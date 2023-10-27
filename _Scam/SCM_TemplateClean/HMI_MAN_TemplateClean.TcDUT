@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="HMI_MAN_TemplateClean" Id="{9d60cffa-578b-4745-afa9-049f24ef55a2}">
+    <Declaration><![CDATA[TYPE HMI_MAN_TemplateClean :
+STRUCT
+
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="OopExmplMain" Id="{1f7f3caf-dc20-05a7-1d07-298a644e1766}" SpecialFunc="None">
+    <Declaration><![CDATA[(*example using the extended block with a random block that has a known interface to show how to use interfaces
+*)
+PROGRAM OopExmplMain
+VAR
+	//this block expanded the baseblock. The baseblock has an input of type interface "IOopExmpl"
+	fbOopExmplExtension: OopExmplExtension;
+	
+	//this block implemented the interface "IOopExmpl"
+	fbOopObjWithInterface: OopExmplRandomObjectWithInterface;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbOopExmplExtension(
+	I_Base:= , 
+	Q_Base=> ,
+	I_ObjectWithGivenInterface:=fbOopObjWithInterface, //note>>plc will crash if nothing is entered here (due to invalid program pointer)
+	I_Extension:= , 
+	Q_Extension=> );]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

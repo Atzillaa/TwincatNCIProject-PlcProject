@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="HMI_SP" Id="{dc1fe36a-0f14-4cbf-954b-42b3e62d5aea}">
+    <Declaration><![CDATA[(* Setpoints managed by the HMI
+	rules 
+		setpoints can only be basic types (bool / byte / word / int / real / string)
+			!don't use enums (you probably can but you hav to define it as a basic type and you then only see a number in the HMI)
+		setpoints are only READ in the plc. Don't write to setpoints!
+			The HMI may overwrite at any moment the setpoints (if the operator activates a recipe)
+			The HMI will not detect a change in setpoints made in the plc >> such a change which isn't allowed, won't be auto detected and saved in the recipe
+			The Bknlibrary functionality will issue a save persistent command at detection of a change (it will go banana's if setpoints keep constantly changing)
+		setpoints should be used as setpoints... 
+		
+		General naming convention (idea is that during coding you can quickly find the correct setpoint)
+			TB_UseExtraPickOffset	//togglebutton use extra pick offset
+			DST_ExtraPickOffset		//extra pick offset distance
+			POS_SrvPicker_Pick 		//pick position
+			SPD_SrvPicker_Travel 	//travel speed
+			TMR_PickTime			//pick delay
+			
+			note: PB_DoSomething >> BAD!!! A pushbutton is only momentarily high so the setpoint will always be false. If you manage to get it high in a recipe
+				then at every HMI-recipe activation the button will be set...  Declare it in HMI_STS instead!  
+		
+		not listed >> don't use different schemes for the same thing and you are free to use your imagination
+		note: if there are many setpoints in the same struct then try to group settings that belong to each other
+			using above example it will become:
+				Picker.TB_UseExtraPickOffset
+				Picker.DST_ExtraPickOffset
+				Picker.Pos_SrvPicker_Pick
+				Picker.SPD_SrvPicker_Travel
+				Picker.TMR_PickTime
+			now you don't have to explain the HMI programmer anymore which setpoints belong to each other.	
+*)
+TYPE HMI_SP :
+STRUCT
+	General: HMI_SP_General;								(*General*)
+
+	{info 'TODO TEMPLATE REMOVE: Example scam'}
+	//Example for how to use, remove me
+	Example:HMI_SP_TemplateMachinePart;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

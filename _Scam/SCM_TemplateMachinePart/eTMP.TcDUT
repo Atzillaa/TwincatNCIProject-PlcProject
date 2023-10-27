@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="eTMP" Id="{943a76cc-00f3-4a33-846d-6a221247c14a}">
+    <Declaration><![CDATA[//enum of states
+{attribute 'strict'}
+{attribute 'to_string'}
+{attribute 'qualified_only'}
+TYPE eTMP :
+(
+	TotalReset,
+	InitCil,
+	InitSrv,
+	Rest,
+	SrvPosStart,
+	SrvStartInterl,
+	SrvPosEnd,
+	SrvPosEndIntrl,
+	MultiStepTest2,
+	MultiStepTest3
+);
+END_TYPE
+
+//info on attributes:
+//strict 			: also tests if the name is not used for something else
+//to_string			: allows the enum to be converted to string
+//qualified_only 	: forces the user to start witht the type name (to avoid the situation that accidentially another enum is used)  ]]></Declaration>
+  </DUT>
+</TcPlcObject>

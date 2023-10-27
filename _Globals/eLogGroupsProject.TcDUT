@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <DUT Name="eLogGroupsProject" Id="{d6ab304f-2d07-44d8-bf50-653a8fa43f8f}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+TYPE eLogGroupsProject :
+(
+	//the first 8 bits are taken/reserved for the boikon library groups: Boikon_Library.eLogGroups
+	(*
+	Off					:= 2#0,					//this channel will not get logged
+	Default				:= 2#1,					//the library blocks will automaticly give the default group for the logged type, otherwise a custom group can be chosen
+	Inputs				:= 2#10,	
+	Outputs 			:= 2#100,
+	Analogs				:= 2#1000,
+	Cntrl_states		:= 2#10000,				//states for controls/utilities (servo blocks for example)
+	*)
+	//project groups, in total 32 bits available
+	//add/rename/remove groups as needed
+	SCM_States 			:=SHL(2#1,8),
+	SCM_CommSignals		:=SHL(2#1,9),
+	Spare				:=SHL(2#1,10),
+	Template			:=SHL(2#1,11),
+	TestServoPos		:=SHL(2#1,12)
+)DWORD;
+END_TYPE
+
+//info on attributes:
+//strict 			: also tests if the name is not used for something else
+//to_string			: allows the enum to be converted to string
+//qualified_only 	: forces the user to start witht the type name (to avoid the situation that accidentially another enum is used)  
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

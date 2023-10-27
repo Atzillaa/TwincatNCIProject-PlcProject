@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="HMI_STS" Id="{a57b2134-6498-45d7-8522-dd3b1979315b}">
+    <Declaration><![CDATA[(* Statuses to indicate various things on the HMI and in the plc  (two way)
+	rules 
+		statuses can only be basic types (bool / byte / word / int / real / string) 
+			!don't use enums (you probably can but you hav to define it as a basic type and you then only see a number in the HMI)
+		statuses are used to show indicator lights / values / strings / etc
+		statuses can also be used for buttons in the HMI which are not setpoints or manuals
+			-example: 
+				a popup is shown in the HMI by status:  IND_OperatorConfirm
+				the confirm button is connected with status: PB_OperatorConfirmed
+				in the plc if PB_OperatorConfirmed is high, IND_OperatorConfirm is set low
+			-side note: the bknlibrary controls also use status for manual related items as: SPD_Servo / POS_Servo / etc
+				reason: the whole manual struct is reset after leaving manual mode but these settings don't have to be reset.
+*)
+TYPE HMI_STS :
+STRUCT
+	General: HMI_STS_General;									(*General*)
+
+	{info 'TODO TEMPLATE REMOVE: Example scam'}
+	Organiser:HMI_STS_Organiser;								(*Organiser (If there are multiple organiser then use unique names)*)
+	Example:HMI_STS_TemplateMachinePart; 						//Example for how to use, remove me
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

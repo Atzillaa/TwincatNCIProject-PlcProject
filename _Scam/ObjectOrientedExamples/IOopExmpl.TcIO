@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="IOopExmpl" Id="{8c04f71c-6e21-0b5c-368e-3e6351299a76}">
+    <Declaration><![CDATA[(*An interface describes the must have methods for a functionblock
+	-now you know for sure that a block implementing this interface will have the methods described here
+*) 
+INTERFACE IOopExmpl
+]]></Declaration>
+    <Method Name="MustHaveMethod" Id="{4c21514d-9d57-0f32-18b4-3eafb1df0e4e}">
+      <Declaration><![CDATA[METHOD MustHaveMethod : BOOL
+VAR_INPUT
+	I:BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

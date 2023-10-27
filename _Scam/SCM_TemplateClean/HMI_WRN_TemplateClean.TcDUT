@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="HMI_WRN_TemplateClean" Id="{a83ed979-fbee-4d3f-aa9d-614a6491400b}">
+    <Declaration><![CDATA[TYPE HMI_WRN_TemplateClean :
+STRUCT
+	(*
+		Rules:
+		Warnings shall only be of type BOOL
+		Warnings can be set / reset / activated as you need it (unlike errors!). 
+		
+		Syntax convention:
+		a clear variable name which describes the warning		as described below
+		StepLockActive:BOOL;									//Warning [machinepart]: in step modus (steps are held until confirmation the continue to the next step)
+		
+		*Note the comment for structs is not used in the HMI (comments inside the struct are used), but I still recommend to add comments.
+	*)
+	Step:HMI_WRN_Step;										//Warning [machinepart]: Stepping controls
+	Standby:BOOL;											//Warning [machinepart]: in standby mode (autostart if not empty)
+	NotRdyRcv_Discharge:BOOL;								//Warning [machinepart]: not ready to receive products
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

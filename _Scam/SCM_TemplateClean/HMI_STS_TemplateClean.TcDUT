@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="HMI_STS_TemplateClean" Id="{d65517df-537c-497d-9f23-99fc91abcb19}">
+    <Declaration><![CDATA[TYPE HMI_STS_TemplateClean :
+STRUCT
+	Step:HMI_STS_Step;										//Stepping controls
+	Empty:BOOL;												//Machinepart is empty
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

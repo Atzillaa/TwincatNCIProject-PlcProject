@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="OopExmplExtension" Id="{007eade0-4d94-0c6a-11e2-9da8f294431c}" SpecialFunc="None">
+    <Declaration><![CDATA[(*	Extending the base block
+
+*)
+FUNCTION_BLOCK OopExmplExtension EXTENDS OopExmplBase
+VAR_INPUT
+	I_Extension:BOOL;
+END_VAR
+VAR_OUTPUT
+	Q_Extension:BOOL;
+END_VAR
+VAR
+	HM_Extension:BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//call baseblock functionality
+SUPER^();
+
+//extra code added by extension
+HM_Extension := HM_Base AND I_Extension;
+Q_Extension := HM_Extension;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

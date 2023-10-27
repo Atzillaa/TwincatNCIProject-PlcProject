@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="HMI_ERR_TemplateClean" Id="{1fccee74-822e-45e1-802f-d0869fc47113}">
+    <Declaration><![CDATA[TYPE HMI_ERR_TemplateClean :
+STRUCT
+	(*
+		Rules:
+		Errors shall only be off type BOOL
+		Errors shall only be set in the program AND mass reset (utl_ANY_Reset) at I_OrgControl.Reset_K >> already programmed in the template
+		
+		Syntax convention:
+		a clear variable name which describes the error			as described below
+		InitNotEmpty:BOOL;										//Error [machinepart]: not empty during initialisation
+		
+		*Note the comment for structs is not used in the HMI (comments inside the struct are used), but I still recommend to add comments.
+	*)
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="MAIN" Id="{55a103d2-858d-4dc1-a31e-5fbbbfc40857}" SpecialFunc="None">
+    <Declaration><![CDATA[(*Basic MAIN with an example organiser and scam*)
+{info '_Welcome to the Boikon Twincat 3 Template'}
+{info '__Please read the _Readme.txt for more info'}
+//TODO TEMPLATE >> remove analysis attribute below (it disables unused var warnings)
+{attribute 'analysis' := '-33'} 
+PROGRAM MAIN
+VAR PERSISTENT
+(*HMI Setpoints*)
+	HMI_Setpoints:HMI_SP;								(*HMI data, all setpoints*)
+END_VAR
+
+VAR
+(*HMI Errors*)
+	HMI_Errors : HMI_ERR;								(*HMI data, all errors*)
+(*HMI Warnings*)
+	HMI_Warnings: HMI_WRN;								(*HMI data, all warnings*)
+(*HMI Statusses*)
+	HMI_Statusses: HMI_STS;								(*HMI data, all statusses*)
+(*HMI Manuals*)
+	HMI_Manuals: HMI_MAN;								(*HMI data, all manuals*)
+	
+	fbGeneral: Utl_General;								(*General*)
+	
+	fbOrganiser:cntrl_Organiser(						
+		SP_TmrReset := T#1S,
+		SP_TmrResetES := T#3S);							(*Machine organiser*)
+END_VAR
+
+{info 'TODO TEMPLATE REMOVE THIS SECTION'}
+VAR
+	fbTestScmClean:SCM_TemplateClean;					//Remove >> Only here so it will get error checked
+	fbExampleMachinePart: SCM_TemplateMachinePart;		//Remove >> Example for how to use
+END_VAR
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//TODO template: general actions can be added here. 
+//in utl_General I've added the usual suspects needed for a machine.
+//please keep in mind I've only included common reocurring items, you need to thoroughly check / update / clean the block!  
+a_General();
+
+//TODO template: everything in here is added as an example >> remove or adjust to your needs
+//It is a simple machine with 1 organiser and 1 scam completely connected up with general
+b_MachinePart();
+
+
+//TODO template: remove this completely from your project. It is used to test library blocks during development (declarations + in solution explorer)
+UnitTesting();]]></ST>
+    </Implementation>
+    <Action Name="a_General" Id="{ef997c49-6f4c-4175-83bc-febdc880087c}">
+      <Implementation>
+        <ST><![CDATA[fbGeneral(
+	I_SN_ResetErrors:= fbOrganiser.Q_Control.Reset_K, //use as needed, this is internally OR'ed with physical input PB_ResetAll
+	//controls the lights for the general start/stop/reset buttons
+	I_SN_Lp_Pb_StartAll:= fbOrganiser.Q_LP_Start, //since in this example there is only 1 org, only 1 org connected here
+	I_SN_Lp_Pb_StopAll:= fbOrganiser.Q_LP_Stop, //since in this example there is only 1 org, only 1 org connected here 
+	I_SN_Lp_Pb_ResetAll:= fbOrganiser.Q_LP_Reset, //since in this example there is only 1 org, only 1 org connected here
+	Q_SN_ES_Zone1_OK=> , //connect to corresponding organisers >> if multiple zones are needed then create extra outputs+code in general
+	Q_SN_StartAll=> , //connect to all organisers that have to start with the physical start/stop/reset-all buttons 
+	Q_SN_StopAll=> , //connect to all organisers that have to start with the physical start/stop/reset-all buttons 
+	Q_SN_ResetAll=> , //connect to all organisers that have to start with the physical start/stop/reset-all buttons 
+	Q_SN_TotalResetAll=> , //connect to all organisers that have to start with the physical start/stop/reset-all buttons 
+	IO_ERR:= HMI_Errors.General, 
+	IO_WRN:= HMI_Warnings.General, 
+	IO_SP:= HMI_Setpoints.General, 
+	IO_STS:= HMI_Statusses.General);]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="b_MachinePart" Id="{51166692-ba41-42d3-9f46-75bf2fc7547e}">
+      <Implementation>
+        <ST><![CDATA[//Note: if the machine consists of several machine parts with their own organiser then for a cleaner structure make a seperate action for each part
+fbOrganiser(
+	I_SN_ES_OK:= fbGeneral.Q_SN_ES_Zone1_OK, //do not connect directly to an I_ES_OK input. In general this signal is only set high if es-ok AND PB_Reset
+	I_SN_TotalReset:= fbGeneral.Q_SN_TotalResetAll, //General has a PB_HMI_TotalReset which is connected to this output
+	I_SN_ProgsRest:= fbExampleMachinePart.Q_ProgStatus.Prog_Rest, //if more than 1 program connected then AND these statusses 
+	I_SN_ProgsError:= 	fbGeneral.Q_SN_ERR_General							//general errors active. Note if you have multiple general zones than connect the error of that zone
+						OR fbExampleMachinePart.Q_ProgStatus.Prog_Error, 	//if more than 1 program connected then OR these statusses
+	I_PB_Start:= fbGeneral.Q_SN_StartAll, //@ multiple zones a button for this zone can be OR'ed 
+	I_PB_Stop:= fbGeneral.Q_SN_StopAll, //@ multiple zones a button for this zone can be OR'ed
+	I_PB_Reset:= fbGeneral.Q_SN_ResetAll, //@ multiple zones a button for this zone can be OR'ed
+	Q_Control=> , //Organiser control signals used by scam-programs
+	Q_LP_Start=> , //can be used to connect to light in corresponding button 
+	Q_LP_Stop=> , //can be used to connect to light in corresponding button 
+	Q_LP_Reset=> , //can be used to connect to light in corresponding button 
+	IO_STS:= HMI_Statusses.Organiser, 
+	IO_WRN:= HMI_Warnings.Organiser);
+	
+fbExampleMachinePart(
+	I_K_ES_OK:= fbGeneral.Q_SN_ES_Zone1_OK, //Emergency stop for this zone OK. @ mutliple zones, fbGeneral must be adapted to supply these signals for each zone
+	I_K_ExternalError:= fbGeneral.Q_SN_ERR_General,	//an external error which should put this scam in exception as well
+														//>>adapt to your needs!!! if you only want to add airpressure NOK then add this signal as output in general and use it here
+														//>>if 2 scams belonging to seperate organisers are communicating with each other than you can make one also go into execption if the other has an error
+	I_OrgControl:= fbOrganiser.Q_Control, //Control signals from the organiser
+	I_SN_SUP_Request_OK := Glbl.Sim_MyMachinePart, //Connect to upstream, used to detect if this block has run empty
+	I_STS_SUP_Empty:= , //Connect to upstream. The upstream is empty, use this to enter energy-save mode (stop conveyors etc)
+	I_SN_DSC_Request:= Glbl.Sim_MyMachinePart, //Connect to downstream. The downstream is ready for products >> this program can run 
+	Q_ProgStatus=> , //Connect to the organiser. These are the program states (in-rest/-error/-exception)
+	Q_STS_Empty=> , //Connect to downstream. The supply is empty and this part is now empty and in energy-save mode
+	Q_SN_SUP_Request=> ,//Connect to upstream. This program is running and ready to receive products
+	IO_SP_Common:= HMI_Setpoints.General.Common, //note, remove this IO from the program when it is not needed
+	IO_MAN:= HMI_Manuals.Example, 
+	IO_SP:= HMI_Setpoints.Example, 
+	IO_STS:= HMI_Statusses.Example, 
+	IO_WRN:= HMI_Warnings.Example, 
+	IO_ERR:= HMI_Errors.Example);]]></ST>
+      </Implementation>
+    </Action>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="HMI_SP_TemplateMachinePart" Id="{0becb090-3692-47e5-b2c6-0fa9009104f6}">
+    <Declaration><![CDATA[{attribute 'analysis' := '-33'} //Only for template!!! >> deactivate error unused variable for next variable/struct
+TYPE HMI_SP_TemplateMachinePart :
+STRUCT
+	CFG_MachinePartEnabled:BOOL:=TRUE;				//Configuration this machinepart is enabled >> when disabled I_SN_SUP_Request is coupled directly to Q_SN_DSC_Request and errors+organiser stuff is put in the correct state
+	POS_SrvBegin:REAL:=10;							//position servo begin
+	POS_SrvEnd:REAL:=100;							//postion servo end
+	PC_ProductPassedStopper:HMI_SP_Sensor := (TMR_DelayDetected:= T#250MS, TMR_DelayUndetected:= T#100MS, TMR_DelayErrorDetect:= T#1S, TMR_DelayErrorUndetect:=T#500MS);
+	Cil_Example:HMI_SP_Valve := (
+		Tmr_ErrorDetection:= T#2S);
+	VCG_Suckers: HMI_SP_VacuumGenerator := (Tmr_BlowOff:= T#2S, PS_VacuumOk:=(TMR_DelayDetected:= T#1S, TMR_DelayUndetected:= T#250MS, TMR_DelayErrorDetect:= T#3S, TMR_DelayErrorUndetect:= T#500MS));
+	Mtr_Example: HMI_SP_Motor := (
+		Spd_DefaultPrct:= 75);
+	Srv_Example: HMI_SP_Servo;
+	Gantry_Example: HMI_SP_SingleBeltGantry;
+	Cam_OmronSmartCam: HMI_SP_OmronMicroScan;
+	Cam_OmronController: HMI_SP_OmronCamera;
+	
+	DstGripperCloseProductType1:REAL:=4.2;				//Distance gripper claws closed for product type
+	DstGripperCloseProductType2:REAL:=5;				//Distance gripper claws closed for product type
+	
+	
+	//example pre defined HMI recipe limits and groups (only works for setpoint variables!!!) 
+	//the first time a new setpoint is added to the HMI recipe, the HMI will check the comment for these keys for predefined min/max / recipe-group
+	//the HMI will search for these keys: [min=*] and [max=*] and [group=*]  (*==your value)
+	//time needs to be in c# timespan format.
+	//1.12:30:44.5 		==1day, 12hours, 30 minutes, 44seconds, 500ms
+	//1 				==1day
+	//1:2				==1hour, 2minutes
+	//1:2:3				==1hour, 2minutes, 3seconds
+	//0:0:0.001			==1ms
+	//
+	//keywords: [min=..] , [max=..] , [group=..]
+	TestTime:TIME;							//equals 100ms: [min=0:0:0.1]   equals 3hrs, 30minutes, 3seconds: [max=3:30:3] 
+	TestOnlyMinKey:INT;						//[min=-100]
+	TestOnlyMaxKey:INT;						//[max=100]
+	TestOnlyGroupKey:BOOL;					//[group=TemplateTest]
+	TestArrayAllKeys:ARRAY[0..2] OF UINT;	//[min=100] [max=1000] [group=TemplateTest]	
+	//various hmi test
+	TestStructCopyCompare:ARRAY[0..2] OF HMI_SP_MqttClient; //testing HMI control to synchronise settings Boikon_HMI.AdsStructCompareCopy_Viewscreen
+	TestRealValue:REAL;						//real value for setpoint testing
+	TestEnumValue:eLogGroups:=eLogGroups.Errors;	//enum value for testing (just checking if HMI can handle the datatype)
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

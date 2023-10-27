@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="SP_Common" Id="{95dccf3d-eeed-4115-9091-b093e5a03ae7}">
+    <Declaration><![CDATA[//struct to store setpoints that need te bo accessible by multiple machine parts >> this struct is stored in the general settings
+{attribute 'analysis' := '-33'} //deactivate error unused variable for next variable/struct
+TYPE SP_Common :
+STRUCT
+	(*Some example setpoints which might be needed for multiple machine parts at once*)
+	
+	//these setpoints could be added to setpoint group "size"
+	ProductWidth:REAL;							//product with
+	ProductHeight:REAL;							//product height
+	
+	//these setpoints could be added to a setpoint group "material
+	ProductMaterialDependantSetpoint1:REAL;		//product material setpoint xxx
+	ProductMaterialDependantSetpoint2:REAL;		//product material setpoint xxx
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

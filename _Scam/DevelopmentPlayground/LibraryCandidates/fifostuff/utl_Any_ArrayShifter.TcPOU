@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="utl_Any_ArrayShifter" Id="{82464781-7818-0ef4-06e7-5f73ab005304}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+	Function to shift elements (can be any type bool/struct) of an array to the left or right for a given amount of positions
+	Executes given command on fifo element, returns true if successfull and false at parameter error
+	*if you shift more positions then there are array indexes it behaves as a total array reset (staying within the array memory)
+		
+	I_Cnt: 	number of positions to shift. Negative is shifting left, Positive is shifting right
+			*If shifting more elements than the array holds >> result is empty array, memory access is limited to the array so no plc crashes should happen. 
+
+Changes
+	2023-6 HP
+	-new block, based on utl_struct_fifo
+*)
+FUNCTION  utl_Any_ArrayShifter : BOOL
+
+VAR_INPUT
+	IO_Array:ANY;								//Data of the fifo of elements: myArray
+	IO_ArrayElement:ANY;						//First element (used for determining size of element): myArray[0]
+	I_Cnt:INT;									//Nr of elements to shift
+END_VAR
+
+VAR
+	nrOfBytes:DINT;
+	copyOffset:DINT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//init to success (gets overwritten if something is not good)
+utl_Any_ArrayShifter := TRUE;
+
+//if parameters wrong >> abort
+IF(	SHR(IO_Array.diSize,1) < IO_ArrayElement.diSize   //array with less than 2 elements and command to shift???
+	OR IO_Array.pValue = 0							//invalid pointer
+	OR IO_ArrayElement.pValue = 0)					//invalid pointer
+THEN
+	utl_Any_ArrayShifter := FALSE;
+	utl_SystemMessage(I_Message:='utl_Any_FifoHandler parameter error');
+	RETURN;
+END_IF
+
+//calculate where to copy to / from
+copyOffset := MIN(	IO_Array.diSize,  //limit offset to max size
+					IO_ArrayElement.diSize * ABS(I_Cnt));
+
+nrOfBytes := IO_Array.diSize - copyOffset;
+
+//if command to shift to the right >> copy source = [0] and destination = [Offset] then reset all before offset
+IF(I_Cnt>0)
+THEN
+	//copy calculated nr of positions to new position. 
+	MEMCPY(	destAddr := IO_Array.pValue + TO_DWORD(copyOffset),
+			srcAddr := IO_Array.pValue,
+			n :=  TO_UDINT(nrOfBytes));
+				
+	//reset elements shifted out
+	MEMSET(	destAddr := IO_Array.pValue,
+			fillByte := 0,
+			n := TO_UDINT(copyOffset));
+			
+//if command to shift to the left >> copy source = [offset] and destination = [0] then reset from the back number of elements * size of element	
+ELSIF(I_Cnt<0)
+THEN
+	//copy calculated nr of positions
+	MEMCPY(	destAddr := IO_Array.pValue ,
+			srcAddr := IO_Array.pValue + TO_DWORD(copyOffset),
+			n :=  TO_UDINT(nrOfBytes));
+	
+	//nr of bytes to reset
+	nrOfBytes := MIN(	IO_Array.diSize, 		//limit, at max reset whole array 
+						ABS(I_Cnt) * IO_ArrayElement.diSize);
+		
+	//reset elements shifted out
+	MEMSET(	destAddr := IO_Array.pValue + TO_DWORD(IO_Array.diSize) - TO_DWORD(nrOfBytes),
+			fillByte := 0,
+			n := TO_UDINT(nrOfBytes));
+//request to shift 0 positions??? >> okay...	
+ELSE
+	RETURN;
+END_IF]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

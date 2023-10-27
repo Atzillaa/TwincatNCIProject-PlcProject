@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="cntrl_EthercatManager" Id="{cf228295-a523-0e82-3ff1-a096be8ae6e2}" SpecialFunc="None">
+    <Declaration><![CDATA[(*	Basic HMI wrapper for utl_EthercatDevicesManager
+
+	Exposes and extends the library functionality of utl_EthercatDevicesManager for the HMI.
+	-if you need to automate things than make your own version for controlling utl_ethercatManager, but I don't think you would ever want to do that. Normally ethercat should just run.
+	 if tricks are needed like: automatically restarting slave devices, then something is not ok and that should be fixed instead. 
+	 the only trick which might be needed is the delayed start, which is incorporated in this block.
+
+	Configuring:	
+	-FB_INIT: Delayed start:
+	 If configured, the ethercatmaster device will be automatically set to state "OP" after a delay
+		In some scenario's (lots of IO) not all slaves will enter successfully the op state after a cold start of the plc 
+		To fix this, you can set in the hw-manager the master device default state to INIT 
+			-master device/ethercat/advanced settings/state machine/master settings/startup state >> set to init
+		This block will then set the master to OP after a delay
+			
+	-Link "I_AmsNetID" to the master ethercat device. If this is not linked, then the block is disabled.
+	
+
+	Custom errors:
+	-0xFFF1 = block disabled (no device linked) NOTE: this will not set Q_STS_InError!
+	-0xFFF2 = fbEcGetSlaveCount had an error (block doesn't have an error id output)
+	-0xFFF3 = fbEcGetConfSlaves no error but reported different amount of slaves then expected
+	-0xFFF4 = invalid arguments
+	-0xFFF5 = master did not get requested state without block errors
+	
+	Changes:
+	2023-09 HP
+		-it's alive
+*)
+FUNCTION_BLOCK cntrl_EthercatManager
+
+VAR_OUTPUT
+	Q_STS_EthAutoStartOk:BOOL;						//Ethercat is autostarted or functionality disabled
+	Q_STS_NrOfSlavesNotInOp:UINT;					//number of found devices not in  OP state during scan command
+END_VAR
+VAR_IN_OUT
+	IO_STS:HMI_STS_EthercatManager;
+END_VAR
+VAR
+	HM_AutoScanNeeded:BOOL;
+	HM_CNT:UINT;
+	HM_LastUpdatedSlave:UINT;
+	fbEthercatDevicesManager:utl_EthercatDevicesManager(
+								DelayedStartMaster:= FALSE); //note: gets overwritten in this block's init function
+	Tmr_StartAutoScan:ton;							
+	Tmr_ResetButtons:ton;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//if search for next not OP device is requested by hmi >> search
+IF(IO_STS.PB_JumpIndexToNextNotOpDevice)
+THEN
+	//search forward in all slaves for status not op
+	FOR HM_CNT:=0 TO fbEthercatDevicesManager.Q_STS_NrOfSlaves BY 1
+	DO
+		IO_STS.IndexStatusCurrentDevice := IO_STS.IndexStatusCurrentDevice + 1;
+		//if overflow >> loopback
+		IF(IO_STS.IndexStatusCurrentDevice >= fbEthercatDevicesManager.Q_STS_NrOfSlaves) THEN IO_STS.IndexStatusCurrentDevice := 0; END_IF
+
+		M_UpdateSlaveStatus (IO_STS);
+		
+		//if current device not in op >> done for loop
+		IF(IO_STS.StatusSlaveDevice.State <> TO_STRING(eEtherCatDeviceState.Op)) THEN EXIT; END_IF
+	END_FOR
+END_IF
+IO_STS.PB_JumpIndexToNextNotOpDevice := FALSE;
+
+//if search for previous not OP device is requested by hmi >> search
+IF(	IO_STS.PB_JumpIndexToPreviousNotOpDevice
+	AND fbEthercatDevicesManager.Q_STS_NrOfSlaves > 0)
+THEN
+ 	//search reverse in all slaves for status not op
+	FOR HM_CNT:=0 TO fbEthercatDevicesManager.Q_STS_NrOfSlaves BY 1
+	DO
+		//if overflow >> loopback
+		IF(IO_STS.IndexStatusCurrentDevice = 0) 
+		THEN 
+			IO_STS.IndexStatusCurrentDevice := fbEthercatDevicesManager.Q_STS_NrOfSlaves - 1;
+		//else no overflow >> .. 
+		ELSE		
+			IO_STS.IndexStatusCurrentDevice := IO_STS.IndexStatusCurrentDevice - 1;
+		END_IF
+		
+		M_UpdateSlaveStatus (IO_STS);
+
+		//if current device not in op >> done for loop
+		IF(IO_STS.StatusSlaveDevice.State <> TO_STRING(eEtherCatDeviceState.Op)) THEN EXIT;	END_IF
+	END_FOR
+END_IF
+IO_STS.PB_JumpIndexToPreviousNotOpDevice := FALSE;
+
+//if index status slave changed >> update slave info
+IF(HM_LastUpdatedSlave <> IO_STS.IndexStatusCurrentDevice) THEN	M_UpdateSlaveStatus (IO_STS); END_IF
+
+
+
+fbEthercatDevicesManager(
+	I_K_Reset:= IO_STS.PB_ResetError, 
+	I_K_ScanDevices:= 	IO_STS.PB_UpdateConfigAndStates 
+						OR Tmr_StartAutoScan.Q, 
+	I_K_SetMasterState:= IO_STS.PB_SetMasterState AND NOT IO_STS.PB_UpdateConfigAndStates, 
+	I_K_RestartSlaveDevice:= IO_STS.PB_RestartCurrentDevice AND NOT IO_STS.PB_UpdateConfigAndStates, 
+	I_SP_ReqMasterState:= IO_STS.ReqMasterState, 
+	I_SP_IndexSlaveDeviceToRestart:= IO_STS.IndexStatusCurrentDevice, 
+	//Q_K_ScanDevicesOk=> , 
+	//Q_K_SetMasterStateOk=> , 
+	//Q_K_ResetDeviceOk=> , 
+	Q_STS_EthAutoStartOk=> Q_STS_EthAutoStartOk,
+	Q_STS_InError=> IO_STS.Error,
+	Q_STS_ErrorId=> IO_STS.ErrorNr, 
+	Q_STS_NrOfSlaves=> IO_STS.NrOfSlaves, 
+	Q_STS_NrOfSlavesNotInOp=> IO_STS.NrOfSlavesNotInOp);
+Q_STS_NrOfSlavesNotInOp := fbEthercatDevicesManager.Q_STS_NrOfSlavesNotInOp;
+
+//if scan completed >> also update selected device info + reset HMI commands
+IF(	fbEthercatDevicesManager.Q_K_ScanDevicesOk)
+THEN
+	M_UpdateSlaveStatus(IO_STS);
+	HM_AutoScanNeeded := FALSE;
+END_IF
+
+//if master state command succeeded >> also scan new situation
+IF( fbEthercatDevicesManager.Q_K_SetMasterStateOk)
+THEN
+	HM_AutoScanNeeded := TRUE;
+END_IF
+
+//if restart device command succeeded >> also scan new situation
+IF( fbEthercatDevicesManager.Q_K_ResetDeviceOk)
+THEN
+	HM_AutoScanNeeded := TRUE;
+END_IF
+
+//trigger autoscan
+Tmr_StartAutoScan(	IN:= HM_AutoScanNeeded, 
+				PT:= T#2S);
+
+//auto reset hmi buttons if command completed
+Tmr_ResetButtons(
+	IN:= 	fbEthercatDevicesManager.Q_K_ScanDevicesOk
+			OR fbEthercatDevicesManager.Q_K_SetMasterStateOk
+			OR fbEthercatDevicesManager.Q_K_ResetDeviceOk
+			OR IO_STS.PB_ResetError, 
+	PT:= T#2S);
+IF(Tmr_ResetButtons.Q)
+THEN
+	IO_STS.PB_RestartCurrentDevice := FALSE;
+	IO_STS.PB_SetMasterState := FALSE;
+	IO_STS.PB_UpdateConfigAndStates := FALSE;
+	IO_STS.PB_ResetError := FALSE;
+END_IF
+	]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{d2afbf00-8a69-05c6-287d-fd7741af7c68}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; 		// if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  		// if TRUE, the instance afterwards gets moved into the copy code (online change)
+	DelayedStartMaster:BOOL;	//set master device to op after startup delay >> needed if you configurate the hw-ethercat master start to INIT instead of OP
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//there is no other neat way to set the fb_Init argument with a variable in this block's declarations...
+fbEthercatDevicesManager.P_CFG_DelayedStartMaster := DelayedStartMaster;
+
+ ]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_UpdateSlaveStatus" Id="{0aab90e7-db92-0e78-16ef-43e18693da34}">
+      <Declaration><![CDATA[METHOD PRIVATE M_UpdateSlaveStatus
+VAR_IN_OUT
+	IO_STS:HMI_STS_EthercatManager;
+END_VAR
+
+VAR
+	HM_Index:UINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[HM_Index := LIMIT(0, IO_STS.IndexStatusCurrentDevice, fbEthercatDevicesManager.Q_STS_NrOfSlaves-1);
+
+HM_LastUpdatedSlave := IO_STS.IndexStatusCurrentDevice := HM_Index;
+IO_STS.StatusSlaveDevice := fbEthercatDevicesManager.M_EcGetSlaveInfo(HM_Index);]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

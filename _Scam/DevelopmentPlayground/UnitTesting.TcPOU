@@ -1,0 +1,760 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="UnitTesting" Id="{35d7aae4-96e8-0d4e-083d-d72777d3622a}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'no-analysis'} //doing many things here that trigger warnings
+PROGRAM UnitTesting
+VAR CONSTANT
+	ARRSIZE:INT:=5;
+END_VAR
+
+VAR
+	
+	HM_HoustonWeHaveAProblem:BOOL;
+	EnableArrayTest:BOOL;
+	EnableSafetyTest:BOOL;
+	EnableTimerTests:BOOL;
+	
+	//Array functions test
+	//
+
+	arrCnt_1: ARRAY[1..ARRSIZE] OF INT;
+	arrCnt_2: ARRAY[1..ARRSIZE] OF INT;
+	arrCnt_3: ARRAY[1..ARRSIZE] OF INT;
+	//\\
+
+	
+	tmpBool:BOOL;
+	tmpInt1:INT;
+	tmpInt2:INT;
+	tmpInt3:INT;
+	tmpInt4:INT;
+	tmpReal1:REAL;
+	tmpReal2:REAL;
+	
+	
+	//timer test
+	
+	fbUtl_TimeElapsedInitDone:BOOL;
+	fbUtl_TimeElapsed:utl_TimeElapsed;
+	
+	//SAFETY TEST
+	//simulate feedbacks outputs for safety example program (so we can test run on the plc test-board)
+	//normal output card, hardwired to safety input card for testing purposes
+	PB_ES_SIM:BOOL; //simulate pushbutton ok
+	FB_ES_OK_SIM:BOOL;	//enable linking of output K safety back to input safety EDM
+	FB_Y_SIM1:BOOL;  	//enable linking of output Y1 safety back to input safety EDM
+	FB_Y_SIM2:BOOL;  	//enable linking of output Y2 safety back to input safety EDM
+	
+	//feedback main es relais
+	I_ES_OK:utl_LoggedInput;
+	Q_ES_K_FB:utl_LoggedOutput;	
+	Tmr_Q_ES_K_FB:utl_TONH_TOFH;
+
+	//feedback safety valves
+	I_YPS1:utl_LoggedInput;	
+	Q_YPS1_FB:utl_LoggedOutput;
+	Tmr_Q_Y_PS1_FB:utl_TONH_TOFH;
+
+	I_YPS2_K:utl_LoggedInput;	
+	Q_YPS2_FB:utl_LoggedOutput;
+	Tmr_Q_Y_PS2_FB:utl_TONH_TOFH;
+	
+	//pb es ok
+	Q_ES_PB1_OK:utl_LoggedOutput;
+	Tmr_Q_ES_PB1_OK:ton;
+	Q_ES_PB2_OK:utl_LoggedOutput;
+	Tmr_Q_ES_PB2_OK:ton;
+	//\\
+	
+	fbcntrlSensor:cntrl_Sensor(Options:= eSensorConfig.Default);
+	fbcntrlSensor_STS:HMI_STS_Sensor;
+	fbcntrlSensor_SP:HMI_SP_Sensor;
+	fbcntrlSensor_ERR:HMI_ERR_Sensor;
+	fbcntrlSensor_CntEdges:BYTE;
+	fbcntrlSensor_I_IN:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
+	fbcntrlSensor_QD:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
+	fbcntrlSensor_QDB:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
+	fbcntrlSensor_QP:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
+	
+	//Timer test
+	fbTmrOnOffState:INT;
+	fbTmrOnOffCnt:INT;
+	fbTmrOnOffTest:utl_TONH_TOFH;
+	fbTmrOnOffTest_I:utl_LoggedBool(LoggingGroup:=eLogGroups.Default);
+	fbTmrOnOffTest_Q_On:utl_LoggedBool(LoggingGroup:=eLogGroups.Default);
+	fbTmrOnOffTest_Q_Off:utl_LoggedBool(LoggingGroup:=eLogGroups.Default);
+	fbTmrOnOffTest_Q_OnOff:utl_LoggedBool(LoggingGroup:=eLogGroups.Default);
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF(BknGlbl.FirstScan) THEN A_aFirstScan(); END_IF
+
+//if array function testing enabled (spams error messages because also testing wrong parameters)>>..
+IF( EnableArrayTest) 
+THEN
+	//Any-reset + Any-find fist high byte
+	InitValues();
+	A_AnyReset_AnyFindFirstByte();
+	
+	//Any array shift
+	InitValues();
+	A_Any_ArrayShifter();
+	
+	//Any array reset element(s)
+	InitValues();
+	A_Any_ArrayResetElements();
+	
+	//stop spamming system errors (unittesting tried out wrong parameters which caused a boikon system error
+	EnableArrayTest R= NOT HM_HoustonWeHaveAProblem;
+END_IF
+
+A_utl_TimeElapsed();
+A_utl_OnOffTimer_cntrl_Sensor();
+
+//simulate inputs for safety program (hardwired from normal outputcard to safety inputcard
+//wire safety valve outputs to plc-inputs, which are linked to plc outputs for feedback of safety EDM inputs 
+A_SafetyExampleProgram();
+]]></ST>
+    </Implementation>
+    <Action Name="A_aFirstScan" Id="{65fb7e12-f359-0bec-2fa4-8af79ba1b3bd}">
+      <Implementation>
+        <ST><![CDATA[EnableArrayTest := TRUE;
+EnableSafetyTest := TRUE;
+EnableTimerTests := TRUE;
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Any_ArrayResetElements" Id="{919efa41-6a94-0fd6-35fa-c69ea36f5327}">
+      <Implementation>
+        <ST><![CDATA[//
+// Reset middle element
+//
+	IF( 
+		NOT	utl_Any_ArrayResetElements(	I_Cnt:=1, 
+										I_Offset:=TO_UINT(ARRSIZE)/2 ,
+										IO_Array:=arrCnt_2,
+										IO_ArrayElement:=arrCnt_2[1])
+		OR arrCnt_2[(ARRSIZE/2)+1] <> 0    //-1 shenanigans because array started at 1...
+		OR arrCnt_2[ (ARRSIZE/2)] <> (ARRSIZE/2)
+		OR arrCnt_2[ (ARRSIZE/2)+2] <> (ARRSIZE/2)+2
+		//memory around untouched check
+		OR arrCnt_1[ARRSIZE] <> ARRSIZE
+		OR arrCnt_3[1] <> 1)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_ArrayResetElements failed unit test 1');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+//
+// Reset last element
+//
+	IF( 
+		NOT	utl_Any_ArrayResetElements(	I_Cnt:=1, 
+										I_Offset:=TO_UINT(ARRSIZE-1) , //offset==0 is first element
+										IO_Array:=arrCnt_2,
+										IO_ArrayElement:=arrCnt_2[1])
+		OR arrCnt_2[ARRSIZE] <> 0 
+		OR arrCnt_2[ARRSIZE-1] <> ARRSIZE-1 
+		//memory around untouched check
+		OR arrCnt_1[ARRSIZE] <> ARRSIZE
+		OR arrCnt_3[1] <> 1)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_ArrayResetElements failed unit test 2');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+//
+// Reset 2 elements offset 1
+//
+	IF( 
+		NOT utl_Any_ArrayResetElements(	I_Cnt:=2, 
+									I_Offset:=1,
+									IO_Array:=arrCnt_2,
+									IO_ArrayElement:=arrCnt_2[1])
+		OR arrCnt_2[1] <> 1
+				OR arrCnt_2[2] <> 0
+				OR arrCnt_2[3] <> 0
+				OR ( arrCnt_2[4] <> 4 AND ARRSIZE >= 4)
+				//memory around untouched check
+				OR arrCnt_1[ARRSIZE] <> ARRSIZE
+				OR arrCnt_3[1] <> 1)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_ArrayResetElements failed unit test 3');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+//
+// Reset too many with offset 1  (should auto stop at memory border)
+//
+	InitValues();
+	IF( NOT utl_Any_ArrayResetElements(	I_Cnt:=TO_UINT(ARRSIZE)*2, 
+									I_Offset:= 1,
+									IO_Array:=arrCnt_2,
+									IO_ArrayElement:=arrCnt_2[1])
+		OR arrCnt_2[1] <> 1
+		OR arrCnt_2[2] <> 0
+		OR arrCnt_2[ARRSIZE] <> 0
+		//memory around untouched check
+		OR arrCnt_1[ARRSIZE] <> ARRSIZE
+		OR arrCnt_3[1] <> 1	)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_ArrayResetElements failed unit test 4');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+
+
+	
+//
+// Monkey testing, should return false, parameter error because offset is wrong
+//
+	IF( utl_Any_ArrayResetElements(	I_Cnt:=2, 
+									I_Offset:= SIZEOF(arrCnt_2)/SIZEOF(arrCnt_2[1]),
+									IO_Array:=arrCnt_2,
+									IO_ArrayElement:=arrCnt_2[1]))
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_ArrayResetElements failed unit test 5');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Any_ArrayShifter" Id="{e5d71479-d156-0ac0-0e41-4f7eb6898f40}">
+      <Implementation>
+        <ST><![CDATA[//
+//shift 1 to the right
+//
+	utl_Any_ArrayShifter(arrCnt_2 ,arrCnt_2[1], 1);
+	
+	//check
+	IF( arrCnt_2[1] <> 0
+		OR arrCnt_2[2] <> 1
+		OR arrCnt_2[ARRSIZE] <> (ARRSIZE-1)
+		//memory around untouched check
+		OR arrCnt_1[ARRSIZE] <> ARRSIZE
+		OR arrCnt_3[1] <> 1)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_ArrayShifter failed unit test 1');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+
+//
+//shift 2 left
+//
+	utl_Any_ArrayShifter(arrCnt_2 ,arrCnt_2[1], -2);
+	
+	//check
+	IF( arrCnt_2[1] <> 2
+		OR arrCnt_2[ARRSIZE-2] <> ARRSIZE-1
+		//memory around untouched check
+		OR arrCnt_1[ARRSIZE] <> ARRSIZE
+		OR arrCnt_3[1] <> 1)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_ArrayShifter failed unit test 2');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+//shift gonsky right
+	arrCnt_2[1] := 1;
+	arrCnt_2[ARRSIZE] := ARRSIZE;
+	utl_Any_ArrayShifter(arrCnt_2 ,arrCnt_2[1], ARRSIZE*2);
+	
+	//check
+	IF( arrCnt_2[1] <> 0
+		OR arrCnt_2[ARRSIZE] <> 0
+		//memory around untouched check
+		OR arrCnt_1[ARRSIZE] <> ARRSIZE
+		OR arrCnt_3[1] <> 1)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_ArrayShifter failed unit test 3');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+//shift gonsky left
+	arrCnt_2[1] := 1;
+	arrCnt_2[ARRSIZE] := ARRSIZE;
+	utl_Any_ArrayShifter(arrCnt_2 ,arrCnt_2[1], -ARRSIZE*2);
+	
+	//check
+	IF( arrCnt_2[1] <> 0
+		OR arrCnt_2[ARRSIZE] <> 0
+		//memory around untouched check
+		OR arrCnt_1[ARRSIZE] <> ARRSIZE
+		OR arrCnt_3[1] <> 1)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_ArrayShifter failed unit test 4');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_AnyReset_AnyFindFirstByte" Id="{5a1f8c94-5a6f-07ff-1419-b09f7b65852d}">
+      <Implementation>
+        <ST><![CDATA[//
+//Reset ANY
+//
+	utl_Any_Reset(arrCnt_2); 
+	IF(	utl_Any_FindFirstNonZeroByte(arrCnt_2,0) > -1
+		//memory around should be untouched
+		OR arrCnt_1[ARRSIZE] <> ARRSIZE
+		OR arrCnt_3[1] <>1)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_Reset failed unit test 1');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF 
+	
+//
+//Find first non zero byte
+//
+	arrCnt_2[1] := 1;
+	IF(	utl_Any_FindFirstNonZeroByte(arrCnt_2,0) <> 0)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_FindFirstNonZeroByte failed unit test 1');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+	arrCnt_2[1] := 0;
+	arrCnt_2[ARRSIZE] := 1;
+	IF(	utl_Any_FindFirstNonZeroByte(arrCnt_2,0) <> ((ARRSIZE-1)*TO_INT(SIZEOF(arrCnt_2[1]))))
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_FindFirstNonZeroByte failed unit test 2');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+
+
+
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_SafetyExampleProgram" Id="{5602990e-c22e-08b3-126c-fc0f4158c591}">
+      <Implementation>
+        <ST><![CDATA[{warning disable C0139} 
+//Safety test program for when using plc-test-setup 
+//>>plc outputs are wired to safety inputs and vica versa to simulate PB_ES / FB / ETC
+
+//if firstscan set default times 
+IF(BknGlbl.FirstScan)
+THEN
+
+	PB_ES_SIM := FB_ES_OK_SIM := FB_Y_SIM1 := FB_Y_SIM2 := TRUE;
+
+	//if too much diff >> should trigger safety error
+	Tmr_Q_ES_PB1_OK.PT := T#10MS;
+	Tmr_Q_ES_PB2_OK.PT := T#20MS;
+	
+	Tmr_Q_ES_K_FB.I_SP_TON := T#50MS;
+	Tmr_Q_ES_K_FB.I_SP_TOF := T#50MS;
+	
+	Tmr_Q_Y_PS1_FB.I_SP_TON := T#500MS; 
+	Tmr_Q_Y_PS1_FB.I_SP_TOF := T#500MS; 
+	
+	Tmr_Q_Y_PS2_FB.I_SP_TON := T#550MS; 
+	Tmr_Q_Y_PS2_FB.I_SP_TOF := T#550MS; 
+END_IF
+
+//if not enabled >> abort
+IF( NOT EnableSafetyTest) THEN RETURN; END_IF 
+
+
+//all control bits
+EnableSafetyTest;
+PB_ES_SIM;  		//sim pb ok
+FB_ES_OK_SIM;		//sim feedback ES_K
+FB_Y_SIM1;			//sim feedback y1
+FB_Y_SIM2;			//sim feedback y2
+
+main.fbGeneral.I_Pb_ResetAll._i;
+main.fbGeneral.Q_SN_ES_Zone1_OK;
+main.fbGeneral.fbSafetyZone1.fbPbSf_ResetSafetyErrors.P_BypassStateTrue;
+
+
+//Emergency stop pushbutton
+Tmr_Q_ES_PB1_OK(
+	IN:= PB_ES_SIM , 
+	PT:=);
+Q_ES_PB1_OK.Q := Tmr_Q_ES_PB1_OK.Q;
+
+Tmr_Q_ES_PB2_OK(
+	IN:= PB_ES_SIM , 
+	PT:=);
+Q_ES_PB2_OK.Q := Tmr_Q_ES_PB2_OK.Q;
+
+//feedback main relais
+Tmr_Q_ES_K_FB( I_IN:= NOT(	I_ES_OK.Q 
+							AND FB_ES_OK_SIM));
+Q_ES_K_FB.Q := 	Tmr_Q_ES_K_FB.Q_On 
+				OR Tmr_Q_ES_K_FB.Q_On;
+
+//feedback air safety valves 
+Tmr_Q_Y_PS1_FB(	I_IN:= NOT(	I_YPS1.Q 
+							AND FB_Y_SIM1));
+Q_YPS1_FB.Q := Tmr_Q_Y_PS1_FB.Q_OnOff;
+
+Tmr_Q_Y_PS2_FB(	I_IN:= NOT(	I_YPS2_K.Q
+							AND FB_Y_SIM2));
+Q_YPS2_FB.Q := Tmr_Q_Y_PS2_FB.Q_OnOff;
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_utl_OnOffTimer_cntrl_Sensor" Id="{dd4afe7a-8a12-07b0-1767-3c637b4b9b8c}">
+      <Implementation>
+        <ST><![CDATA[IF(NOT EnableTimerTests) THEN RETURN; END_IF;
+
+//test use cases >> 
+CASE fbTmrOnOffState OF
+	//initialise
+	0:
+		fbTmrOnOffTest(I_In:=FALSE);
+		
+		utl_WriteProtectedBool(fbcntrlSensor.I_In, FALSE);
+		fbcntrlSensor_SP.TMR_Muting := T#0MS;
+		fbcntrlSensor(
+			I_SimulationActive:= , 
+			I_SimulateState:= , 
+			I_OrgControl:= , 
+			I_ErrNotState:= , 
+			IO_SP:= fbcntrlSensor_SP, 
+			IO_STS:= fbcntrlSensor_STS, 
+			IO_ERR:= fbcntrlSensor_ERR);
+		
+		fbTmrOnOffCnt := fbTmrOnOffCnt + 1;
+		
+		//if fault detected
+		IF(fbTmrOnOffCnt > 1000)
+		THEN
+			utl_SystemMessage(I_Message:= 'utl_OnOffTmr failed unit test 1');
+			HM_HoustonWeHaveAProblem := TRUE;
+		END_IF
+
+		//if values ok >> continue		
+		IF(	NOT fbTmrOnOffTest.Q_OnOff
+			AND NOT fbcntrlSensor.Q_DetectedDebounced
+			AND NOT fbCntrlSensor.Q_DetectedDebouncedPulse)
+		THEN
+			//>>
+			fbTmrOnOffState := 1;
+		END_IF
+
+	
+	//short pulse test
+	1:
+		fbTmrOnOffTest(
+			I_SP_TON:= T#50MS, 
+			I_SP_TOF:= T#100MS, 
+			I_IN:= TRUE, 
+			I_K_HOLD:= FALSE);
+			
+		utl_WriteProtectedBool(fbcntrlSensor.I_In, TRUE);
+		fbcntrlSensor_SP.TMR_DelayDetected := T#50MS;
+		fbcntrlSensor_SP.TMR_DelayUnDetected := T#100MS;
+		fbcntrlSensor(
+			I_SimulationActive:= , 
+			I_SimulateState:= , 
+			I_OrgControl:= , 
+			I_ErrNotState:= , 
+			IO_SP:= fbcntrlSensor_SP, 
+			IO_STS:= fbcntrlSensor_STS, 
+			IO_ERR:= fbcntrlSensor_ERR);
+			
+		fbTmrOnOffCnt := fbTmrOnOffCnt + 1;
+		
+		//if 1 of the types failed >> error message
+		IF( 
+			//on delay should stay off
+			fbTmrOnOffTest.Q_On 
+			//off delay should turn immediatly on
+			OR NOT fbTmrOnOffTest.Q_Off
+			//onOff delay should stay off 
+			OR fbTmrOnOffTest.Q_OnOff
+			//sensor direct should be on
+			OR NOT fbcntrlSensor.Q_DetectedDirect
+			//sensor debounced should stay off
+			OR fbcntrlSensor.Q_DetectedDebounced
+			)
+		THEN
+			utl_SystemMessage(I_Message:= 'utl_OnOffTmr failed unit test 1');
+			HM_HoustonWeHaveAProblem := TRUE;
+		END_IF
+		
+		//if pulse done
+		IF(fbTmrOnOffCnt > 40) 
+		THEN 
+			fbTmrOnOffCnt := 0;
+			fbTmrOnOffState := 2;
+		END_IF
+	
+	//off delay test
+	2:
+		fbTmrOnOffTest(
+			I_SP_TON:= T#50MS, 
+			I_SP_TOF:= T#100MS, 
+			I_IN:= FALSE, 
+			I_K_HOLD:= FALSE);
+			
+		utl_WriteProtectedBool(fbcntrlSensor.I_In, FALSE);
+		fbcntrlSensor_SP.TMR_DelayDetected := T#50MS;
+		fbcntrlSensor_SP.TMR_DelayUnDetected := T#100MS;
+		fbcntrlSensor(
+			I_SimulationActive:= , 
+			I_SimulateState:= , 
+			I_OrgControl:= , 
+			I_ErrNotState:= , 
+			IO_SP:= fbcntrlSensor_SP, 
+			IO_STS:= fbcntrlSensor_STS, 
+			IO_ERR:= fbcntrlSensor_ERR);
+			
+		fbTmrOnOffCnt := fbTmrOnOffCnt + 1;
+		
+		
+		//if 1 of the types failed >> error message
+		IF( //On delays should be low
+			fbTmrOnOffTest.Q_On
+			OR fbTmrOnOffTest.Q_OnOff
+			//test off delay
+			OR ( fbTmrOnOffTest.Q_Off AND fbTmrOnOffCnt >100 )
+			//sensor direct and debounced should be off
+			OR fbcntrlSensor.Q_DetectedDirect OR fbcntrlSensor.Q_DetectedDebounced
+			)
+		THEN
+			utl_SystemMessage(I_Message:= 'utl_OnOffTmr failed unit test 2');
+			HM_HoustonWeHaveAProblem := TRUE;
+		END_IF
+		
+		
+		//if off delay done
+		IF(fbTmrOnOffCnt > 1000)
+		THEN
+			fbTmrOnOffCnt := 0;
+			fbTmrOnOffState := 3;
+		END_IF
+		
+		
+	//halve second high then halve second low
+	3:
+		fbTmrOnOffTest(
+			I_SP_TON:= T#50MS, 
+			I_SP_TOF:= T#100MS, 
+			I_IN:= fbTmrOnOffCnt <500, 
+			I_K_HOLD:= FALSE);
+			
+		utl_WriteProtectedBool(fbcntrlSensor.I_In, fbTmrOnOffCnt <500);
+		fbcntrlSensor_SP.TMR_DelayDetected := T#50MS;
+		fbcntrlSensor_SP.TMR_DelayUnDetected := T#100MS;
+		fbcntrlSensor(
+			I_SimulationActive:= , 
+			I_SimulateState:= , 
+			I_OrgControl:= , 
+			I_ErrNotState:= , 
+			IO_SP:= fbcntrlSensor_SP, 
+			IO_STS:= fbcntrlSensor_STS, 
+			IO_ERR:= fbcntrlSensor_ERR);
+			
+		fbTmrOnOffCnt := fbTmrOnOffCnt + 1;	
+
+		
+		//if 1 of the types failed >> error message
+		IF( 
+			//sensor direct on already tested 1
+			
+			//test delayed on / sensor direct, stays off
+			(	(	fbTmrOnOffTest.Q_On 
+					OR fbTmrOnOffTest.Q_OnOff
+					OR fbcntrlSensor.Q_DetectedDebounced) 
+				AND fbTmrOnOffCnt < 50)
+				
+			//test delayed on goes on
+			OR ( 	(	NOT fbTmrOnOffTest.Q_On 
+						OR NOT fbcntrlSensor.Q_DetectedDebounced) 
+					AND fbTmrOnOffCnt > 50 AND fbTmrOnOffCnt < 500)
+					
+			//test direct off statusses
+			OR ( 	(	fbTmrOnOffTest.Q_On
+					 	OR fbcntrlSensor.Q_DetectedDirect)
+					AND NOT fbTmrOnOffTest.I_IN)
+ 
+			//test delayed off
+			OR (	(	fbTmrOnOffTest.Q_Off
+						OR fbcntrlSensor.Q_DetectedDebounced) 
+					AND fbTmrOnOffCnt > 600)
+			//only timer		
+			//test off delay turns on + stays on for delay
+			OR (NOT fbTmrOnOffTest.Q_Off AND fbTmrOnOffCnt < 599)
+			
+
+			//test on_off delayed on + stays delayed on
+			OR (	(	NOT fbTmrOnOffTest.Q_OnOff
+						OR NOT fbcntrlSensor.Q_DetectedDebounced) 
+					AND fbTmrOnOffCnt > 50 AND fbTmrOnOffCnt < 599)
+					
+			//test on_off delay turns of again
+			OR (	(	fbTmrOnOffTest.Q_OnOff
+						OR fbcntrlSensor.Q_DetectedDebounced) 
+					AND fbTmrOnOffCnt > 600 AND fbTmrOnOffCnt < 1000)
+			)
+		THEN
+			utl_SystemMessage(I_Message:= 'utl_OnOffTmr failed unit test 3');
+			HM_HoustonWeHaveAProblem := TRUE;
+		END_IF
+
+		//if test done
+		IF(fbTmrOnOffCnt > 1000)
+		THEN
+			fbTmrOnOffCnt := 0;
+			fbTmrOnOffState := 4;
+		END_IF
+		
+	//off
+	4:
+		fbTmrOnOffTest(
+			I_SP_TON:= T#50MS, 
+			I_SP_TOF:= T#100MS, 
+			I_IN:= FALSE, 
+			I_K_HOLD:= FALSE);
+		fbTmrOnOffCnt := fbTmrOnOffCnt + 1;
+		
+		//if off delay done
+		IF(fbTmrOnOffCnt > 1000)
+		THEN
+			fbTmrOnOffCnt := 0;
+			fbTmrOnOffState := 5;
+		END_IF
+		
+	//test short off pulse when OnOff timer is on
+	5:
+		fbTmrOnOffTest(
+			I_SP_TON:= T#100MS, 
+			I_SP_TOF:= T#100MS, 
+			I_IN:= fbTmrOnOffCnt < 500 OR fbTmrOnOffCnt > 505, 
+			I_K_HOLD:= FALSE);
+		fbTmrOnOffCnt := fbTmrOnOffCnt + 1;
+		
+		
+		//if 1 of the types failed >> error message
+		IF( 
+			//test on delay turns off during blackout (is already be tested in previous steps)
+			( fbTmrOnOffTest.Q_On AND NOT fbTmrOnOffTest.I_IN)
+ 
+			//test off delay stays high during blackout
+			OR (NOT fbTmrOnOffTest.Q_Off AND NOT fbTmrOnOffTest.I_IN)
+
+			//test off delay stays high during blackout
+			OR (NOT fbTmrOnOffTest.Q_OnOff AND NOT fbTmrOnOffTest.I_IN)
+			)
+		THEN
+			utl_SystemMessage(I_Message:= 'utl_OnOffTmr failed unit test 5');
+			HM_HoustonWeHaveAProblem := TRUE;
+		END_IF
+		
+		//if off delay done
+		IF(	fbTmrOnOffCnt > 1000)
+		THEN
+			fbTmrOnOffCnt := 0;
+			fbTmrOnOffState := 6;
+		END_IF
+
+	//off
+	6:
+		fbTmrOnOffTest(
+			I_SP_TON:= T#50MS, 
+			I_SP_TOF:= T#100MS, 
+			I_IN:= FALSE, 
+			I_K_HOLD:= FALSE);
+		fbTmrOnOffCnt := fbTmrOnOffCnt + 1;
+		
+		//if off delay done
+		IF(fbTmrOnOffCnt > 1000)
+		THEN
+			fbTmrOnOffCnt := 0;
+			fbTmrOnOffState := 7;
+		END_IF
+
+	//sensor muting
+	7:
+		utl_WriteProtectedBool(fbcntrlSensor.I_In, fbTmrOnOffCnt < 500 OR (fbTmrOnOffCnt > 601 AND fbTmrOnOffCnt < 620));
+		fbcntrlSensor_SP.TMR_DelayDetected := T#50MS;
+		fbcntrlSensor_SP.TMR_DelayUnDetected := T#50MS;
+		fbcntrlSensor_SP.TMR_Muting := T#100MS;
+		fbcntrlSensor(
+			I_SimulationActive:= , 
+			I_SimulateState:= , 
+			I_OrgControl:= , 
+			I_ErrNotState:= , 
+			IO_SP:= fbcntrlSensor_SP, 
+			IO_STS:= fbcntrlSensor_STS, 
+			IO_ERR:= fbcntrlSensor_ERR);
+
+		fbTmrOnOffCnt := fbTmrOnOffCnt + 1;
+
+		//test if sensor debounced stay low during muting
+		IF(	fbcntrlSensor.Q_DetectedDebounced
+			AND fbcntrlSensor.I_In
+			AND fbTmrOnOffCnt > 505)
+		THEN
+			utl_SystemMessage(I_Message:= 'utl_OnOffTmr failed unit test 7');
+			HM_HoustonWeHaveAProblem := TRUE;
+		END_IF
+
+		//if off delay done
+		IF(fbTmrOnOffCnt > 1000)
+		THEN
+			fbTmrOnOffCnt := 0;
+			fbTmrOnOffState := 8;
+		END_IF	
+		
+		
+	//unkown state
+	ELSE
+		fbTmrOnOffState := 0;	
+END_CASE
+
+//only log if a problem arised
+IF(HM_HoustonWeHaveAProblem)
+THEN
+	fbTmrOnOffTest_I.B := fbTmrOnOffTest.I_IN;
+	fbTmrOnOffTest_Q_On.B := fbTmrOnOffTest.Q_On;
+	fbTmrOnOffTest_Q_Off.B := fbTmrOnOffTest.Q_Off;
+	fbTmrOnOffTest_Q_OnOff.B := fbTmrOnOffTest.Q_OnOff;
+	
+	fbcntrlSensor_QD.B := fbcntrlSensor.Q_DetectedDirect;
+	fbcntrlSensor_QDb.B := fbcntrlSensor.Q_DetectedDebounced;
+	fbcntrlSensor_QP.B := fbcntrlSensor.Q_DetectedDebouncedPulse;
+	fbcntrlSensor_I_IN.B := fbcntrlSensor.I_In;
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_utl_timeElapsed" Id="{71845a62-8c99-03e3-1fc2-b3478e258354}">
+      <Implementation>
+        <ST><![CDATA[IF(NOT EnableTimerTests) THEN RETURN; END_IF;
+
+//utl_timeElapased
+IF(BknGlbl.Blink_P_100msec)
+THEN
+	IF(	NOT utl_IsInLimits(	fbUtl_TimeElapsed.P_Millis,
+							Bknglbl.TaskCycleTime_ms,
+							100)
+		AND fbUtl_TimeElapsedInitDone)
+	THEN
+		utl_SystemMessage(I_Message:='utl_timeElapased failed unit test');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	fbUtl_TimeElapsedInitDone := TRUE;
+END_IF
+]]></ST>
+      </Implementation>
+    </Action>
+    <Method Name="InitValues" Id="{d7a71b1a-10c1-0248-0992-5b4320aee6aa}">
+      <Declaration><![CDATA[METHOD PRIVATE InitValues]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//prep arrays
+FOR tmpInt1:=1 TO ARRSIZE BY 1
+DO
+	arrCnt_1[tmpInt1] := tmpInt1;
+	arrCnt_2[tmpInt1] := tmpInt1;
+	arrCnt_3[tmpInt1] := tmpInt1;
+END_FOR ]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
