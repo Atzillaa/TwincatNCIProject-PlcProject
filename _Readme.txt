@@ -15,49 +15,65 @@ FB_Init(int a, int b)	:	When initialising an instance for a FB , DO NOT connect 
 							Most library items already have these properties
 							>Ask me if unclear HP
 
+//visu programming: 
+	textfield variable formatting: https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_plc_intro/3524724747.html#3524762891&id=
+	for time use %s (don't forget to also assign onmouseup event correctly)
 
 //interesting pragma's
-{region 'my private space'}  {endregion} >>just like in c# create foldable blocks
-{info 'shows this text as info during compiling'}
-{warning 'shows this text as warning during compiling'}
-{warning disable/restore xxxx}
-	C0125>> ... is assigned to more than one enumeration
-	C0139>> code has no effect
-	C0195 / C0196>> signed to unsigned / unsigned to signed
-	C0197>> implicit conversion ... possible loss of information
-	C0371>> acces from external context (using for example IO_STS in a method while declared in the main body)
-	maybe these work as well???> https://content.helpme-codesys.com/en/CODESYS%20Static%20Analysis/_san_struct_reference_rules.html
-{error 'shows this text as error during compiling'}
-{attribute 'no-analysis'}				//deactivate all intellisense errors
-{attribute 'analysis' := '-33'}			//deactivate error unused variable for next variable/struct
-{attribute 'analysis' := '-27'}			//SA0027 >> name already used (when using for enums, it doesn't work to place it at the top. Must be above problem line of code)
-{attribute 'qualified_only'}			//forces the user to add the DUT name in front of the variables (needed if for example 2 enum structs have the same keys)
-{attribute 'displaymode':='bin'}		// or 'dec' or 'hex' forces said display mode of the variable during monitoring
-{attribute 'global_init_slot':= 'x'}	//cdetermines which blocks get initialised first. Globals have a adefault value of 49990 and POU's 50000
-{attribute 'hide_all_locals'}			//(top of declacations) or 'hide' (above variable): hides all or single local variable(s) in online view'
+	{region 'my private space'}  {endregion} >>just like in c# create foldable blocks
+	{info 'shows this text as info during compiling'}
+	{warning 'shows this text as warning during compiling'}
+	{warning disable/restore xxxx}
+		C0125>> ... is assigned to more than one enumeration
+		C0139>> code has no effect
+		C0195 / C0196>> signed to unsigned / unsigned to signed
+		C0197>> implicit conversion ... possible loss of information
+		C0371>> acces from external context (using for example IO_STS in a method while declared in the main body)
+		maybe these work as well???> https://content.helpme-codesys.com/en/CODESYS%20Static%20Analysis/_san_struct_reference_rules.html
+	{error 'shows this text as error during compiling'}
+	{attribute 'no-analysis'}				//deactivate all intellisense errors
+	{attribute 'analysis' := '-33'}			//deactivate errors: unused variable '-27' = name already used
+	{attribute 'qualified_only'}			//forces the user to add the DUT name in front of the variables (needed if for example 2 enum structs have the same keys)
+	{attribute 'displaymode':='bin'}		// or 'dec' or 'hex' forces said display mode of the variable during monitoring
+	{attribute 'global_init_slot':= 'x'}	//cdetermines which blocks get initialised first. Globals have a adefault value of 49990 and POU's 50000
+	{attribute 'hide_all_locals'}			//(top of declacations) or 'hide' (above variable): hides all or single local variable(s) in online view'
 Properties
-{attribute 'monitoring':='call'}		//Forces during monitoring the get property is executed so a value can be seen (otherwise no monitoring of values)
+	{attribute 'monitoring':='call'}		//Forces during monitoring the get property is executed so a value can be seen (otherwise no monitoring of values)
+
 Programs
-{attribute 'no_explicit_call' := 'do not call this POU directly, because ...'}
+	{attribute 'hide'} //hides block in a library from a project
+	{attribute 'no_explicit_call' := 'do not call this POU directly, because ...'}
 
 
 //interesting new features of tc3
-Type "Reference To" versus "Pointer To" 
-	input assignment: "REF=myTYpe" instead of "=ADR(myTYpe)"   
-	type value: no need for ^ when accessing the value
-	__ISVALIDREF(myType) >> returns true if a valid reference is supplied
-	>>compiler type checks when assigning 2 references
-	>>cleaner code
-Type "Any" better than "Pointer To" if "Reference To" can not be used, basically it automaticly creates a struct with address and sizeoff
-	Example: declaration var input {I_myAny:Any;} code {memset(I_myAny.adr, 0, I_myAny.size)};
-myBool S= myOtherbool; //sets mybool if myOtherbool is true
-myBool R= myOtherbool; //Reset
-OR_ELSE >> stop checking other conditions at the first true
-AND_THEN >> stop checking other conditions at the first false   >>example prevent BSOD: IF (ptr <> 0 AND_THEN ptr ^ = 99) THEN...
-action FB_init: acts a little like a constructor in C# Used a lot in the bkn-lib for configuration settings. Be very carefully with this beast! Ask me (HP), for some instructions
+TYPE REFERENCE
+	Type "Reference To" versus "Pointer To" 
+		input assignment: "REF=myTYpe" instead of "=ADR(myTYpe)"   
+		type value: no need for ^ when accessing the value
+		__ISVALIDREF(myType) >> returns true if a valid reference is supplied
+		>>compiler type checks when assigning 2 references
+		>>cleaner code
+TYPE ANY
+	Type "Any" better than "Pointer To" if "Reference To" can not be used, basically it automaticly creates a struct with address and sizeoff
+		Example: declaration var input {I_myAny:Any;} code {memset(I_myAny.adr, 0, I_myAny.size)};
+
+BIT SET/RESET
+	myBool S= myOtherbool; //sets mybool if myOtherbool is true
+	myBool R= myOtherbool; //Reset
+
+IF THEN
+	OR_ELSE >> stop checking other conditions at the first true
+	AND_THEN >> stop checking other conditions at the first false   >>example prevent BSOD: IF (ptr <> 0 AND_THEN ptr ^ = 99) THEN...
+
+FB_Init
+	action FB_init: acts a little like a constructor in C# Used a lot in the bkn-lib for configuration settings. Be very carefully with this beast! Ask me (HP), for some instructions
+
+
 Property: properties can now be made. Used in the bkn-lib to give access to configuration settings set by FB_Init (only done on rare occasion, if needed then add more)'
+
 Pointer acces:	myBytePointer[3] >> type pointers can be treated as arrays of the type, so for this byte-type this equals (myBytepointer+3)^
 				myStringPointer[1] >> points to the next string + 80 bytes!!!
+
 __VARINFO: returns all kind of nice info for a variable, also the name!
 __NEW / __DELETE: declare memory during runtime
 __TRY, __CATCH, ... : OMG don not use this (there is a nice example TO catch DIV BY zero)'

@@ -23,9 +23,11 @@ STRUCT
 	Cam_OmronController: HMI_STS_OmronCamera;		
 
 	//Template: used in HMI for test/example pages >> remove
-	PB_MyButton:BOOL;										//pushbutton>> used in HMI template for testing 
-	RealValue:REAL;											//real value>> used in HMI template for testing
-	TimeValue:TIME;											//time value>> used in HMI template for testing
+	PB_MyButton:BOOL;										//pushbutton		>> used in HMI template for testing
+	PBsf_MySafeButton:HMI_PB_Safe;							//pushbutton safe 	>> used in HMI template for testing
+	RealValue:REAL;											//real value		>> used in HMI template for testing
+	TimeValue:TIME;											//time value		>> used in HMI template for testing
+	RealArr:ARRAY[0..10] OF REAL;							//arry of reals 	>> used in HMI template for testing
 END_STRUCT
 END_TYPE
 ]]></Declaration>

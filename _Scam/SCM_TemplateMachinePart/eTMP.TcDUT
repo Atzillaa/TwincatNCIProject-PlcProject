@@ -10,6 +10,8 @@ TYPE eTMP :
 	TotalReset,
 	InitCil,
 	InitSrv,
+	InitCamQuickFocus,
+	InitCamLoadJob,
 	Rest,
 	SrvPosStart,
 	SrvStartInterl,

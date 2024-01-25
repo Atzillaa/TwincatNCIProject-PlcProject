@@ -33,7 +33,7 @@ STRUCT
 	//0:0:0.001			==1ms
 	//
 	//keywords: [min=..] , [max=..] , [group=..]
-	TestTime:TIME;							//equals 100ms: [min=0:0:0.1]   equals 3hrs, 30minutes, 3seconds: [max=3:30:3] 
+	TestTime:TIME;							//equals 100ms: [min=0:0:0.1]   equals 9days, 3hrs, 30minutes, 3seconds: [max=9:3:30:3] 
 	TestOnlyMinKey:INT;						//[min=-100]
 	TestOnlyMaxKey:INT;						//[max=100]
 	TestOnlyGroupKey:BOOL;					//[group=TemplateTest]

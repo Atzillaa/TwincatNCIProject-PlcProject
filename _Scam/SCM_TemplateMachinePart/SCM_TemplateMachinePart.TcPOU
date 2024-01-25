@@ -131,20 +131,26 @@ VAR
 (*Internals*)
 	HM_Empty:BOOL;										//Flag machinpart is empty
 	HM_CamReceivedData: ARRAY[0..100] OF BYTE;			//Received data from camera
+	//for testing some functionality
 	HM_DebugMultiStep_ResetInActivations:BOOL;
+	HM_DebugOmronRcvAsString:STRING;
+	HM_DebugOmronDataValid:BOOL;					
 
 	//NOTE: if you need any of these to be logged, you can change the datatype to the logged variant!
 		//HM_Empty :utl_LoggedBool (LoggingGroup:= eLogGroups.CommSignals);
 	
 (*timers*)
-	Tmr_Empty:TON;										(*Timer detection machine is empty*)
-	Tmr_Initialisation:TON;								(*Timer template*)
+	Tmr_Sim_StateTime:ton;								//Timer used for simulation >> counts elapsed time in state	
+	Tmr_Empty:TON;										//Timer detection machine is empty*)
+	Tmr_Initialisation:TON;								//Timer template*)
 	Tmr_TestServoVelo:ton;
 	Tmr_Wrn_NoSupply:ton;
-	Tmr_Sim_PC_Example:ton;
+	
 	
 (*called fb data*)
 	fbStep:utl_Step;									//Handles state transitioning related work
+	
+	fbPBsf_Example:utl_HMI_PB_Safe;						//Safe pushbutton
 	
 	fbPC_Example:cntrl_Sensor(
 		Options:= eSensorConfig.InputNO);				//Photocell
@@ -162,6 +168,7 @@ VAR
 		DAC_100PrctValue:= 0);
 		
 	fbFdr_Example:cntrl_FDR_CTC300(
+		Options:= eFdrCT300_Config.WithMaintSwitch,
 		MotorNominalRpm:= 1500, 
 		MinTargetSpeed:= 25, 
 		MaxTargetSpeed:= 125, 
@@ -212,10 +219,11 @@ VAR
 
 	fbCam_OmronController: Cntrl_OmronCamera;
 	
+	DbgCamResultAsString: STRING; //debug result as string
 	fbCam_OmronSmartCam: Cntrl_OmronMicroScan(
 		AlwaysConnected:= FALSE, 	//try to connect to camera even if no auto_k 
 		JobNr:= 1, 					//default job nr to load if job load command is given (can be changed with property)
-		UseIoTrigger:= TRUE);		//instead of trigger over ethernet, send trigger by real output
+		UseIoTrigger:= FALSE);		//instead of trigger over ethernet, send trigger by real output
 
 (*Logged variables*)
 	//Logged counter: example how we can count the debounced falling edges of a photocell
@@ -296,8 +304,7 @@ A_Exceptions();
 	Step transitions
 *)
 //if not (exception or debugging hold step active) >> execute step transitions
-IF ( 	NOT Q_ProgStatus.Prog_Exception
-		AND NOT fbStep.Q_K_LockSteps) //IO_STS.Step.TB_StepModus Can be used to lock the steps after a step has been made. The step is unlocked with: IO_STS.Step.PB_ReleaseStep >> This is very handy for tuning parameters
+IF (	NOT Q_ProgStatus.Prog_Exception)
 THEN 
 	A_StepTransitions();
 END_IF
@@ -422,7 +429,6 @@ Q_ProgStatus.Prog_Exception := (eE > U_0);]]></ST>
 *)
 
 //Initialise activations, which are controlled by the steps
-Tmr_Sim_PC_Example.IN := FALSE;
 fbPC_Example.I_SimulateState := eSensorState.Undetected;
 
 
@@ -438,8 +444,8 @@ CASE eS OF
 	;
 
 	eTMP.Rest:
-		Tmr_Sim_PC_Example.IN := TRUE;
-		IF(Tmr_Sim_PC_Example.Q) THEN  fbPC_Example.I_SimulateState := eSensorState.Detected; END_IF
+		//Simulate sensor on after delay
+		IF(Tmr_Sim_StateTime.ET > T#33MS) THEN fbPC_Example.I_SimulateState := eSensorState.Detected; END_IF
 		
 	eTMP.SrvPosStart:
 	;
@@ -449,8 +455,10 @@ CASE eS OF
 END_CASE	
 
 
-Tmr_Sim_PC_Example(	//IN:= ,
-					PT:= T#500MS ); ]]></ST>
+//This timer keeps track of the step duration. This value can be used to simulate delays for xxx.I_SimulateXXX inputs of blocks
+//See above example for the photocel simulation
+Tmr_Sim_StateTime(	IN:= NOT fbStep.Q_P_Stepped,
+					PT:= T#1D ); ]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_StepActivations" Id="{cebbb77e-c522-4e9d-a607-ae06b2e6f976}">
@@ -504,85 +512,81 @@ A_StepActivationsInit();
 (*Activations by step*)
 	CASE eS OF
 		eTMP.TotalReset:
-			(*Comm signals*)
-			(*Timers*)
-			(*Internals*)
 			(*Controls*)
-			(*Warnings*)
-			(*Errors*)
-	
-	
+			(*Internals*)
+			(*Warnings/Errors*)
+		
 		eTMP.InitCil:
-			(*Comm signals*)
-			(*Timers*)
-			(*Internals*)
 			(*Controls*)
-			fbCil_Example.I_K_AutoIn := TRUE; 
-			fbCam_OmronSmartCam.I_K_QuickFocus := TRUE;
-			
-			(*Warnings*)
-			IO_WRN.Full := fbPC_Example.Q_DetectedDebounced;
-	
-			(*Errors*)
-			//a sensor error can be triggered by activating the I_K_ErrNot.... input >> uses internally a timer
-			//usually we want the machine to be empty in the init phase so setting error here if it is not
-			fbPC_Example.I_ErrNotState := eSensorState.Undetected; 
-			//or an error can also be set directly
-			//IF( [some condition] ) then IO_ERR.PC_ProductPassedStopper.NotLow := true; END_IF  !!!Errors must be a set! 
+				fbCil_Example.I_K_AutoIn := TRUE; 
+			(*Internals*)
+			(*Warnings/Errors*)
+				IO_WRN.Full := fbPC_Example.Q_DetectedDebounced;
+				//a sensor error can be triggered by activating the I_K_ErrNot.... input >> uses internally a timer
+				//usually we want the machine to be empty in the init phase so setting error here if it is not
+				fbPC_Example.I_ErrNotState := eSensorState.Undetected; 
+				//or an error can also be set directly
+				//IF( [some condition] ) then IO_ERR.PC_ProductPassedStopper.NotLow := true; END_IF  !!!Errors must be a set! 
 		
 		eTMP.InitSrv:
-			(*Comm signals*)
-			(*Timers*)
-				Tmr_Initialisation.IN := fbMtr_Example.Q_STS_Running;
-			(*Internals*)
 			(*Controls*)
 				fbCil_Example.I_K_AutoIn := TRUE; 
 				fbMtr_Example.I_K_Auto_Fwd:= TRUE;
 				fbSrv_Example.I_K_Auto_Homing:= TRUE;
 				fbSrv_GripperExample.I_K_Auto_Homing :=TRUE;
-				fbCam_OmronController.I_K_LoadScene := TRUE;
-				fbCam_OmronController.I_SceneToLoad := 2;
-				fbCam_OmronSmartCam.I_K_LoadJob := TRUE;
-				fbCam_OmronSmartCam.P_SP_JobToLoad := 1; //note: these kind of variables can also be set @RE step (>>when stepping from previous step to here)
-			(*Warnings*)
-			(*Errors*)
+			(*Internals*)
+				Tmr_Initialisation.IN := fbMtr_Example.Q_STS_Running;
+			(*Warnings/Errors*)
 				//S= >> SET!!! , all errors have to be set. In tc3 we can now use S= instead of "IF(..)THEN err:=true; end_if"
 				IO_ERR.InitNotEmpty S= fbPC_Example.Q_DetectedDebounced;  	//detection machine is not empty during init
 				fbPC_Example.I_ErrNotState := eSensorState.Undetected;			//it is nice to also trigger this error, especially if there are multiple sensors. This at a faulty sensor the operator knows which sensor causes the problem
 		
-		eTMP.Rest:
-			(*Comm signals*)
-			Q_ProgStatus.Prog_Rest := TRUE;
-			Q_SN_SUP_Request :=	I_SN_DSC_Request
-								AND I_OrgControl.Auto_K;
-			(*Timers*)
-			Tmr_Empty.IN := fbMtr_Example.Q_STS_Running
-							AND (	I_STS_SUP_Empty
-									OR NOT I_SN_SUP_Request_OK);
-			(*Internals*)
-			HM_Empty S= Tmr_Empty.Q;
-			HM_Empty R= ((	NOT I_STS_SUP_Empty
-							AND I_SN_SUP_Request_OK)
-						OR fbPC_Example.Q_DetectedDebounced); 
-			
+		eTMP.InitCamQuickFocus:
 			(*Controls*)
-			fbCil_Example.I_K_AutoIn := TRUE; 
-			fbMtr_Example.I_K_Auto_Fwd := 	I_OrgControl.Auto_K
-											AND NOT HM_Empty;  //stop conveyor when empty (gets reset @ sensor or supply not empty anymore)
-								
-			(*Warnings*)
-			//just an example, no need to add this specific warning. The camera itself generates an error if it fails to connect
-			IO_WRN.CameraNotReady := 	I_OrgControl.EnableDevices_K
-										AND NOT fbCam_OmronSmartCam.Q_STS_Ready;  
-			(*Errors*)
-			//if the supply is running >> the photocell should get high after x-time, set error detection of the pc
-			IF(I_SN_SUP_Request_OK)
-			THEN
-				fbPC_Example.I_ErrNotState := eSensorState.Detected; 
-			END_IF
+				fbCil_Example.I_K_AutoIn := TRUE; 
+				fbCam_OmronSmartCam.I_K_QuickFocus := TRUE;
+			(*Internals*)
+			(*Warnings/Errors*)
+
+		eTMP.InitCamLoadJob:
+			(*Controls*)
+				fbCil_Example.I_K_AutoIn := TRUE; 
+				fbCam_OmronController.I_K_LoadScene := TRUE;
+				fbCam_OmronController.I_SceneToLoad := 2;
+				fbCam_OmronSmartCam.I_K_LoadJob := TRUE;
+				fbCam_OmronSmartCam.P_SP_JobToLoad := 1; //note: these kind of variables can also be set @RE step (>>when stepping from previous step to here)			(*Internals*)
+			(*Warnings/Errors*)
+				
+		eTMP.Rest:
+			(*Controls*)
+				Q_ProgStatus.Prog_Rest := TRUE;
+				Q_SN_SUP_Request :=	I_SN_DSC_Request
+									AND I_OrgControl.Auto_K;
+									
+				fbCil_Example.I_K_AutoIn := TRUE; 
+				fbMtr_Example.I_K_Auto_Fwd := 	I_OrgControl.Auto_K
+												AND NOT HM_Empty;  //stop conveyor when empty (gets reset @ sensor or supply not empty anymore)
+			(*Internals*)
+				Tmr_Empty.IN := fbMtr_Example.Q_STS_Running
+								AND (	I_STS_SUP_Empty
+										OR NOT I_SN_SUP_Request_OK);
+				
+				HM_Empty S= Tmr_Empty.Q;
+				HM_Empty R= ((	NOT I_STS_SUP_Empty
+								AND I_SN_SUP_Request_OK)
+							OR fbPC_Example.Q_DetectedDebounced); 
 			
-	
-			
+			(*Warnings/Errors*)
+				//just an example, no need to add this specific warning. The camera itself generates an error if it fails to connect
+				IO_WRN.CameraNotReady := 	I_OrgControl.EnableDevices_K
+											AND NOT fbCam_OmronSmartCam.Q_STS_Ready;  
+				
+				//if the supply is running >> the photocell should get high after x-time, set error detection of the pc
+				IF(I_SN_SUP_Request_OK)
+				THEN
+					fbPC_Example.I_ErrNotState := eSensorState.Detected; 
+				END_IF
+
 		eTMP.SrvPosStart:
 			Q_SN_SUP_Request :=	I_SN_DSC_Request
 								AND I_OrgControl.Auto_K;
@@ -625,8 +629,6 @@ A_StepActivationsInit();
 			(*Timers*)
 			(*Internals*)
 			(*Controls*)
-			fbMtr_Example.I_K_Auto_Fwd := TRUE;
-			fbFdr_Example.I_K_Auto_Rev := TRUE;
 			fbFdr_Example.I_SPD_AutoPrct := 75; //Or use a IO_SP.SPD_MotorXX....
 			fbCil_Example.I_K_AutoOut := TRUE;
 			fbVcg_Suckers.I_K_Auto_Vacuum := TRUE;
@@ -694,12 +696,13 @@ A_StepActivationsInit();
 						PT:= T#5S);
 
 (*Instance calls*)
-	//State transition controller
-	fbStep(
-		IO_OrgControl := I_OrgControl,
-		IO_STS:= IO_STS.Step, 
-		IO_WRN:= IO_WRN.Step);
-	
+	//safe pushbutton, the HMI will continiously write a high to IO_STS.PBsf_MySafeButton.PB_Control for as long as the button is pressed.
+	//the safe block will monitor this flag with a reset. If it does not get set anymore by the hmi (hmi crash / ethernet gone) then the state will be reset by this block.
+	//the time is set in BknGlbl.HMI_PB_Safe_ResetTime
+	//(safe) bit to use in your code: IO_STS.PBsf_MySafeButton.PB_State
+	//!The HMI will test if this block is called here, if you don't it will throw a system error
+	fbPBsf_Example(IO_HMI_PB_Safe:= IO_STS.PBsf_MySafeButton); 
+
 	fbPC_Example(
 		I_SimulationActive:= Glbl.Sim_MyMachinePart, 
 		//I_SimulateState:= ,
@@ -854,6 +857,11 @@ A_StepActivationsInit();
 		IO_SP:= IO_SP.Cam_OmronSmartCam, 
 		IO_ERR:= IO_ERR.Cam_OmronSmartCam, 
 		IO_STS:= IO_STS.Cam_OmronSmartCam);
+		//just for debugging, should be removed
+		IF(fbCam_OmronSmartCam.fbSocketConnection.Q_K_DataReceive_OK)
+		THEN
+			MEMCPY(destAddr:= ADR(DbgCamResultAsString), srcAddr:= ADR(HM_CamReceivedData), n:= 80);
+		END_IF
 		
 	fbCam_OmronController(
 		I_K_SimulationActive:= Glbl.Sim_MyMachinePart,
@@ -867,7 +875,28 @@ A_StepActivationsInit();
 		IO_SP:= IO_SP.Cam_OmronController, 
 		IO_STS:= IO_STS.Cam_OmronController, 
 		IO_WRN:= IO_WRN.Cam_OmronController, 
-		IO_ERR:= IO_ERR.Cam_OmronController);]]></ST>
+		IO_ERR:= IO_ERR.Cam_OmronController);
+	
+	(*Simple example of handling data received by controller. 
+	I recommend doing this in the step transition and directly connect it to the desired location and using return value of the function instead of doing it here
+	the disadvantage of doing it like this that everything inside the block is executed continiously and hogs the processor.
+	Recommended way @ step transitions: 
+		IF(utl_OmronCameraResult(..,..,myBuffer)) 
+		THEN 
+			//>>
+			eS:=xxx.CamResultOK;
+		ELSE
+			//>>
+			eS:= xxx.CamResultNOK;
+		..
+	*) 
+	HM_DebugOmronDataValid := utl_OmronCameraResult(
+								I_Trig_Ok:= fbCam_OmronController.Q_SN_Trigger_OK, 
+								I_pResultData:= fbCam_OmronController.P_pCameraResultData, 
+								I_destResult:= HM_DebugOmronRcvAsString);
+								
+								
+	]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_StepActivationsInit" Id="{e6d8a9f5-49ec-0932-3bd6-e3c1647ce1fd}">
@@ -892,7 +921,6 @@ fbCam_OmronController.I_K_Trigger := FALSE;
 fbCam_OmronController.I_K_TriggerNextResult := FALSE;
 fbCam_OmronController.I_K_ChangeGroup:= FALSE;
 fbCam_OmronController.I_K_LoadScene:= FALSE;
-
 fbCam_OmronSmartCam.I_K_AutoCal := FALSE;
 fbCam_OmronSmartCam.I_K_LoadJob := FALSE;
 fbCam_OmronSmartCam.I_K_QuickFocus := FALSE;
@@ -925,6 +953,10 @@ HM_DebugMultiStep_ResetInActivations := false;]]></ST>
 *)
 
 (*Main program steps*)
+
+//if stepping not locked, by steplock mode >> can be toggled in HMI to lock certain steps for commissioning/debugging
+IF( NOT fbStep.Q_K_LockSteps)
+THEN
 //Repeat until conditions to step to next state are false OR looped already twice (normally programs don't loop multiple times!)
 REPEAT 
 	CASE eS OF
@@ -937,7 +969,7 @@ REPEAT
 					IO_State:= eS, 
 					I_NewStep:= eTMP.InitCil,
 					I_NewStepName := TO_STRING(eTMP.InitCil), 
-					I_StepCanBeHeld:= FALSE);
+					I_StepCanBeHeld:= TRUE);
 			END_IF
 
 		
@@ -945,32 +977,54 @@ REPEAT
 			//if cilinder has moved in and no products in the machine >> next state
 			IF( fbCil_Example.Q_STS_In
 				AND fbCil_SlaveOfExample.Q_STS_In
-				AND NOT fbPC_Example.Q_DetectedDebounced //note: >> set error detection in activations!
-				AND fbCam_OmronController.Q_STS_TriggerReady
-				AND fbCam_OmronSmartCam.Q_K_AutoOrQuickCal_Ok)
+				AND NOT fbPC_Example.Q_DetectedDebounced) //note: >> set error detection in activations!
 			THEN
 				//>>
 				fbStep.M_Step(
 					IO_State:= eS, 
 					I_NewStep:= eTMP.InitSrv,
 					I_NewStepName := TO_STRING(eTMP.InitSrv), 
-					I_StepCanBeHeld:= FALSE);
+					I_StepCanBeHeld:= TRUE);
 			END_IF
 			
 		eTMP.InitSrv:
 			//if servos homed and minimal time elapsed >> next state
 			IF( fbSrv_Example.Q_K_HomingDone
 				AND fbSrv_GripperExample.Q_K_HomingDone
-				AND Tmr_Initialisation.Q
-				AND fbCam_OmronController.Q_SN_LoadScene_OK
-				AND fbCam_OmronSmartCam.Q_K_LoadJob_Ok) 
+				AND Tmr_Initialisation.Q) 
+			THEN
+				//>>
+				fbStep.M_Step(
+					IO_State:= eS, 
+					I_NewStep:= eTMP.InitCamQuickFocus,
+					I_NewStepName := TO_STRING(eTMP.InitCamQuickFocus), 
+					I_StepCanBeHeld:= TRUE);
+			END_IF
+			
+		eTMP.InitCamQuickFocus:
+			//if camera ready / quickfocus done >>..
+			IF(	fbCam_OmronController.Q_STS_TriggerReady
+				AND fbCam_OmronSmartCam.Q_K_AutoOrQuickCal_Ok)
+			THEN
+				//>>
+				fbStep.M_Step(
+					IO_State:= eS, 
+					I_NewStep:= eTMP.InitCamLoadJob,
+					I_NewStepName := TO_STRING(eTMP.InitCamLoadJob), 
+					I_StepCanBeHeld:= TRUE);
+			END_IF
+			
+		eTMP.InitCamLoadJob:
+			//if camera's loaded jobs >. ..
+			IF(	fbCam_OmronController.Q_SN_LoadScene_OK
+				AND fbCam_OmronSmartCam.Q_K_LoadJob_Ok)
 			THEN
 				//>>
 				fbStep.M_Step(
 					IO_State:= eS, 
 					I_NewStep:= eTMP.Rest,
-					I_NewStepName := TO_STRING(eTMP.Rest), 
-					I_StepCanBeHeld:= FALSE);
+					I_NewStepName := TO_STRING(eTMP.rest), 
+					I_StepCanBeHeld:= TRUE);
 			END_IF
 
 		eTMP.Rest: 
@@ -1139,7 +1193,14 @@ REPEAT
 
 //until flag to multistep is false 
 UNTIL(NOT fbStep.P_IsMultiStepRequired)
-END_REPEAT]]></ST>
+END_REPEAT
+END_IF
+
+//State transition controller  (needs to be here, otherwise output Q_P_Stepped will lag by a cycle)
+fbStep(
+	IO_OrgControl := I_OrgControl,
+	IO_STS:= IO_STS.Step, 
+	IO_WRN:= IO_WRN.Step);]]></ST>
       </Implementation>
     </Action>
   </POU>

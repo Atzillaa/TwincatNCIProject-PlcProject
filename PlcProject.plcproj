@@ -18,7 +18,7 @@
     <LibraryReferences>{015cb6ed-99fd-4f18-9128-1eb89efb4ed6}</LibraryReferences>
     <Company>Boikon</Company>
     <Released>false</Released>
-    <ProjectVersion>0.6.7.1000</ProjectVersion>
+    <ProjectVersion>0.6.8.1</ProjectVersion>
     <AutoUpdateVisuProfile>true</AutoUpdateVisuProfile>
     <AutoUpdateUmlProfile>true</AutoUpdateUmlProfile>
     <CombineIds>true</CombineIds>
@@ -85,19 +85,6 @@
     <Compile Include="VisualizationManager.TcVMO">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Controls\cntrl_EthercatManager\cntrl_EthercatManager.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="_Controls\cntrl_EthercatManager\HMI_STS_EthercatManager.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="_Controls\cntrl_EthercatManager\tlEthercatState.TcTLO">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="_Controls\cntrl_EthercatManager\Vis_EthercatManager.TcVIS">
-      <SubType>Code</SubType>
-      <DependentUpon>VisualizationManager.TcVMO</DependentUpon>
-    </Compile>
     <Compile Include="_Controls\TemplateSafetyZone\cntrl_SafetyZone1.TcPOU">
       <SubType>Code</SubType>
     </Compile>
@@ -116,12 +103,6 @@
     <Compile Include="_Globals\Glcn.TcGVL">
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
-    </Compile>
-    <Compile Include="_Scam\DevelopmentPlayground\LibraryCandidates\fifostuff\utl_Any_ArrayResetElements.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="_Scam\DevelopmentPlayground\LibraryCandidates\fifostuff\utl_Any_ArrayShifter.TcPOU">
-      <SubType>Code</SubType>
     </Compile>
     <Compile Include="_Scam\DevelopmentPlayground\UnitTesting.TcPOU">
       <SubType>Code</SubType>
@@ -237,8 +218,13 @@
       <SystemLibrary>true</SystemLibrary>
       <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
     </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_IoLink">
+      <DefaultResolution>Tc3_IoLink, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_IoLink</Namespace>
+    </PlaceholderReference>
     <PlaceholderReference Include="Tc3_Module">
       <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Module</Namespace>
     </PlaceholderReference>
     <PlaceholderReference Include="VisuDialogs">
       <DefaultResolution>VisuDialogs, * (System)</DefaultResolution>
@@ -249,10 +235,8 @@
     <Folder Include="General" />
     <Folder Include="Main" />
     <Folder Include="Version" />
-    <Folder Include="_Controls\cntrl_EthercatManager" />
     <Folder Include="_Controls\TemplateSafetyZone" />
     <Folder Include="_Scam\DevelopmentPlayground" />
-    <Folder Include="_Scam\DevelopmentPlayground\LibraryCandidates\fifostuff" />
     <Folder Include="_Scam\DevelopmentPlayground\LibraryCandidates" />
     <Folder Include="_Utils" />
     <Folder Include="_Controls" />
@@ -284,7 +268,7 @@
   </ItemGroup>
   <ItemGroup>
     <PlaceholderResolution Include="BoikonLibrary">
-      <Resolution>Boikon Library, * (Boikon)</Resolution>
+      <Resolution>Boikon Library, 0.6.8.1 (Boikon)</Resolution>
     </PlaceholderResolution>
     <PlaceholderResolution Include="CAA Callback">
       <Resolution>CAA Callback Extern, * (CAA Technical Workgroup)</Resolution>

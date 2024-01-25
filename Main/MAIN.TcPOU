@@ -31,8 +31,12 @@ END_VAR
 
 {info 'TODO TEMPLATE REMOVE THIS SECTION'}
 VAR
+	//test:utl_EthercatDevicesManager(DelayedStartMaster:= true);
 	fbTestScmClean:SCM_TemplateClean;					//Remove >> Only here so it will get error checked
 	fbExampleMachinePart: SCM_TemplateMachinePart;		//Remove >> Example for how to use
+	
+	bTest:bool;
+	HM_pToByte:POINTER TO BYTE;
 END_VAR
 
 ]]></Declaration>
@@ -46,9 +50,9 @@ a_General();
 //It is a simple machine with 1 organiser and 1 scam completely connected up with general
 b_MachinePart();
 
-
 //TODO template: remove this completely from your project. It is used to test library blocks during development (declarations + in solution explorer)
-UnitTesting();]]></ST>
+UnitTesting();
+]]></ST>
     </Implementation>
     <Action Name="a_General" Id="{ef997c49-6f4c-4175-83bc-febdc880087c}">
       <Implementation>
@@ -73,18 +77,26 @@ UnitTesting();]]></ST>
       <Implementation>
         <ST><![CDATA[//Note: if the machine consists of several machine parts with their own organiser then for a cleaner structure make a seperate action for each part
 fbOrganiser(
-	I_SN_ES_OK:= fbGeneral.Q_SN_ES_Zone1_OK, //do not connect directly to an I_ES_OK input. In general this signal is only set high if es-ok AND PB_Reset
-	I_SN_TotalReset:= fbGeneral.Q_SN_TotalResetAll, //General has a PB_HMI_TotalReset which is connected to this output
-	I_SN_ProgsRest:= fbExampleMachinePart.Q_ProgStatus.Prog_Rest, //if more than 1 program connected then AND these statusses 
-	I_SN_ProgsError:= 	fbGeneral.Q_SN_ERR_General							//general errors active. Note if you have multiple general zones than connect the error of that zone
-						OR fbExampleMachinePart.Q_ProgStatus.Prog_Error, 	//if more than 1 program connected then OR these statusses
-	I_PB_Start:= fbGeneral.Q_SN_StartAll, //@ multiple zones a button for this zone can be OR'ed 
-	I_PB_Stop:= fbGeneral.Q_SN_StopAll, //@ multiple zones a button for this zone can be OR'ed
-	I_PB_Reset:= fbGeneral.Q_SN_ResetAll, //@ multiple zones a button for this zone can be OR'ed
-	Q_Control=> , //Organiser control signals used by scam-programs
-	Q_LP_Start=> , //can be used to connect to light in corresponding button 
-	Q_LP_Stop=> , //can be used to connect to light in corresponding button 
-	Q_LP_Reset=> , //can be used to connect to light in corresponding button 
+	//Emergencystop zone for scams connected to this organiser
+	I_SN_ES_OK:= fbGeneral.Q_SN_ES_Zone1_OK,
+	//Total reset command for this organiser and connected scams
+	//note: scams that communicate with each other via interlocking should have the same total reset command otherwise deadlocks will occur!
+	I_SN_TotalReset:= fbGeneral.Q_SN_TotalResetAll,
+	//Connected scams are in reset >> combined AND	
+	I_SN_ProgsRest:= fbExampleMachinePart.Q_ProgStatus.Prog_Rest,
+	//Connected scams are in error >> combined OR
+	//note: error from general is added as well here but that is dependant on your situation (is it ok this organiser will keep running while general detects an ethercat/airpressure -error? 
+	I_SN_ProgsError:= 	fbGeneral.Q_SN_ERR_General
+						OR fbExampleMachinePart.Q_ProgStatus.Prog_Error,
+	//Automatic stop request >> Can be used by a door program which has a request to open doors but first wants to stop the organiser >> does NOT cause: force stop / error "stop button is stuck"
+	I_SN_RequestStopAuto:= FALSE,			
+	I_PB_Start:= fbGeneral.Q_SN_StartAll,
+	I_PB_Stop:= fbGeneral.Q_SN_StopAll,
+	I_PB_Reset:= fbGeneral.Q_SN_ResetAll, 
+	Q_Control=>, 	//signals for connected scams
+	Q_LP_Start=>, 
+	Q_LP_Stop=>, 
+	Q_LP_Reset=>, 
 	IO_STS:= HMI_Statusses.Organiser, 
 	IO_WRN:= HMI_Warnings.Organiser);
 	

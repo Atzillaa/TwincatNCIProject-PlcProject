@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
   <DUT Name="HMI_ERR_SafetyZone1" Id="{6e2c828e-75fe-07ca-202e-7bf6b613f847}">
-    <Declaration><![CDATA[TYPE HMI_ERR_SafetyZone1 EXTENDS HMI_ERR_SafetyLogic:
+    <Declaration><![CDATA[//Extend the base errors with project errors
+TYPE HMI_ERR_SafetyZone1 EXTENDS HMI_ERR_SafetyLogic:
 STRUCT
 	ES_OK:BOOL;								//Error general: Emergency stop circuit
 	PB_ES_MainCabinet:BOOL;					//Error general: Emergencystop button main cabinet

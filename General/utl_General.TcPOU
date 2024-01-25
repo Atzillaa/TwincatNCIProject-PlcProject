@@ -265,25 +265,6 @@ IF(	NOT .BknGlbl.SimEnable)
 THEN
 	//example simulation bit. This bit should/could be used to put a machinepart into simulation mode
 	Glbl.Sim_MyMachinePart := FALSE;
-	(*Left as example, this project used multiple Simulation buttons for machine parst, of course these need to be reset when not in simulation mode
-	GLBL_SimInfeedCamera := FALSE;
-	GLBL_SimInfeedDrsAndPosChecks := FALSE;
-	GLBL_SimRobots_Pos := FALSE;
-	GLBL_SimRobots_Vac := FALSE;
-	GLBL_SimPackerCasePos1 := FALSE;
-	GLBL_SimPackerCasePos2 := FALSE;
-
-	GLBL_SimCst_CmrTopBags := FALSE;
-	GLBL_SimCst_CmrCaseLabel := FALSE;
-	GLBL_SimCst_Doors := FALSE;
-	GLBL_SimCst_PC_TrigCmrTopBags := FALSE;
-	GLBL_SimCst_PC_TrigPrnCaseLabel := FALSE;
-	GLBL_SimCst_PC_TrigCmrCaseLabel := FALSE;
-	GLBL_SimCst_PC_TrigReject := FALSE;
-	GLBL_SimCst_PC_RejectOutfeed := FALSE;
-	GLBL_SimCst_PC_RejectRejected := FALSE;
-	GLBL_SimCst_Cil_RejectStation := FALSE;*)
-	;
 END_IF]]></ST>
       </Implementation>
     </Action>

@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
   <DUT Name="HMI_STS_SafetyZone1" Id="{50f4144c-cfd0-019f-281a-6ed87517e512}">
-    <Declaration><![CDATA[TYPE HMI_STS_SafetyZone1 EXTENDS HMI_STS_SafetyLogic:
+    <Declaration><![CDATA[//Extend the base statusses with project statusses
+TYPE HMI_STS_SafetyZone1 EXTENDS HMI_STS_SafetyLogic:
 STRUCT
 	//instance statusses
 	K_ES_OK:HMI_STS_Signal;					//Emergenystop circuit zone 1 ok

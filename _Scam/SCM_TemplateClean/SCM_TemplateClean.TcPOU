@@ -128,6 +128,7 @@ VAR
 	HM_Empty:BOOL;										//Internal machinepart is empty
 	
 (*timers*)
+	Tmr_Sim_StateTime:ton;								//Timer used for simulation >> counts elapsed time in state
 
 (*called fb data*)
 	fbStep:utl_Step;									//used for step locking
@@ -199,8 +200,7 @@ A_Exceptions();
 	Step transitions
 *)
 //if not (exception or debugging hold step active) >> execute step transitions
-IF ( 	NOT Q_ProgStatus.Prog_Exception
-		AND NOT fbStep.Q_K_LockSteps) //IO_STS.StepModus.TB_StepModus Can be used to lock the steps after a step has been made. The step is unlocked with: IO_STS.StepModus.PB_ReleaseStep >> This is very handy for tuning parameters
+IF ( 	NOT Q_ProgStatus.Prog_Exception)
 THEN 
 	A_StepTransitions();
 END_IF
@@ -320,26 +320,27 @@ Q_ProgStatus.Prog_Exception := (eE > U_0);]]></ST>
 	
 *)
 
-//Initialisations
-//myCntrlStateSensor.I_SimulateState := FALSE; 
+//Initialise activations, which are controlled by the steps
+//fbPC_Example.I_SimulateState := eSensorState.Undetected;
+
 
 (*Step activations*)
 CASE eS OF
 	eTpc.TotalReset:
 	;
 
-	eTpc.Initialise:
-	//myCntrlStateSensor.I_SimulateState := TRUE;
-	;
-
 	eTpc.Rest:
-	
 	;
-END_CASE
+		//Simulate sensor on after delay
+		//IF(Tmr_Sim_StateTime.ET > T#33MS) THEN fbPC_Example.I_SimulateState := eSensorState.Detected; END_IF
 
-//activations only called in simulation mode
-//for example:
-//TmrSim_SensorOn(....)]]></ST>
+END_CASE	
+
+
+//This timer keeps track of the step duration. This value can be used to simulate delays for xxx.I_SimulateXXX inputs of blocks
+//See above example for the photocel simulation
+Tmr_Sim_StateTime(	IN:= NOT fbStep.Q_P_Stepped,
+					PT:= T#1D ); ]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_StepActivations" Id="{67496d37-6410-4af1-b602-edf8aa745e2f}">
@@ -390,41 +391,27 @@ At last activations/blocks calls that always have to be done are executed
 (*Activations by step*)
 	CASE eS OF
 		eTpc.TotalReset:
-			(*Comm signals*)
-			(*Timers*)
-			(*Internals*)
 			(*Controls*)
-			(*Warnings*)
-			(*Errors*)
+			(*Internals*)
+			(*Warnings/Errors*)
 	
 	
 		eTpc.Initialise:
-			(*Comm signals*)
-			(*Timers*)
-			(*Internals*)
 			(*Controls*)
-			(*Warnings*)
-			(*Errors*)
+			(*Internals*)
+			(*Warnings/Errors*)
 	
 		eTpc.Rest:
-			(*Comm signals*)
-			Q_ProgStatus.Prog_Rest := TRUE;
-			(*Timers*)
-			(*Internals*)
 			(*Controls*)
-			(*Warnings*)
-			(*Errors*)
-			(*Simulation*)
-	
+				Q_ProgStatus.Prog_Rest := TRUE;
+			(*Internals*)
+			(*Warnings/Errors*)
 			
 	(*
 		S_Example:
-			(*Comm signals*)
-			(*Timers*)
-			(*Internals*)
 			(*Controls*)
-			(*Warnings*)
-			(*Errors*)
+			(*Internals*)
+			(*Warnings/Errors*)
 	*)
 	END_CASE
 
@@ -465,11 +452,6 @@ At last activations/blocks calls that always have to be done are executed
 (*Timers*)
 
 (*Instance calls*)		
-	//State transition controller
-	fbStep(
-		IO_OrgControl := I_OrgControl,
-		IO_STS:= IO_STS.Step, 
-		IO_WRN:= IO_WRN.Step);
 		
 	//fbCil_....
 
@@ -503,6 +485,10 @@ At last activations/blocks calls that always have to be done are executed
 *)
 
 (*Main program steps*)
+
+//if stepping not locked, by steplock mode >> can be toggled in HMI to lock certain steps for commissioning/debugging
+IF( NOT fbStep.Q_K_LockSteps)
+THEN
 //Repeat until conditions to step to next state are false OR looped already twice (normally programs don't loop multiple times!)
 REPEAT 
 	CASE eS OF
@@ -547,7 +533,14 @@ REPEAT
 
 //until flag to multistep is false 
 UNTIL(NOT fbStep.P_IsMultiStepRequired)
-END_REPEAT]]></ST>
+END_REPEAT
+END_IF
+
+//State transition controller
+fbStep(
+	IO_OrgControl := I_OrgControl,
+	IO_STS:= IO_STS.Step, 
+	IO_WRN:= IO_WRN.Step);]]></ST>
       </Implementation>
     </Action>
   </POU>

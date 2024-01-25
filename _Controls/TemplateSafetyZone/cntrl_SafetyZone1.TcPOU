@@ -110,7 +110,7 @@ METHOD PROTECTED M_ERR : REFERENCE TO HMI_ERR_SafetyLogic
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[{warning disable C0371} //>>I know this is dangerous but the method is protected and is only meant to be called by the base block when VAR_IN_OUT should be intialised
-M_ERR REF= IO_ERR; //NOTE: cast back to base type IO_ERR extended from]]></ST>
+M_ERR REF= IO_ERR; //NOTE: cast back to base type of IO_ERR (this.IO_ERR is the extended version)]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_SafetyOk" Id="{e1ae4dc7-ca15-0ec7-2e3c-15272acb514b}">
@@ -120,7 +120,9 @@ METHOD PROTECTED M_SafetyOk : BOOL
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[//just for info for the safetylogic visualisation (indicator status ES_OK)
-M_SafetyOk := Isf_K_ES_OK.Q AND Isf_K_ES_DelayedOffOk.Q and Isf_K_AirPressureApplied.Q;]]></ST>
+
+//todo template >> adjust as needed (normally you only have these 2)
+M_SafetyOk := Isf_K_ES_OK.Q AND Isf_K_ES_DelayedOffOk.Q; // and Isf_K_AirPressureApplied.Q;]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_STS" Id="{de79d942-6f27-0af7-0314-64a397681d65}">
@@ -134,7 +136,7 @@ METHOD PROTECTED M_STS : REFERENCE TO HMI_STS_SafetyLogic
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[{warning disable C0371} //>>I know this is dangerous but the method is protected and is only meant to be called by the base block when VAR_IN_OUT should be intialised
-M_STS REF= IO_STS; //NOTE: cast back to base type IO_STS extended from]]></ST>
+M_STS REF= IO_STS; //NOTE: cast back to base type of IO_STS (this.IO_STS is the extended version)]]></ST>
       </Implementation>
     </Method>
   </POU>
