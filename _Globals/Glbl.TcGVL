@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <GVL Name="Glbl" Id="{c945def9-01c5-4958-81b0-c5c4c71d8d05}">
     <Declaration><![CDATA[//project related global variables
 {attribute 'qualified_only'}
@@ -11,13 +11,16 @@ VAR_GLOBAL
 //  -add some variable to this global struct >> now this will get rebuild with the variables needed for checkbounds
 {IF defined (pou: CHECKBOUNDS)}
 	{warning 'CHECKBOUNDS is active, this causes increased processor load. Exclude block from build when possible'}
+{END_IF}
 	OutOfBounds:BOOL:=FALSE;						//Should always be false otherwise a bounds problem >> function CHECKBOUNDS must be implemented in the project, check the beckhoff help !only for testing purposes!
 	OutOfBoundsIndex:DINT := 0;						//Index trying to address which was out of bounds
-{END_IF}
+
 
 (*Project*)
-	Sim_MyMachinePart:BOOL; //only here as example, remove me
-	Sim_WithoutSql:BOOL;
+	//TODO TEMPLATE >>
+		//adapt / remove as needed
+	SimEnable:BOOL:=FALSE;					//Enable simulation (when false, all simulation setpoints will be set to false
+	Sim_MyMachinePart:BOOL; 				//Simulate only a part of the machine (in this case the template example)
 END_VAR
 // {attribute 'qualified_only'} >>forces the user to add the DUT name in front of the variables
 // {attribute 'analysis' := '-33'} >>deactivate error unused variable for next variable/struct]]></Declaration>

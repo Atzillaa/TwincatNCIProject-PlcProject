@@ -1,10 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="HMI_SP_TemplateClean" Id="{fa7b424d-320a-46fe-aa94-64457783369a}">
     <Declaration><![CDATA[TYPE HMI_SP_TemplateClean :
 STRUCT
-	CFG_MachinePartEnabled:BOOL:=TRUE;				(*Configuration this machinepart is enabled >> when disabled I_SN_SUP_Request is coupled directly to Q_SN_DSC_Request and errors+organiser stuff is put in the correct state*)
-	
+	MachinePartEnabled:BOOL:=TRUE;				//block is enabled >> can be used to disable part(s) of the machine
 END_STRUCT
 END_TYPE
 ]]></Declaration>

@@ -1,18 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="HMI_ERR_TemplateClean" Id="{1fccee74-822e-45e1-802f-d0869fc47113}">
     <Declaration><![CDATA[TYPE HMI_ERR_TemplateClean :
 STRUCT
 	(*
 		Rules:
 		Errors shall only be off type BOOL
-		Errors shall only be set in the program AND mass reset (utl_ANY_Reset) at I_OrgControl.Reset_K >> already programmed in the template
-		
+		Errors shall be set >> the HMI block will do the resetting
+
 		Syntax convention:
 		a clear variable name which describes the error			as described below
 		InitNotEmpty:BOOL;										//Error [machinepart]: not empty during initialisation
 		
-		*Note the comment for structs is not used in the HMI (comments inside the struct are used), but I still recommend to add comments.
+		prio's: emergency stop items == 100, e-circuit=99, default (nothing specified) = 50
+		adjust as needed
+		//example how to pre-set error priorities for the HMI. Default errors get prio 50, Recommend prio 100 for e-stop buttons etc
+		ExampleAddPrioForHmiError:BOOL;					//Error[prio=90] TemplateMachinePart: we have an error!
 	*)
 END_STRUCT
 END_TYPE]]></Declaration>

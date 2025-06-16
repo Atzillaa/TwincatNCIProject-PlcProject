@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="HMI_WRN_TemplateMachinePart" Id="{bc803d7b-969c-46c0-ba3b-c4e157108132}">
     <Declaration><![CDATA[TYPE HMI_WRN_TemplateMachinePart :
 STRUCT
@@ -11,16 +11,9 @@ STRUCT
 		Syntax convention:
 		a clear variable name which describes the warning		as described below
 		StepLockActive:BOOL;									//Warning [machinepart]: in step modus (steps are held until confirmation the continue to the next step)
-		
-		*Note the comment for structs is not used in the HMI (comments inside the struct are used), but I still recommend to add comments.
 	*)
-	Step:HMI_WRN_Step;										//Warning [machinepart]: Stepping controls
-	Srv_Example: HMI_WRN_Servo;								//Warning [machinepart]: servo example
-	Gantry_Example: HMI_WRN_SingleBeltGantry;				//Warning [machinepart]: pick and place gantry
-	Cam_OmronController: HMI_WRN_OmronCamera;				//Warning [machinepart]: camera omron controller
 	
 	NotRdyRcv_Discharge:BOOL;								//Warning [machinepart]: not ready to receive products
-	Full:BOOL;												//Warning [machinepart]: full, supply stopped
 	CameraNotReady:BOOL;									//Warning [machinepart]: waiting for camera ready
 END_STRUCT
 END_TYPE]]></Declaration>

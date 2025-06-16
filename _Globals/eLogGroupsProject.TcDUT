@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="eLogGroupsProject" Id="{d6ab304f-2d07-44d8-bf50-653a8fa43f8f}">
     <Declaration><![CDATA[{attribute 'qualified_only'}
 TYPE eLogGroupsProject :

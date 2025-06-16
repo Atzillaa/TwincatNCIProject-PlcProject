@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <POU Name="OopExmplMain" Id="{1f7f3caf-dc20-05a7-1d07-298a644e1766}" SpecialFunc="None">
     <Declaration><![CDATA[(*example using the extended block with a random block that has a known interface to show how to use interfaces
 *)

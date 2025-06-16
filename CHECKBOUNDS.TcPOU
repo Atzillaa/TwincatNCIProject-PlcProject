@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <POU Name="CHECKBOUNDS" Id="{8909720a-0422-4062-93c0-eab153054280}" SpecialFunc="CheckBounds">
     <Declaration><![CDATA[(*	Function that checks and limits if an array is adressed outside of its boundaries
 Usage:
@@ -20,8 +20,6 @@ Changes:
 FUNCTION CHECKBOUNDS : DINT
 VAR_INPUT
         index, lower, upper : DINT;
-END_VAR
-VAR
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[//if index lower than array memory >> set to lowest possible
@@ -34,7 +32,7 @@ IF index<lower THEN
 	CHECKBOUNDS := lower;
 	
 	//log system message
-	utl_SystemMessage(I_Message:=CONCAT('Checkbounds lower violation detected:',TO_STRING(index)));
+	utl_SystemMessageWithLogging(I_Message:=CONCAT('Checkbounds lower violation detected:',TO_STRING(index)));
 	
 //if index higher than array memory >> set to highest possible
 ELSIF index>upper THEN
@@ -46,7 +44,7 @@ ELSIF index>upper THEN
 	CHECKBOUNDS := upper;
 
 	//log system message
-	utl_SystemMessage(I_Message:=CONCAT('Checkbounds upper violation detected:',TO_STRING(index)));
+	utl_SystemMessageWithLogging(I_Message:=CONCAT('Checkbounds upper violation detected:',TO_STRING(index)));
 
 //else index is within array memory
 ELSE

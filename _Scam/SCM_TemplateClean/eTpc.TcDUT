@@ -1,20 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="eTpc" Id="{d3d3b2c1-1eef-4965-bd65-c52c8f932a0a}">
     <Declaration><![CDATA[//enum of states
-{attribute 'strict'}
 {attribute 'to_string'}
 {attribute 'qualified_only'}
 TYPE eTpc :
 (
-	TotalReset,
-	Initialise,
-	Rest
-);
+	//NOTE @ copy of this enum, adapt existing state names:
+	TotalReset_Example,   //extra part _Example added since in the real world i've seen bugs in which scm_ programs still used eTpc in some locations. This should help prevent it.
+	Initialise_Example,
+	Rest_Example
+)INT;
 END_TYPE
 
 //info on attributes:
-//strict 			: also tests if the name is not used for something else
 //to_string			: allows the enum to be converted to string
 //qualified_only 	: forces the user to start witht the type name (to avoid the situation that accidentially another enum is used)  ]]></Declaration>
   </DUT>

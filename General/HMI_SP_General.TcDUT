@@ -1,13 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="HMI_SP_General" Id="{aa5f8390-c294-41f2-b589-bc6f928e7c23}">
     <Declaration><![CDATA[TYPE HMI_SP_General :
 STRUCT
-	BknLibrary:HMI_SP_BknLibrary;								//Boikon library
-		
-	{info 'TODO: Template example / remove when not needed'}
+	{warning 'TODO: Template example / remove when not needed'}
 	//These setpoint are made available for all blocks
-	Common:SP_Common;											//Common setpoints used for multiple machine parts
+	Shared:HMI_SP_GeneralShared;											//Common setpoints used for multiple machine parts
 END_STRUCT
 END_TYPE
 ]]></Declaration>

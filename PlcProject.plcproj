@@ -6,10 +6,10 @@
     <ProjectGuid>{c4e0f58c-aa1a-45d8-b463-60f38f2a24e3}</ProjectGuid>
     <SubObjectsSortedByName>True</SubObjectsSortedByName>
     <DownloadApplicationInfo>true</DownloadApplicationInfo>
-    <WriteProductVersion>true</WriteProductVersion>
-    <GenerateTpy>false</GenerateTpy>
+    <WriteProductVersion>false</WriteProductVersion>
+    <GenerateTpy>true</GenerateTpy>
     <Name>PlcProject</Name>
-    <ProgramVersion>3.1.4023.0</ProgramVersion>
+    <ProgramVersion>3.1.4026.16</ProgramVersion>
     <Application>{d02a166d-96bb-44a6-96c7-fd0e94bc6829}</Application>
     <TypeSystem>{24d5d8c0-f52b-4135-85ce-1c040b1cd87d}</TypeSystem>
     <Implicit_Task_Info>{a083444f-8377-42e2-b625-bfc07cc1b483}</Implicit_Task_Info>
@@ -18,18 +18,58 @@
     <LibraryReferences>{015cb6ed-99fd-4f18-9128-1eb89efb4ed6}</LibraryReferences>
     <Company>Boikon</Company>
     <Released>false</Released>
-    <ProjectVersion>0.6.8.1</ProjectVersion>
+    <ProjectVersion>0.7.0.1</ProjectVersion>
+    <CombineIds>false</CombineIds>
+    <Title>Boikon Template</Title>
+    <CompilerVersion>
+    </CompilerVersion>
+    <AllowChecksForLibrary>false</AllowChecksForLibrary>
+    <POUsForPropertyAccessIncluded>false</POUsForPropertyAccessIncluded>
+    <GlobalVersionStructureIncluded>true</GlobalVersionStructureIncluded>
+    <CompilerDefines>IsTemplate</CompilerDefines>
+    <DeviceLogFilter>LOG_INFO, LOG_ERROR</DeviceLogFilter>
     <AutoUpdateVisuProfile>true</AutoUpdateVisuProfile>
     <AutoUpdateUmlProfile>true</AutoUpdateUmlProfile>
-    <CombineIds>true</CombineIds>
-    <Title>Boikon Template</Title>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CHECKBOUNDS.TcPOU">
       <SubType>Code</SubType>
       <ExcludeFromBuild>false</ExcludeFromBuild>
     </Compile>
+    <Compile Include="DevelopmentPlayground\ObjectOrientedExamples\IOopExmpl.TcIO">
+      <SubType>Code</SubType>
+      <ExcludeFromBuild>true</ExcludeFromBuild>
+    </Compile>
+    <Compile Include="DevelopmentPlayground\ObjectOrientedExamples\OopExmplBase.TcPOU">
+      <SubType>Code</SubType>
+      <ExcludeFromBuild>true</ExcludeFromBuild>
+    </Compile>
+    <Compile Include="DevelopmentPlayground\ObjectOrientedExamples\OopExmplExtension.TcPOU">
+      <SubType>Code</SubType>
+      <ExcludeFromBuild>true</ExcludeFromBuild>
+    </Compile>
+    <Compile Include="DevelopmentPlayground\ObjectOrientedExamples\OopExmplMain.TcPOU">
+      <SubType>Code</SubType>
+      <ExcludeFromBuild>true</ExcludeFromBuild>
+    </Compile>
+    <Compile Include="DevelopmentPlayground\ObjectOrientedExamples\OopExmplRandomObjectWithInterface.TcPOU">
+      <SubType>Code</SubType>
+      <ExcludeFromBuild>true</ExcludeFromBuild>
+    </Compile>
+    <Compile Include="DevelopmentPlayground\UnitTesting\BreakLogging.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DevelopmentPlayground\UnitTesting\UnitTesting.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DevelopmentPlayground\UnitTesting\Vis_Test.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
     <Compile Include="General\HMI_ERR_General.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="General\HMI_MAN_General.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="General\HMI_SP_General.TcDUT">
@@ -38,10 +78,13 @@
     <Compile Include="General\HMI_STS_General.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="General\HMI_General.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="General\HMI_WRN_General.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="General\SP_Common.TcDUT">
+    <Compile Include="General\HMI_SP_GeneralShared.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="General\utl_General.TcPOU">
@@ -54,30 +97,22 @@
     <Compile Include="GlobalTextList.TcGTLO">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Main\HMI_ERR.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Main\HMI_MAN.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Main\HMI_SP.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Main\HMI_STS.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Main\HMI_WRN.TcDUT">
+    <Compile Include="ImagePool.TcIPO">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Main\MAIN.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Main\Visualization.TcVIS">
+    <Compile Include="Main\PlcTask.TcTTO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Main\VisGeneral.TcVIS">
       <SubType>Code</SubType>
       <DependentUpon>VisualizationManager.TcVMO</DependentUpon>
     </Compile>
-    <Compile Include="PlcTask.TcTTO">
+    <Compile Include="Main\VisScmTemplate.TcVIS">
       <SubType>Code</SubType>
+      <DependentUpon>VisualizationManager.TcVMO</DependentUpon>
     </Compile>
     <Compile Include="Version\Global_Version.TcGVL">
       <SubType>Code</SubType>
@@ -91,8 +126,15 @@
     <Compile Include="_Controls\TemplateSafetyZone\HMI_ERR_SafetyZone1.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="_Controls\TemplateSafetyZone\HMI_SafetyZone1.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="_Controls\TemplateSafetyZone\HMI_STS_SafetyZone1.TcDUT">
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Controls\TemplateSafetyZone\Vis_SafetyZone1.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>VisualizationManager.TcVMO</DependentUpon>
     </Compile>
     <Compile Include="_Globals\eLogGroupsProject.TcDUT">
       <SubType>Code</SubType>
@@ -103,29 +145,6 @@
     <Compile Include="_Globals\Glcn.TcGVL">
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
-    </Compile>
-    <Compile Include="_Scam\DevelopmentPlayground\UnitTesting.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="_Scam\ObjectOrientedExamples\IOopExmpl.TcIO">
-      <SubType>Code</SubType>
-      <ExcludeFromBuild>true</ExcludeFromBuild>
-    </Compile>
-    <Compile Include="_Scam\ObjectOrientedExamples\OopExmplMain.TcPOU">
-      <SubType>Code</SubType>
-      <ExcludeFromBuild>true</ExcludeFromBuild>
-    </Compile>
-    <Compile Include="_Scam\ObjectOrientedExamples\OopExmplBase.TcPOU">
-      <SubType>Code</SubType>
-      <ExcludeFromBuild>true</ExcludeFromBuild>
-    </Compile>
-    <Compile Include="_Scam\ObjectOrientedExamples\OopExmplExtension.TcPOU">
-      <SubType>Code</SubType>
-      <ExcludeFromBuild>true</ExcludeFromBuild>
-    </Compile>
-    <Compile Include="_Scam\ObjectOrientedExamples\OopExmplRandomObjectWithInterface.TcPOU">
-      <SubType>Code</SubType>
-      <ExcludeFromBuild>true</ExcludeFromBuild>
     </Compile>
     <Compile Include="_Scam\SCM_TemplateClean\eTpc.TcDUT">
       <SubType>Code</SubType>
@@ -142,11 +161,15 @@
     <Compile Include="_Scam\SCM_TemplateClean\HMI_STS_TemplateClean.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="_Scam\SCM_TemplateClean\HMI_TemplateClean.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="_Scam\SCM_TemplateClean\HMI_WRN_TemplateClean.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="_Scam\SCM_TemplateClean\SCM_TemplateClean.TcPOU">
       <SubType>Code</SubType>
+      <ExcludeFromBuild>false</ExcludeFromBuild>
     </Compile>
     <Compile Include="_Scam\SCM_TemplateMachinePart\eTMP.TcDUT">
       <SubType>Code</SubType>
@@ -163,6 +186,9 @@
     <Compile Include="_Scam\SCM_TemplateMachinePart\HMI_STS_TemplateMachinePart.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI_TemplateMachinePart.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="_Scam\SCM_TemplateMachinePart\HMI_WRN_TemplateMachinePart.TcDUT">
       <SubType>Code</SubType>
     </Compile>
@@ -172,90 +198,33 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <PlaceholderReference Include="BoikonLibrary">
-      <DefaultResolution>Boikon Library, * (Boikon)</DefaultResolution>
-      <Namespace>BoikonLib</Namespace>
-    </PlaceholderReference>
-    <PlaceholderReference Include="System_VisuElemMeter">
-      <DefaultResolution>VisuElemMeter, 3.5.13.0 (System)</DefaultResolution>
-      <Namespace>VisuElemMeter</Namespace>
-      <SystemLibrary>true</SystemLibrary>
-      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
-    </PlaceholderReference>
-    <PlaceholderReference Include="System_VisuElems">
-      <DefaultResolution>VisuElems, 3.5.13.40 (System)</DefaultResolution>
-      <Namespace>VisuElems</Namespace>
-      <SystemLibrary>true</SystemLibrary>
-      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
-    </PlaceholderReference>
-    <PlaceholderReference Include="System_VisuElemsSpecialControls">
-      <DefaultResolution>VisuElemsSpecialControls, 3.5.13.0 (System)</DefaultResolution>
-      <Namespace>VisuElemsSpecialControls</Namespace>
-      <SystemLibrary>true</SystemLibrary>
-      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
-    </PlaceholderReference>
-    <PlaceholderReference Include="System_VisuElemsWinControls">
-      <DefaultResolution>VisuElemsWinControls, 3.5.13.20 (System)</DefaultResolution>
-      <Namespace>VisuElemsWinControls</Namespace>
-      <SystemLibrary>true</SystemLibrary>
-      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
-    </PlaceholderReference>
-    <PlaceholderReference Include="System_VisuElemTextEditor">
-      <DefaultResolution>VisuElemTextEditor, 3.5.13.0 (System)</DefaultResolution>
-      <Namespace>VisuElemTextEditor</Namespace>
-      <SystemLibrary>true</SystemLibrary>
-      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
-    </PlaceholderReference>
-    <PlaceholderReference Include="system_visuinputs">
-      <DefaultResolution>visuinputs, 3.5.13.0 (system)</DefaultResolution>
-      <Namespace>visuinputs</Namespace>
-      <SystemLibrary>true</SystemLibrary>
-      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
-    </PlaceholderReference>
-    <PlaceholderReference Include="System_VisuNativeControl">
-      <DefaultResolution>VisuNativeControl, 3.5.13.0 (System)</DefaultResolution>
-      <Namespace>VisuNativeControl</Namespace>
-      <SystemLibrary>true</SystemLibrary>
-      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
-    </PlaceholderReference>
-    <PlaceholderReference Include="Tc3_IoLink">
-      <DefaultResolution>Tc3_IoLink, * (Beckhoff Automation GmbH)</DefaultResolution>
-      <Namespace>Tc3_IoLink</Namespace>
-    </PlaceholderReference>
-    <PlaceholderReference Include="Tc3_Module">
-      <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
-      <Namespace>Tc3_Module</Namespace>
-    </PlaceholderReference>
-    <PlaceholderReference Include="VisuDialogs">
-      <DefaultResolution>VisuDialogs, * (System)</DefaultResolution>
-      <Namespace>VisuDialogs</Namespace>
-    </PlaceholderReference>
-  </ItemGroup>
-  <ItemGroup>
+    <Folder Include="DevelopmentPlayground" />
+    <Folder Include="DevelopmentPlayground\UnitTesting" />
+    <Folder Include="DevelopmentPlayground\ObjectOrientedExamples" />
     <Folder Include="General" />
     <Folder Include="Main" />
     <Folder Include="Version" />
     <Folder Include="_Controls\TemplateSafetyZone" />
-    <Folder Include="_Scam\DevelopmentPlayground" />
-    <Folder Include="_Scam\DevelopmentPlayground\LibraryCandidates" />
     <Folder Include="_Utils" />
     <Folder Include="_Controls" />
     <Folder Include="_Globals" />
     <Folder Include="_Scam" />
-    <Folder Include="_Scam\ObjectOrientedExamples" />
     <Folder Include="_Scam\SCM_TemplateClean" />
     <Folder Include="_Scam\SCM_TemplateMachinePart" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="PlcProject.tmc">
+      <SubType>Content</SubType>
+    </None>
     <Content Include="Version\_Readme.txt">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="_ReadmeBreakingChanges.txt">
       <SubType>Content</SubType>
     </Content>
     <Content Include="_Utils\_Readme.txt">
       <SubType>Content</SubType>
     </Content>
-    <None Include="PlcProject.tmc">
-      <SubType>Content</SubType>
-    </None>
     <Content Include="_Controls\_Readme.txt">
       <SubType>Content</SubType>
     </Content>
@@ -267,92 +236,69 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PlaceholderResolution Include="BoikonLibrary">
-      <Resolution>Boikon Library, 0.6.8.1 (Boikon)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="CAA Callback">
-      <Resolution>CAA Callback Extern, * (CAA Technical Workgroup)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="CAA MemBlockMan">
-      <Resolution>CAA Memory Block Manager Extern, * (CAA Technical Workgroup)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="CAA ResMan">
-      <Resolution>CAA Ressource Manager Extern, * (CAA Technical Workgroup)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="CAA Types">
-      <Resolution>CAA Types Extern, * (CAA Technical Workgroup)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="CmpApp">
-      <Resolution>CmpApp, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="CmpBitmapPool">
-      <Resolution>CmpBitmapPool, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="CmpDynamicText">
-      <Resolution>CmpDynamicText, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="CmpEventMgr">
-      <Resolution>CmpEventMgr, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="CmpLog">
-      <Resolution>CmpLog, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="CmpSchedule">
-      <Resolution>CmpSchedule, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="CmpTargetVisu">
-      <Resolution>CmpTargetVisu, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="CmpVisuHandler">
-      <Resolution>CmpVisuHandler, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="Collections">
-      <Resolution>Collections, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="Component Manager">
-      <Resolution>Component Manager, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="FloatingPointUtils">
-      <Resolution>FloatingPointUtils, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="Standard">
-      <Resolution>Tc2_Standard, * (Beckhoff Automation GmbH)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="Standard64">
-      <Resolution>Tc2_Standard, * (Beckhoff Automation GmbH)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="StringUtils">
-      <Resolution>StringUtils, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="SysCpuHandling">
-      <Resolution>SysCpuHandling, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="SysDir">
-      <Resolution>SysDir, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="SysFile">
-      <Resolution>SysFile, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="SysMem">
-      <Resolution>SysMem, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="SysProcess">
-      <Resolution>SysProcess, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="SysShm">
-      <Resolution>SysShm, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="SysTarget">
-      <Resolution>SysTarget, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="System_VisuElemBase">
-      <Resolution>VisuElemBase, * (System)</Resolution>
-    </PlaceholderResolution>
+    <PlaceholderReference Include="CmpBitmapPool">
+      <DefaultResolution>CmpBitmapPool, * (System)</DefaultResolution>
+      <Namespace>CmpBitmapPool</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElemMeter">
+      <DefaultResolution>VisuElemMeter, 4.7.0.0 (System)</DefaultResolution>
+      <Namespace>VisuElemMeter</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElems">
+      <DefaultResolution>VisuElems, 4.7.0.0 (System)</DefaultResolution>
+      <Namespace>VisuElems</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElemsSpecialControls">
+      <DefaultResolution>VisuElemsSpecialControls, 4.7.0.0 (System)</DefaultResolution>
+      <Namespace>VisuElemsSpecialControls</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElemsWinControls">
+      <DefaultResolution>VisuElemsWinControls, 4.7.0.0 (System)</DefaultResolution>
+      <Namespace>VisuElemsWinControls</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElemTextEditor">
+      <DefaultResolution>VisuElemTextEditor, 4.7.0.0 (System)</DefaultResolution>
+      <Namespace>VisuElemTextEditor</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuInputs">
+      <DefaultResolution>VisuInputs, 4.7.0.0 (System)</DefaultResolution>
+      <Namespace>VisuInputs</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuNativeControl">
+      <DefaultResolution>VisuNativeControl, 4.7.0.0 (System)</DefaultResolution>
+      <Namespace>VisuNativeControl</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_Module">
+      <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Module</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="VisuDialogs">
+      <DefaultResolution>VisuDialogs, * (System)</DefaultResolution>
+      <Namespace>VisuDialogs</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="VisuDialogs" />
+    <PlaceholderReference Include="[BoikonLibrary]">
+      <DefaultResolution>[Boikon Library], * (Boikon)</DefaultResolution>
+      <Namespace>BoikonLib</Namespace>
+    </PlaceholderReference>
+  </ItemGroup>
+  <ItemGroup>
     <PlaceholderResolution Include="System_VisuElemMeter">
       <Resolution>VisuElemMeter, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="System_VisuElems">
-      <Resolution>VisuElems, * (System)</Resolution>
     </PlaceholderResolution>
     <PlaceholderResolution Include="System_VisuElemsSpecialControls">
       <Resolution>VisuElemsSpecialControls, * (System)</Resolution>
@@ -363,62 +309,60 @@
     <PlaceholderResolution Include="System_VisuElemTextEditor">
       <Resolution>VisuElemTextEditor, * (System)</Resolution>
     </PlaceholderResolution>
-    <PlaceholderResolution Include="system_visuinputs">
-      <Resolution>VisuInputs, * (System)</Resolution>
-    </PlaceholderResolution>
     <PlaceholderResolution Include="System_VisuInputs">
       <Resolution>VisuInputs, * (System)</Resolution>
     </PlaceholderResolution>
-    <PlaceholderResolution Include="SysTime">
-      <Resolution>SysTime, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="SysTimeCore">
-      <Resolution>SysTimeCore, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="SysTimeRtc">
-      <Resolution>SysTimeRtc, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="Tc2_Standard">
-      <Resolution>Tc2_Standard, * (Beckhoff Automation GmbH)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="Tc2_System">
-      <Resolution>Tc2_System, * (Beckhoff Automation GmbH)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="Tc2_Utilities">
-      <Resolution>Tc2_Utilities, * (Beckhoff Automation GmbH)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="Tc3_Module">
-      <Resolution>Tc3_Module, * (Beckhoff Automation GmbH)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="Util">
-      <Resolution>Util, * (System)</Resolution>
-    </PlaceholderResolution>
-    <PlaceholderResolution Include="VisuDialogs">
-      <Resolution>VisuDialogs, * (System)</Resolution>
+    <PlaceholderResolution Include="System_VisuNativeControl">
+      <Resolution>VisuNativeControl, * (System)</Resolution>
     </PlaceholderResolution>
   </ItemGroup>
   <ItemGroup>
-    <LibraryReference Include="VisuSymbols,3.5.10.0,System">
-      <Namespace>VisuSymbols</Namespace>
-    </LibraryReference>
+    <SubObject Include="UnitTesting._M_RollingFletcher">
+      <ExcludeFromBuild>true</ExcludeFromBuild>
+    </SubObject>
   </ItemGroup>
   <ProjectExtensions>
     <PlcProjectOptions>
       <XmlArchive>
-        <Data>
-          <o xml:space="preserve" t="OptionKey">
+  <Data>
+    <o xml:space="preserve" t="OptionKey">
       <v n="Name">"&lt;ProjectRoot&gt;"</v>
       <d n="SubKeys" t="Hashtable" ckt="String" cvt="OptionKey">
-        <v>{8F99A816-E488-41E4-9FA3-846536012284}</v>
+        <v>{192FAD59-8248-4824-A8DE-9177C94C195A}</v>
         <o>
-          <v n="Name">"{8F99A816-E488-41E4-9FA3-846536012284}"</v>
+          <v n="Name">"{192FAD59-8248-4824-A8DE-9177C94C195A}"</v>
           <d n="SubKeys" t="Hashtable" />
           <d n="Values" t="Hashtable" />
+        </o>
+        <v>{246001F4-279D-43AC-B241-948EB31120E1}</v>
+        <o>
+          <v n="Name">"{246001F4-279D-43AC-B241-948EB31120E1}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String">
+            <v>ExtendedSettings</v>
+            <v>false</v>
+            <v>GeneralPropertySupport</v>
+            <v>false</v>
+            <v>GlobalTextListFilePath</v>
+            <v>""</v>
+            <v>GlobalVisuImageFilePath</v>
+            <v>"%APPLICATIONPATH%\;%APPLICATIONPATH%\"</v>
+            <v>ImplicitChecksForVisualizationPOUs</v>
+            <v>true</v>
+            <v>UnicodeStrings</v>
+            <v>false</v>
+          </d>
         </o>
         <v>{29BD8D0C-3586-4548-BB48-497B9A01693F}</v>
         <o>
           <v n="Name">"{29BD8D0C-3586-4548-BB48-497B9A01693F}"</v>
           <d n="SubKeys" t="Hashtable" ckt="String" cvt="OptionKey">
+            <v>NamingConventions</v>
+            <o>
+              <v n="Name">"NamingConventions"</v>
+              <d n="SubKeys" t="Hashtable" />
+              <d n="Values" t="Hashtable" />
+            </o>
             <v>Rules</v>
             <o>
               <v n="Name">"Rules"</v>
@@ -432,27 +376,9 @@
                     <v>True</v>
                   </d>
                 </o>
-                <v>4</v>
+                <v>175</v>
                 <o>
-                  <v n="Name">"4"</v>
-                  <d n="SubKeys" t="Hashtable" />
-                  <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
-                    <v>bActive</v>
-                    <v>True</v>
-                  </d>
-                </o>
-                <v>33</v>
-                <o>
-                  <v n="Name">"33"</v>
-                  <d n="SubKeys" t="Hashtable" />
-                  <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
-                    <v>bActive</v>
-                    <v>True</v>
-                  </d>
-                </o>
-                <v>6</v>
-                <o>
-                  <v n="Name">"6"</v>
+                  <v n="Name">"175"</v>
                   <d n="SubKeys" t="Hashtable" />
                   <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
                     <v>bActive</v>
@@ -477,6 +403,33 @@
                     <v>True</v>
                   </d>
                 </o>
+                <v>33</v>
+                <o>
+                  <v n="Name">"33"</v>
+                  <d n="SubKeys" t="Hashtable" />
+                  <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
+                    <v>bActive</v>
+                    <v>True</v>
+                  </d>
+                </o>
+                <v>4</v>
+                <o>
+                  <v n="Name">"4"</v>
+                  <d n="SubKeys" t="Hashtable" />
+                  <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
+                    <v>bActive</v>
+                    <v>True</v>
+                  </d>
+                </o>
+                <v>6</v>
+                <o>
+                  <v n="Name">"6"</v>
+                  <d n="SubKeys" t="Hashtable" />
+                  <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
+                    <v>bActive</v>
+                    <v>True</v>
+                  </d>
+                </o>
               </d>
               <d n="Values" t="Hashtable" />
             </o>
@@ -487,45 +440,73 @@
         <o>
           <v n="Name">"{40450F57-0AA3-4216-96F3-5444ECB29763}"</v>
           <d n="SubKeys" t="Hashtable" />
-          <d n="Values" t="Hashtable" ckt="String" cvt="String">
+          <d n="Values" t="Hashtable" ckt="String">
+            <v>ActiveVisuExtensions_0</v>
+            <v>"IR0whWr8bwdyBwAAJW4b7gAAAAC4AQAALpclGQAAAAABAAAAAAAAAAEaUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwACTHsANgBkADQAMgBlADkAMQA4AC0AZQA2AGEANQAtADQAYgAyAGMALQA5ADEANwBiAC0AZQAwADcAMwAxAGIANwA2ADYAYgAxAGYAfQADDkMAbwBtAHAAYQBuAHkABDBCAGUAYwBrAGgAbwBmAGYAIABBAHUAdABvAG0AYQB0AGkAbwBuACAARwBtAGIASAAFDlYAZQByAHMAaQBvAG4ABg4xAC4AMAAuADQALgAyAAcMQQBjAHQAaQB2AGUACAhiAG8AbwBsAAkITgBhAG0AZQAKJFYAaQBzAHUARQBsAGUAbQBFAHYAZQBuAHQAVABhAGIAbABlAAsWUAByAG8AZgBpAGwAZQBEAGEAdABhAAxMewAxADYAZQA1ADUAYgA2ADAALQA3ADAANAAzAC0ANABhADYAMwAtAGIANgA1AGIALQA2ADEANAA3ADEAMwA4ADcAOABkADQAMgB9AA0STABpAGIAcgBhAHIAaQBlAHMADkx7ADMAYgBmAGQANQA0ADUAOQAtAGIAMAA3AGYALQA0AGQANgBlAC0AYQBlADEAYQAtAGEAOAAzADMANQA2AGEANQA1ADEANAAyAH0AD0x7ADkAYwA5ADUAOAA5ADYAOAAtADIAYwA4ADUALQA0ADEAYgBiAC0AOAA4ADcAMQAtADgAOQA1AGYAZgAxAGYAZQBkAGUAMQBhAH0AEAZpAG4AdAARClUAcwBhAGcAZQASClQAaQB0AGwAZQATDFMAeQBzAHQAZQBtABQSVgBpAHMAdQBFAGwAZQBtAHMAFRhWAGkAcwB1AEUAbABlAG0AQgBhAHMAZQAWFFYAaQBzAHUASQBuAHAAdQB0AHMAFyZEAGUAdgBQAGwAYQBjAGUAaABvAGwAZABlAHIAcwBVAHMAZQBkABgiUABsAHUAZwBpAG4AQwBvAG4AcwB0AHIAYQBpAG4AdABzABlMewA0ADMAZAA1ADIAYgBjAGUALQA5ADQAMgBjAC0ANAA0AGQANwAtADkAZQA5ADQALQAxAGIAZgBkAGYAMwAxADAAZQA2ADMAYwB9ABocQQB0AEwAZQBhAHMAdABWAGUAcgBzAGkAbwBuABsUUABsAHUAZwBpAG4ARwB1AGkAZAAcFlMAeQBzAHQAZQBtAC4ARwB1AGkAZAAdSGEAZgBjAGQANQA0ADQANgAtADQAOQAxADQALQA0AGYAZQA3AC0AYgBiADcAOAAtADkAYgBmAGYAZQBiADcAMABmAGQAMQA3AB4UVQBwAGQAYQB0AGUASQBuAGYAbwAfTHsAYgAwADMAMwA2ADYAYQA4AC0AYgA1AGMAMAAtADQAYgA5AGEALQBhADAAMABlAC0AZQBiADgANgAwADEAMQAxADAANABjADMAfQAgDlUAcABkAGEAdABlAHMAIUx7ADEAOAA2ADgAZgBmAGMAOQAtAGUANABmAGMALQA0ADUAMwAyAC0AYQBjADAANgAtADEAZQAzADkAYgBiADUANQA3AGIANgA5AH0AIkx7AGEANQBiAGQANAA4AGMAMwAtADAAZAAxADcALQA0ADEAYgA1AC0AYgAxADYANAAtADUAZgBjADYAYQBkADIAYgA5ADYAYgA3AH0AIxZPAGIAagBlAGMAdABzAFQAeQBwAGUAJFRVAHAAZABhAHQAZQBMAGEAbgBnAHUAYQBnAGUATQBvAGQAZQBsAEYAbwByAEMAbwBuAHYAZQByAHQAaQBiAGwAZQBMAGkAYgByAGEAcgBpAGUAcwAlEEwAaQBiAFQAaQB0AGwAZQAmFEwAaQBiAEMAbwBtAHAAYQBuAHkAJx5VAHAAZABhAHQAZQBQAHIAbwB2AGkAZABlAHIAcwAoOFMAeQBzAHQAZQBtAC4AQwBvAGwAbABlAGMAdABpAG8AbgBzAC4ASABhAHMAaAB0AGEAYgBsAGUAKRJ2AGkAcwB1AGUAbABlAG0AcwAqDHMAeQBzAHQAZQBtACtINgBjAGIAMQBjAGQAZQAxAC0AZAA1AGQAYwAtADQAYQAzAGIALQA5ADAANQA0AC0AMgAxAGYAYQA3ADUANgBhADMAZgBhADQALChJAG4AdABlAHIAZgBhAGMAZQBWAGUAcgBzAGkAbwBuAEkAbgBmAG8ALUx7AGMANgAxADEAZQA0ADAAMAAtADcAZgBiADkALQA0AGMAMwA1AC0AYgA5AGEAYwAtADQAZQAzADEANABiADUAOQA5ADYANAAzAH0ALhhNAGEAagBvAHIAVgBlAHIAcwBpAG8AbgAvGE0AaQBuAG8AcgBWAGUAcgBzAGkAbwBuADAMTABlAGcAYQBjAHkAMTBMAGEAbgBnAHUAYQBnAGUATQBvAGQAZQBsAFYAZQByAHMAaQBvAG4ASQBuAGYAbwAyMEwAbwBhAGQATABpAGIAcgBhAHIAaQBlAHMASQBuAHQAbwBQAHIAbwBqAGUAYwB0ADMaQwBvAG0AcABhAHQAaQBiAGkAbABpAHQAeQDQAAIaBtADAS0E0AUBLQbQBwitAdAJAS0K0AsMGgfQDQ4aAUUNDwTQAA8aBEUFEAQBAAAAAAAAAAQAAAACAAAA0BEQrQIAAADQEgEtCtADAS0T0AAPGgRFBRAEBAAAAAYAAAAAAAAAAAAAANAREK0BAAAA0BIBLRTQAwEtE9AADxoERQUQBAQAAAAGAAAAAAAAAAAAAADQERCtBAAAANASAS0V0AMBLRPQAA8aBEUFEAQEAAAABgAAAAAAAAAAAAAA0BEQrQQAAADQEgEtFtADAS0T0BcIrQFFGBkB0AAZGgJFGhAEBAAAAAIAAAAAAAAAAAAAANAbHC0d0B4fGgJFICEC0AAiGgVFBRAEAwAAAAMAAAAAAAAACgAAANAjEK0AAAAA0AkBLSTQJQEtFNAmAS0T0AAiGgVFBRAEAwAAAAMAAAAAAAAACgAAANAjEK0BAAAA0AkBLSTQJQEtFNAmAS0TmicoAUUAAQLQAAEtKdAAAS0q0AAcLSvQLC0aA9AuEK0BAAAA0C8QrSMAAADQMAitANAxLRoD0C4QrQIAAADQLxCtBgAAANAwCK0A0DIIrQDQMwitAA=="</v>
+            <v>ActiveVisuExtensionsLength</v>
+            <v>0</v>
             <v>ActiveVisuProfile</v>
-            <v>IR0whWr8bwfwBwAAiD2qpQAAAABVAgAA37x72QAAAAABAAAAAAAAAAEaUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwACTHsAZgA5ADUAYgBiADQAMgA2AC0ANQA1ADIANAAtADQAYgA0ADUALQA5ADQAMAAwAC0AZgBiADAAZgAyAGUANwA3AGUANQAxAGIAfQADCE4AYQBtAGUABDBUAHcAaQBuAEMAQQBUACAAMwAuADEAIABCAHUAaQBsAGQAIAA0ADAAMgA0AC4ANwAFFlAAcgBvAGYAaQBsAGUARABhAHQAYQAGTHsAMQA2AGUANQA1AGIANgAwAC0ANwAwADQAMwAtADQAYQA2ADMALQBiADYANQBiAC0ANgAxADQANwAxADMAOAA3ADgAZAA0ADIAfQAHEkwAaQBiAHIAYQByAGkAZQBzAAhMewAzAGIAZgBkADUANAA1ADkALQBiADAANwBmAC0ANABkADYAZQAtAGEAZQAxAGEALQBhADgAMwAzADUANgBhADUANQAxADQAMgB9AAlMewA5AGMAOQA1ADgAOQA2ADgALQAyAGMAOAA1AC0ANAAxAGIAYgAtADgAOAA3ADEALQA4ADkANQBmAGYAMQBmAGUAZABlADEAYQB9AAoOVgBlAHIAcwBpAG8AbgALBmkAbgB0AAwKVQBzAGEAZwBlAA0KVABpAHQAbABlAA4aVgBpAHMAdQBFAGwAZQBtAE0AZQB0AGUAcgAPDkMAbwBtAHAAYQBuAHkAEAxTAHkAcwB0AGUAbQARElYAaQBzAHUARQBsAGUAbQBzABIwVgBpAHMAdQBFAGwAZQBtAHMAUwBwAGUAYwBpAGEAbABDAG8AbgB0AHIAbwBsAHMAEyhWAGkAcwB1AEUAbABlAG0AcwBXAGkAbgBDAG8AbgB0AHIAbwBsAHMAFCRWAGkAcwB1AEUAbABlAG0AVABlAHgAdABFAGQAaQB0AG8AcgAVIlYAaQBzAHUATgBhAHQAaQB2AGUAQwBvAG4AdAByAG8AbAAWFHYAaQBzAHUAaQBuAHAAdQB0AHMAFwxzAHkAcwB0AGUAbQAYGFYAaQBzAHUARQBsAGUAbQBCAGEAcwBlABkmRABlAHYAUABsAGEAYwBlAGgAbwBsAGQAZQByAHMAVQBzAGUAZAAaCGIAbwBvAGwAGyJQAGwAdQBnAGkAbgBDAG8AbgBzAHQAcgBhAGkAbgB0AHMAHEx7ADQAMwBkADUAMgBiAGMAZQAtADkANAAyAGMALQA0ADQAZAA3AC0AOQBlADkANAAtADEAYgBmAGQAZgAzADEAMABlADYAMwBjAH0AHRxBAHQATABlAGEAcwB0AFYAZQByAHMAaQBvAG4AHhRQAGwAdQBnAGkAbgBHAHUAaQBkAB8WUwB5AHMAdABlAG0ALgBHAHUAaQBkACBIYQBmAGMAZAA1ADQANAA2AC0ANAA5ADEANAAtADQAZgBlADcALQBiAGIANwA4AC0AOQBiAGYAZgBlAGIANwAwAGYAZAAxADcAIRRVAHAAZABhAHQAZQBJAG4AZgBvACJMewBiADAAMwAzADYANgBhADgALQBiADUAYwAwAC0ANABiADkAYQAtAGEAMAAwAGUALQBlAGIAOAA2ADAAMQAxADEAMAA0AGMAMwB9ACMOVQBwAGQAYQB0AGUAcwAkTHsAMQA4ADYAOABmAGYAYwA5AC0AZQA0AGYAYwAtADQANQAzADIALQBhAGMAMAA2AC0AMQBlADMAOQBiAGIANQA1ADcAYgA2ADkAfQAlTHsAYQA1AGIAZAA0ADgAYwAzAC0AMABkADEANwAtADQAMQBiADUALQBiADEANgA0AC0ANQBmAGMANgBhAGQAMgBiADkANgBiADcAfQAmFk8AYgBqAGUAYwB0AHMAVAB5AHAAZQAnVFUAcABkAGEAdABlAEwAYQBuAGcAdQBhAGcAZQBNAG8AZABlAGwARgBvAHIAQwBvAG4AdgBlAHIAdABpAGIAbABlAEwAaQBiAHIAYQByAGkAZQBzACgQTABpAGIAVABpAHQAbABlACkUTABpAGIAQwBvAG0AcABhAG4AeQAqHlUAcABkAGEAdABlAFAAcgBvAHYAaQBkAGUAcgBzACs4UwB5AHMAdABlAG0ALgBDAG8AbABsAGUAYwB0AGkAbwBuAHMALgBIAGEAcwBoAHQAYQBiAGwAZQAsEnYAaQBzAHUAZQBsAGUAbQBzAC1INgBjAGIAMQBjAGQAZQAxAC0AZAA1AGQAYwAtADQAYQAzAGIALQA5ADAANQA0AC0AMgAxAGYAYQA3ADUANgBhADMAZgBhADQALihJAG4AdABlAHIAZgBhAGMAZQBWAGUAcgBzAGkAbwBuAEkAbgBmAG8AL0x7AGMANgAxADEAZQA0ADAAMAAtADcAZgBiADkALQA0AGMAMwA1AC0AYgA5AGEAYwAtADQAZQAzADEANABiADUAOQA5ADYANAAzAH0AMBhNAGEAagBvAHIAVgBlAHIAcwBpAG8AbgAxGE0AaQBuAG8AcgBWAGUAcgBzAGkAbwBuADIMTABlAGcAYQBjAHkAMzBMAGEAbgBnAHUAYQBnAGUATQBvAGQAZQBsAFYAZQByAHMAaQBvAG4ASQBuAGYAbwA0MEwAbwBhAGQATABpAGIAcgBhAHIAaQBlAHMASQBuAHQAbwBQAHIAbwBqAGUAYwB0ADUaQwBvAG0AcABhAHQAaQBiAGkAbABpAHQAeQDQAAIaA9ADAS0E0AUGGgfQBwgaAUUHCQjQAAkaBEUKCwQDAAAABQAAAA0AAAAAAAAA0AwLrQIAAADQDQEtDtAPAS0Q0AAJGgRFCgsEAwAAAAUAAAANAAAAKAAAANAMC60BAAAA0A0BLRHQDwEtENAACRoERQoLBAMAAAAFAAAADQAAAAAAAADQDAutAgAAANANAS0S0A8BLRDQAAkaBEUKCwQDAAAABQAAAA0AAAAUAAAA0AwLrQIAAADQDQEtE9APAS0Q0AAJGgRFCgsEAwAAAAUAAAANAAAAAAAAANAMC60CAAAA0A0BLRTQDwEtENAACRoERQoLBAMAAAAFAAAADQAAAAAAAADQDAutAgAAANANAS0V0A8BLRDQAAkaBEUKCwQDAAAABQAAAA0AAAAAAAAA0AwLrQIAAADQDQEtFtAPAS0X0AAJGgRFCgsEAwAAAAUAAAANAAAAKAAAANAMC60EAAAA0A0BLRjQDwEtENAZGq0BRRscAdAAHBoCRR0LBAMAAAAFAAAADQAAAAAAAADQHh8tINAhIhoCRSMkAtAAJRoFRQoLBAMAAAADAAAAAAAAAAoAAADQJgutAAAAANADAS0n0CgBLRHQKQEtENAAJRoFRQoLBAMAAAADAAAAAAAAAAoAAADQJgutAQAAANADAS0n0CgBLRHQKQEtEJoqKwFFAAEC0AABLSzQAAEtF9AAHy0t0C4vGgPQMAutAQAAANAxC60XAAAA0DIarQDQMy8aA9AwC60CAAAA0DELrQMAAADQMhqtANA0Gq0A0DUarQA=</v>
+            <v>"IR0whWr8bwfyBwAAaCbC8QAAAABVAgAA1xHl6QAAAAABAAAAAAAAAAEaUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwACTHsAZgA5ADUAYgBiADQAMgA2AC0ANQA1ADIANAAtADQAYgA0ADUALQA5ADQAMAAwAC0AZgBiADAAZgAyAGUANwA3AGUANQAxAGIAfQADCE4AYQBtAGUABDJUAHcAaQBuAEMAQQBUACAAMwAuADEAIABCAHUAaQBsAGQAIAA0ADAAMgA2AC4AMQA1AAUWUAByAG8AZgBpAGwAZQBEAGEAdABhAAZMewAxADYAZQA1ADUAYgA2ADAALQA3ADAANAAzAC0ANABhADYAMwAtAGIANgA1AGIALQA2ADEANAA3ADEAMwA4ADcAOABkADQAMgB9AAcSTABpAGIAcgBhAHIAaQBlAHMACEx7ADMAYgBmAGQANQA0ADUAOQAtAGIAMAA3AGYALQA0AGQANgBlAC0AYQBlADEAYQAtAGEAOAAzADMANQA2AGEANQA1ADEANAAyAH0ACUx7ADkAYwA5ADUAOAA5ADYAOAAtADIAYwA4ADUALQA0ADEAYgBiAC0AOAA4ADcAMQAtADgAOQA1AGYAZgAxAGYAZQBkAGUAMQBhAH0ACg5WAGUAcgBzAGkAbwBuAAsGaQBuAHQADApVAHMAYQBnAGUADQpUAGkAdABsAGUADhpWAGkAcwB1AEUAbABlAG0ATQBlAHQAZQByAA8OQwBvAG0AcABhAG4AeQAQDFMAeQBzAHQAZQBtABESVgBpAHMAdQBFAGwAZQBtAHMAEjBWAGkAcwB1AEUAbABlAG0AcwBTAHAAZQBjAGkAYQBsAEMAbwBuAHQAcgBvAGwAcwATKFYAaQBzAHUARQBsAGUAbQBzAFcAaQBuAEMAbwBuAHQAcgBvAGwAcwAUJFYAaQBzAHUARQBsAGUAbQBUAGUAeAB0AEUAZABpAHQAbwByABUiVgBpAHMAdQBOAGEAdABpAHYAZQBDAG8AbgB0AHIAbwBsABYUVgBpAHMAdQBJAG4AcAB1AHQAcwAXGFYAaQBzAHUARQBsAGUAbQBCAGEAcwBlABgmRABlAHYAUABsAGEAYwBlAGgAbwBsAGQAZQByAHMAVQBzAGUAZAAZCGIAbwBvAGwAGiJQAGwAdQBnAGkAbgBDAG8AbgBzAHQAcgBhAGkAbgB0AHMAG0x7ADQAMwBkADUAMgBiAGMAZQAtADkANAAyAGMALQA0ADQAZAA3AC0AOQBlADkANAAtADEAYgBmAGQAZgAzADEAMABlADYAMwBjAH0AHBxBAHQATABlAGEAcwB0AFYAZQByAHMAaQBvAG4AHRRQAGwAdQBnAGkAbgBHAHUAaQBkAB4WUwB5AHMAdABlAG0ALgBHAHUAaQBkAB9IYQBmAGMAZAA1ADQANAA2AC0ANAA5ADEANAAtADQAZgBlADcALQBiAGIANwA4AC0AOQBiAGYAZgBlAGIANwAwAGYAZAAxADcAIBRVAHAAZABhAHQAZQBJAG4AZgBvACFMewBiADAAMwAzADYANgBhADgALQBiADUAYwAwAC0ANABiADkAYQAtAGEAMAAwAGUALQBlAGIAOAA2ADAAMQAxADEAMAA0AGMAMwB9ACIOVQBwAGQAYQB0AGUAcwAjTHsAMQA4ADYAOABmAGYAYwA5AC0AZQA0AGYAYwAtADQANQAzADIALQBhAGMAMAA2AC0AMQBlADMAOQBiAGIANQA1ADcAYgA2ADkAfQAkTHsAYQA1AGIAZAA0ADgAYwAzAC0AMABkADEANwAtADQAMQBiADUALQBiADEANgA0AC0ANQBmAGMANgBhAGQAMgBiADkANgBiADcAfQAlFk8AYgBqAGUAYwB0AHMAVAB5AHAAZQAmVFUAcABkAGEAdABlAEwAYQBuAGcAdQBhAGcAZQBNAG8AZABlAGwARgBvAHIAQwBvAG4AdgBlAHIAdABpAGIAbABlAEwAaQBiAHIAYQByAGkAZQBzACcQTABpAGIAVABpAHQAbABlACgUTABpAGIAQwBvAG0AcABhAG4AeQApHlUAcABkAGEAdABlAFAAcgBvAHYAaQBkAGUAcgBzACo4UwB5AHMAdABlAG0ALgBDAG8AbABsAGUAYwB0AGkAbwBuAHMALgBIAGEAcwBoAHQAYQBiAGwAZQArEnYAaQBzAHUAZQBsAGUAbQBzACwMcwB5AHMAdABlAG0ALUg2AGMAYgAxAGMAZABlADEALQBkADUAZABjAC0ANABhADMAYgAtADkAMAA1ADQALQAyADEAZgBhADcANQA2AGEAMwBmAGEANAAuKEkAbgB0AGUAcgBmAGEAYwBlAFYAZQByAHMAaQBvAG4ASQBuAGYAbwAvTHsAYwA2ADEAMQBlADQAMAAwAC0ANwBmAGIAOQAtADQAYwAzADUALQBiADkAYQBjAC0ANABlADMAMQA0AGIANQA5ADkANgA0ADMAfQAwGE0AYQBqAG8AcgBWAGUAcgBzAGkAbwBuADEYTQBpAG4AbwByAFYAZQByAHMAaQBvAG4AMgxMAGUAZwBhAGMAeQAzMEwAYQBuAGcAdQBhAGcAZQBNAG8AZABlAGwAVgBlAHIAcwBpAG8AbgBJAG4AZgBvADQwTABvAGEAZABMAGkAYgByAGEAcgBpAGUAcwBJAG4AdABvAFAAcgBvAGoAZQBjAHQANRpDAG8AbQBwAGEAdABpAGIAaQBsAGkAdAB5ANAAAhoD0AMBLQTQBQYaB9AHCBoBRQcJCNAACRoERQoLBAQAAAAHAAAAAAAAAAAAAADQDAutAgAAANANAS0O0A8BLRDQAAkaBEUKCwQEAAAABwAAAAAAAAAAAAAA0AwLrQEAAADQDQEtEdAPAS0Q0AAJGgRFCgsEBAAAAAcAAAAAAAAAAAAAANAMC60CAAAA0A0BLRLQDwEtENAACRoERQoLBAQAAAAHAAAAAAAAAAAAAADQDAutAgAAANANAS0T0A8BLRDQAAkaBEUKCwQEAAAABwAAAAAAAAAAAAAA0AwLrQIAAADQDQEtFNAPAS0Q0AAJGgRFCgsEBAAAAAcAAAAAAAAAAAAAANAMC60CAAAA0A0BLRXQDwEtENAACRoERQoLBAQAAAAHAAAAAAAAAAAAAADQDAutAgAAANANAS0W0A8BLRDQAAkaBEUKCwQEAAAABwAAAAAAAAAAAAAA0AwLrQQAAADQDQEtF9APAS0Q0BgZrQFFGhsB0AAbGgJFHAsEBAAAAAIAAAAAAAAAAAAAANAdHi0f0CAhGgJFIiMC0AAkGgVFCgsEAwAAAAMAAAAAAAAACgAAANAlC60AAAAA0AMBLSbQJwEtEdAoAS0Q0AAkGgVFCgsEAwAAAAMAAAAAAAAACgAAANAlC60BAAAA0AMBLSbQJwEtEdAoAS0QmikqAUUAAQLQAAEtK9AAAS0s0AAeLS3QLi8aA9AwC60BAAAA0DELrSQAAADQMhmtANAzLxoD0DALrQIAAADQMQutBgAAANAyGa0A0DQZrQDQNRmtAA=="</v>
           </d>
         </o>
-        <v>{192FAD59-8248-4824-A8DE-9177C94C195A}</v>
+        <v>{535658C0-5AF5-460d-99A4-BFFB984A829A}</v>
         <o>
-          <v n="Name">"{192FAD59-8248-4824-A8DE-9177C94C195A}"</v>
+          <v n="Name">"{535658C0-5AF5-460d-99A4-BFFB984A829A}"</v>
           <d n="SubKeys" t="Hashtable" />
-          <d n="Values" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String" cvt="NewestVersionConstraintToSave">
+            <v>VersionConstraint</v>
+            <o />
+          </d>
+        </o>
+        <v>{8A0FB252-96EB-4DCC-A5B4-B4804D05E2D6}</v>
+        <o>
+          <v n="Name">"{8A0FB252-96EB-4DCC-A5B4-B4804D05E2D6}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
+            <v>WriteLineIDs</v>
+            <v>True</v>
+          </d>
+        </o>
+        <v>{8F99A816-E488-41E4-9FA3-846536012284}</v>
+        <o>
+          <v n="Name">"{8F99A816-E488-41E4-9FA3-846536012284}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String" cvt="String">
+            <v>DisabledWarningIds</v>
+            <v>5410</v>
+          </d>
+        </o>
+        <v>{E709B08B-B6E4-4966-8EED-D793A13114C6}</v>
+        <o>
+          <v n="Name">"{E709B08B-B6E4-4966-8EED-D793A13114C6}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
+            <v>Utf8Encoding</v>
+            <v>True</v>
+          </d>
         </o>
         <v>{F66C7017-BDD8-4114-926C-81D6D687E35F}</v>
         <o>
           <v n="Name">"{F66C7017-BDD8-4114-926C-81D6D687E35F}"</v>
           <d n="SubKeys" t="Hashtable" />
-          <d n="Values" t="Hashtable" />
-        </o>
-        <v>{246001F4-279D-43AC-B241-948EB31120E1}</v>
-        <o>
-          <v n="Name">"{246001F4-279D-43AC-B241-948EB31120E1}"</v>
-          <d n="SubKeys" t="Hashtable" />
-          <d n="Values" t="Hashtable" ckt="String">
-            <v>UnicodeStrings</v>
-            <v>false</v>
-            <v>GlobalVisuImageFilePath</v>
-            <v>"%APPLICATIONPATH%\"</v>
+          <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
+            <v>CalcActiveTransOnly</v>
+            <v>True</v>
           </d>
         </o>
       </d>
       <d n="Values" t="Hashtable" />
     </o>
-        </Data>
-        <TypeList>
-          <Type n="Boolean">System.Boolean</Type>
-          <Type n="Hashtable">System.Collections.Hashtable</Type>
-          <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
-          <Type n="String">System.String</Type>
-        </TypeList>
-      </XmlArchive>
+  </Data>
+  <TypeList>
+    <Type n="Boolean">System.Boolean</Type>
+    <Type n="Hashtable">System.Collections.Hashtable</Type>
+    <Type n="Int32">System.Int32</Type>
+    <Type n="NewestVersionConstraintToSave">{af9bafe2-ba31-4b15-a2b9-48a0f2cd09fb}</Type>
+    <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
+    <Type n="String">System.String</Type>
+  </TypeList>
+</XmlArchive>
     </PlcProjectOptions>
   </ProjectExtensions>
 </Project>

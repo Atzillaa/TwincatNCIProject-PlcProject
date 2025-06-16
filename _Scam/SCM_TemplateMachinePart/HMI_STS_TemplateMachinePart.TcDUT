@@ -1,33 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="HMI_STS_TemplateMachinePart" Id="{e8ac29d5-48cd-4002-9fea-0a1298a5a977}">
     <Declaration><![CDATA[{attribute 'analysis' := '-33'} //Only for template!!! >> deactivate error unused variable for next variable/struct
 TYPE HMI_STS_TemplateMachinePart :
 STRUCT
-	Step:HMI_STS_Step;										//Stepping controls
-
-	Empty:BOOL;												//Machinepart is empty
-	Full:BOOL;												//Machinepart is full
-	
-	PC_ProductPassedStopper:HMI_STS_Sensor;
-
-	Cil_Example: HMI_STS_Valve;
-	Cil_SlaveOfExample: HMI_STS_Valve;
-	VCG_Suckers: HMI_STS_VacuumGenerator;
-	Mtr_Example: HMI_STS_Motor;
-	Fdr_Example: HMI_STS_FDR_CTC300;
-	Srv_Example: HMI_STS_Servo;
-	Gantry_Example: HMI_STS_SingleBeltGantry;
-	SrvGripper_Example: HMI_STS_SRV_GEH6000;
-	Cam_OmronSmartCam: HMI_STS_OmronMicroScan;
-	Cam_OmronController: HMI_STS_OmronCamera;		
+	IsEmpty:BOOL;												//Machinepart is empty
+	OmronSmartCamLastResult:STRING;							//last result of the omrom smart camera
 
 	//Template: used in HMI for test/example pages >> remove
 	PB_MyButton:BOOL;										//pushbutton		>> used in HMI template for testing
-	PBsf_MySafeButton:HMI_PB_Safe;							//pushbutton safe 	>> used in HMI template for testing
-	RealValue:REAL;											//real value		>> used in HMI template for testing
-	TimeValue:TIME;											//time value		>> used in HMI template for testing
 	RealArr:ARRAY[0..10] OF REAL;							//arry of reals 	>> used in HMI template for testing
+	MyEnum:eTMP;											//enum type 		>> test casting issues in HMI
+	//used for services test
+	testBool:BOOL;
+	testInt:INT;
+	testReal:REAL;
 END_STRUCT
 END_TYPE
 ]]></Declaration>

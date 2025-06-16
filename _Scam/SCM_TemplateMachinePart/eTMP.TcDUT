@@ -1,24 +1,37 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="eTMP" Id="{943a76cc-00f3-4a33-846d-6a221247c14a}">
     <Declaration><![CDATA[//enum of states
-{attribute 'strict'}
 {attribute 'to_string'}
 {attribute 'qualified_only'}
 TYPE eTMP :
 (
 	TotalReset,
-	InitCil,
+	InitCyl,
 	InitSrv,
 	InitCamQuickFocus,
 	InitCamLoadJob,
 	Rest,
 	SrvPosStart,
-	SrvStartInterl,
+	SrvPosStartInterl,
 	SrvPosEnd,
 	SrvPosEndIntrl,
+	CylOut,
+	CylIn,
+	MtrStartFwd,
+	MtrStop,
+	MtrStartRev,
+	CamReady,
+	CamTrig,
 	MultiStepTest2,
-	MultiStepTest3
+	MultiStepTest3,
+	
+	//Example how to use the organiser semi-automode
+	//this is a special case in which the operator can choose with a button for example to let the machine do special things 
+	//like put servos+clinders automated in a position for configuring/measuring
+	
+	SemiAutoStart,
+	SemiAutoStop
 );
 END_TYPE
 

@@ -1,10 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="HMI_WRN_General" Id="{538c6224-d640-4cfe-b477-ff9c57848f92}">
     <Declaration><![CDATA[TYPE HMI_WRN_General :
 STRUCT
-	BknLibrary:HMI_WRN_BknLibrary;			//Boikon library
-	
 	CheckBoundsTriggered:BOOL;				//Warning general: array out of bounds detected
 END_STRUCT
 END_TYPE

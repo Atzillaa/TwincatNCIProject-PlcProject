@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="HMI_MAN_General" Id="{42d0f6ab-c743-04e2-2573-e219a6e2b60a}">
+    <Declaration><![CDATA[TYPE HMI_MAN_General :
+STRUCT
+	//note: manuals are normally used for controls, not for general
+	//PB_MyManualCommand:bool;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,224 +1,203 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <POU Name="SCM_TemplateClean" Id="{8bc014cc-36c6-4eaf-a98c-fc3a181393b9}" SpecialFunc="None">
     <Declaration><![CDATA[(*Clean SCAM template. 
-
-To be used as base for new projects.
-Make a copy and rename as defined in the control overview scheme
-
-Code conventions:
-	Var in/out/in_out
-		I_	>>block input
-		Q_	>>block output
-		for in+outputs:
-			+K	>>Command, usually connected to potential free contacts / activation of relais.  
-			+SN	>>Signal, communication with other blocks with interlocking
-				+SUP	>>to/from supply (previous machinepart in the productflow)
-				+DSC 	>>to/from discharge (next machinepart in the productflow)
-				*A command to another block has a response with a signal with the same name but appended with _OK
-					example: command= Q_SN_SUP_DeliverProduct response= I_SN_SUP_DeliverProduct_OK
-			+STS	>>Status, a general status output not meant as communication with interlocking 
-		
-		IO_	>>block in-/output
-			+HMI_ERR_[blockname] >> this struct holds all errors. !Errors should be SET, is is reset by I_OrgControl.Reset_K !In the HMI don't use errors for indicators etc
-			+HMI_WRN_[blockname] >> this struct holds all warning. Warnings can be A: / S: / R:
-			+HMI_STS_[blockname] >> this struct holds all statusses and possibly also buttons which are not for manual mode
-			+HMI_SP_[blockname]	 >> this struct holds all setpoints. !Only read in the plc!!! Setting on plc side will not save new value in the HMI recipe!
-			+HMI_MAN_[blockname] >> this struct holds all manual buttons. It is completely reset if the organiser leaves manual mode (only put buttons here, position/speed/etc can be put in statusses >>IO_STS.MAN_ABSPOS) 
-			+STS	>>status
+	To be used as base for new projects.
+	Make a copy and rename as defined in the control overview scheme
 	
-	Var internal
-		eS		>>main state
-		eE		>>exception state
-		CFG_	>>configuration set by FB_Init
-		HM_		>>block internal for a basetype variable
-		
-		fb	>>internal instance of another block
-			+Tmr_		>>Normal ton timer
-			+TmrOff_	>>tof timer
-			+Re			>>rising edge (R-Trig)
-			+Fe			>>falling edge (F-Trig)
-			+Cam		>>camera
-			+Cil		>>cilinder
-			+Pc			>>photocell
-			+Px			>>proximity sensor (capacitive/inductive)
-			+Ps			>>pressure sensor
-			+Mtr		>>Motor
-			+Fdr		>>Frequency drive
-			+Srv		>>servo
-			Example: fbSrv_LaserHeight / fbCil_TapeCutter / fbTmr_CutDelay
+	Code conventions:
+		Var in/out/in_out
+			I_	>>block input
+			Q_	>>block output
+			for in+outputs:
+				+K	>>Command, usually connected to potential free contacts / activation of relais.  
+				+SN	>>Signal, communication with other blocks with interlocking
+					+SUP	>>to/from supply (previous machinepart in the productflow)
+					+DSC 	>>to/from discharge (next machinepart in the productflow)
+					*A command to another block has a response with a signal with the same name but appended with _OK
+						example: command= Q_SN_SUP_DeliverProduct response= I_SN_SUP_DeliverProduct_OK
+				+STS	>>Status, a general status output not meant as communication with interlocking 
 			
-		*Logged variables do not have a defined prefix yet >> try to make them logical
-		if logging a position of fbSrv_HeightLaser then name it: fbSrv_HeightLaserPos
-			>> now in plc lab you will find the channel below the channel where its state is logged. 
-	
-	Activation/Method/Properties		
-		A_	>>Activation
-		M_	>>Method
-		P_	>>Property
+			IO_	>>block in-/output
+				+HMI_ERR_[blockname] >> this struct holds all errors. !Errors should be SET, is is reset by I_OrgControl.Reset_K !In the HMI don't use errors for indicators etc
+				+HMI_WRN_[blockname] >> this struct holds all warning. Warnings can be A: / S: / R:
+				+HMI_STS_[blockname] >> this struct holds all statusses and possibly also buttons which are not for manual mode
+				+HMI_SP_[blockname]	 >> this struct holds all setpoints. !Only read in the plc!!! Setting on plc side will not save new value in the HMI recipe!
+				+HMI_MAN_[blockname] >> this struct holds all manual buttons. It is completely reset if the organiser leaves manual mode (only put buttons here, position/speed/etc can be put in statusses >>IO_STS.MAN_ABSPOS) 
+				+STS	>>status
 		
-	Conditions
-		don't mix OR / AND without paranthesis (you will get bitten by the fact there is an order of precedence otherwise)
-		after a paranthesis add / remove a TAB when opening / closing  
-		after a condition add a ENTER
-		Example:
-		IF(	myBool1
-			AND(	mybool2
-					OR mybool3)
-			AND mybool4)
-		THEN
-			....
-		END_IF
+		Var internal
+			eS		>>main state
+			eE		>>exception state
+			CFG_	>>configuration set by FB_Init
+			HM_		>>block internal for a basetype variable
+			
+		Instance declarations
+			Tmr_	>>TON timer
+			TmrOff_	>>TOF timer
+			Re		>>rising edge (R-Trig)
+			Fe		>>falling edge (F-Trig)
+			Cam		>>camera
+			Cyl		>>cylinder (cntrl_Valve)
+			Vlv		>>valve (cntrl_Valve)
+			Mtr		>>Motor
+			Fdr		>>Frequency drive
+			Srv		>>servo
+			Vcg		>>Vacuum generator
+			//sensors
+			Pc		>>photocell
+			Px		>>proximity sensor (capacitive/inductive)
+			Ps		>>pressure sensor
+			Rs		>>reed switch
+					
+			Example: Srv_LaserHeight / Cyl_TapeCutter / Tmr_CutDelay
+				
+			*Logged variables do not have a defined prefix yet >> try to make them logical
+			if logging a position of Srv_HeightLaser then name it: Srv_HeightLaserPos
+				>> now in plc lab you will find the channel below the channel where its state is logged. 
 		
-	Arrays/For-loops
-		define arrays with constants: 
-			HM_FifoProducts: array [0..Glcn.MaxIndexFifoProducts] of ProductInfo
-		if you need to loop this array then use this constant:
-			FOR HM_Index:=0 TO Glcn.MaxIndexFifoProducts BY 1 
-			DO
-				..
-			END_FOR
-	
-Changes
-	2019-12 HP
-	-New tc3 template
-	DateTime.Now() HP
-	-this blocks keeps being updated with new blocks/styles/etc
+		Activation/Method/Properties		
+			A_	>>Activation
+			M_	>>Method
+			P_	>>Property
+			
+		Conditions
+			don't mix OR / AND without paranthesis (you will get bitten by the fact there is an order of precedence otherwise)
+			after a paranthesis add / remove a TAB when opening / closing  
+			after a condition add a ENTER
+			Example:
+			IF(	myBool1
+				AND(	mybool2
+						OR mybool3)
+				AND mybool4)
+			THEN
+				....
+			END_IF
+			
+		Arrays/For-loops
+			define arrays with constants: 
+				HM_FifoProducts: array [0..Glcn.MaxIndexFifoProducts] of ProductInfo
+			if you need to loop this array then use this constant:
+				FOR HM_Index:=0 TO Glcn.MaxIndexFifoProducts BY 1 
+				DO
+					..
+				END_FOR
+		
+	Changes
+		2019-12 HP
+		-New tc3 template
+		DateTime.Now() HP
+		-this blocks keeps being updated with new blocks/styles/etc
+		2024-02 HP
+		-new hmi struct
 *)
 
-FUNCTION_BLOCK SCM_TemplateClean
+FUNCTION_BLOCK SCM_TemplateClean IMPLEMENTS ItfEnumConverter
 
 VAR CONSTANT
 END_VAR
 
 VAR_INPUT
-	I_OrgControl:OrgControl;						//Organiser control signals
-	I_K_ES_OK:BOOL;									//Signal emergency stop ok >> used for controls as extra safety to stop them no matter organiser state
-	I_K_ExternalError: BOOL;						//Signal external error >> used to put this scam into exception. Usually only connected to a general error but can be connected to another scam as well
-	I_STS_SUP_Empty:BOOL;							//Status supply is empty >> used to detect if this block has run empty as well (sup_empty + conveyor on for x time >> this part is empty)
+	I_Organiser: ItfOrgControl;								//Organiser control bits
+	//todo template>> remove if not needed
+	//I_SP_GeneralShared:REFERENCE TO HMI_SP_GeneralShared; 	//General shared setpoints for multiple blocks
+	
+	I_K_ES_OK:BOOL;											//Signal emergency stop ok >> used for controls as extra safety to stop them no matter organiser state
+	I_K_ExternalError: BOOL;								//Signal external error >> used to put this scam into exception. Usually only connected to a general error but can be connected to another scam as well
+	I_STS_SUP_Empty:BOOL;									//Status supply is empty >> used to detect if this block has run empty as well (sup_empty + conveyor on for x time >> this part is empty)
 END_VAR
 
 VAR_OUTPUT
-	Q_ProgStatus:ProgStatus;						//Program status bits
 	Q_STS_Empty:BOOL;								//Status this part is empty (go in energy saving / standby mode, stop conveyors etc)
 END_VAR
 
-VAR_IN_OUT
-	//<Optional> remove when not needed
-		IO_SP_Common:SP_Common;						//Common setpoints for multiple blocks>> link to HMI_Setpoints.General.Common
-	//\>
-	IO_MAN: HMI_MAN_TemplateClean; 					//HMI manual bits
-	IO_SP: HMI_SP_TemplateClean;					//HMI setpoints
-	IO_STS: HMI_STS_TemplateClean;					//HMI statusses and controls
-	IO_WRN: HMI_WRN_TemplateClean;					//HMI Warnings
-	IO_ERR: HMI_ERR_TemplateClean; 					//HMI Errors
-END_VAR
-
 VAR
-(*steps*)
-	eS: eTpc; //Note: an external type is used because {attribute 'to_string'} only works there and we need this to log the string value of the state
+	(*Configuration*)	
 
-(*steps exceptions*)
-	eE :
-	(
-	U_0,U1_0,U1_1,U1_2
-	);
-	
-(*Internals*)
-	HM_Empty:BOOL;										//Internal machinepart is empty
-	
-(*timers*)
-	Tmr_Sim_StateTime:ton;								//Timer used for simulation >> counts elapsed time in state
+	(*Logged variables*)
 
-(*called fb data*)
-	fbStep:utl_Step;									//used for step locking
-
-(*Logged variables*)
+	(*Internals*)
+	HMI:HMI_TemplateClean;					//All Hmi variables
+	eS: eTpc; 								//Main state program
+	eE:	(U_0,U1_0,U1_1,U1_2	);				//Main state exceptions
+	HM_ProgStatus:ProgStatus;				//Program general status bits	
+	HM_LastTicksStateRest:ULINT;			//System ticks value last time left rest state
+	HM_Empty:BOOL;							//Internal machinepart is empty
+		
+	(*Instances*)
+	Step:utl_Step;							//used for state transitioning
+	//Cyl_InfStopper:....					//Cylinder infeed stopper
 	
-(*IO*)
+	(*Inputs / Outputs*)	
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[(*
 	Machinepart not enabled >> note: optional remove setpoint and this code if not needed!
 *)
 	//If this part is not enabled >> reset errors/warnings/outputs
-	IF (	NOT IO_SP.CFG_MachinePartEnabled)
+	IF (	NOT HMI.SP.MachinePartEnabled)
 	THEN
 		//if reset command >> reset errors / warnings (in case an error was set when the machine was still enabled)
-		IF(	I_OrgControl.Reset_K
-			OR I_OrgControl.TotalReset_K)
+		IF(	I_Organiser.Reset_K
+			OR I_Organiser.TotalReset_K)
 		THEN
-			//reset errors and warnings
-			utl_Any_Reset(I_Data:= IO_ERR);
-			utl_Any_Reset(I_Data:= IO_WRN);
+			//Make sure output of devices are turned off.
+			A_StepActivationsInit();
+			
+			//reset HMI variables
+			utl_Any_Reset(I_Data:= HMI.ERR);
+			utl_Any_Reset(I_Data:= HMI.WRN);
 			//make the organiser happy
-			Q_ProgStatus.Prog_Error := FALSE;
-			Q_ProgStatus.Prog_Exception := FALSE;
+			HM_ProgStatus.Prog_Error := FALSE;
+			HM_ProgStatus.Prog_Exception := FALSE;
 		END_IF
 		
-		//Make sure output of devices are turned off.
-		//easy way to do this, is to call activations with emergency stop is false and state = TotalReset (should turn all things off)
-		I_K_ES_OK := FALSE;
-		eS:=eTpc.TotalReset;
-		A_StepActivations();
-	
+		eS:=eTpc.TotalReset_Example;
+		
 		(*bits needed to keep the line running if a part midsection is disabled*)
-		Q_ProgStatus.Prog_Rest := TRUE;
+		HM_ProgStatus.Prog_Rest := TRUE;
 		Q_STS_Empty := I_STS_SUP_Empty;
 		RETURN;
 	END_IF
 
 (*
-	Detection program in Error
-*) 
-Q_ProgStatus.Prog_Error := (	(utl_Any_FindFirstNonZeroByte(I_Data:=IO_ERR, I_Offset:=0) >= 0)
-								OR NOT I_K_ES_OK
-								OR I_K_ExternalError);
-								
-(*
-	Reset HMI errors (must be before where errors are set and after detection program in error) 
+	Update HMI variables
+	Check if an error is active >> set Q_ProgStatus.Prog_Errror
 *)
-IF( I_OrgControl.Reset_K) 
-THEN 
-	utl_Any_Reset(I_Data:= IO_ERR);
-END_IF
+	HMI.M_Update(	I_OrgControl:= I_Organiser, 	//used for reset manuals/errors commands
+					I_HMI_Parent := 0, 							//This is top level, no error propagation
+					I_ERR:= HMI.ERR,							//The update function will check for error changes (signal to the hmi to update errors) + reset errors
+					I_WRN:= HMI.WRN,							//The update function will check for warning changes (signal to the hmi to update errors)
+					I_MAN:= HMI.MAN);							//The update function will reset manuals @ organiser request
 
-(*
-	Reset HMI manuals
-*)
-IF( I_OrgControl.ResetManuals_K)
-THEN
-	utl_Any_Reset(I_Data:=(IO_MAN));
-END_IF
+(*	Simulation*)
+	//if simulation active >> ..
+	IF(Glbl.Sim_MyMachinePart) THEN A_Simulation();END_IF 
 
-(*
-	Exceptions
-*)
-A_Exceptions();
+(*	Exceptions & step-controller*)
+	A_Exceptions();
 
-(*
-	Step transitions
-*)
-//if not (exception or debugging hold step active) >> execute step transitions
-IF ( 	NOT Q_ProgStatus.Prog_Exception)
-THEN 
-	A_StepTransitions();
-END_IF
+(*	Step transitions*)
+	//if not in exception >> execute step transitions
+	IF ( 	NOT HM_ProgStatus.Prog_Exception)
+	THEN 
+		A_StepTransitions();
+	END_IF
 
-(*
-	Activations
-*)
-A_StepActivations();
-
-(*
-	Simulation
-*)
-//if simulation active >> ..
-IF(Glbl.Sim_MyMachinePart) THEN A_Simulation();END_IF ]]></ST>
+(*	Activations*)
+	A_StepActivations(); ]]></ST>
     </Implementation>
     <Action Name="A_Exceptions" Id="{83afa6e6-ad6d-0ee1-2c0b-705a40832f0d}">
       <Implementation>
-        <ST><![CDATA[(*Exceptions
+        <ST><![CDATA[(* State transition controller
+	Handles multistep + step hold + statusses for hmi + logging*) 
+		//>>must be before all method calls, since the input arguments are used
+	Step(
+		I_StepEnumConverter := THIS^,
+		I_OrgControl := I_Organiser);
+
+
+(*Exceptions
 	Here exeptions are handled.
 	*most basic version:
 		Rest U_0 := Q_ProgStatus.Prog_Exception:=false
@@ -249,13 +228,13 @@ CASE eE OF
 	//rest
 	U_0:
 		//if program in error >> to error state
-		IF(	Q_ProgStatus.Prog_Error
-			AND NOT I_OrgControl.TotalReset_K)
+		IF(	HM_ProgStatus.Prog_Error
+			AND NOT I_Organiser.TotalReset_K)
 		THEN
 			//>>
 			eE := U1_0;
 		//else if total reset command >> to total reset state
-		ELSIF(	I_OrgControl.TotalReset_K)
+		ELSIF(	I_Organiser.TotalReset_K)
 		THEN
 			//>>
 			eE := U1_1;
@@ -264,14 +243,14 @@ CASE eE OF
 	//error
 	U1_0:
 		//if total reset command >> to total reset state
-		IF(	I_OrgControl.TotalReset_K)
+		IF(	I_Organiser.TotalReset_K)
 		THEN
 			//>>
 			eE := U1_1;
 			
 		//else if no error active and organiser back in an automatic state
-		ELSIF(	NOT Q_ProgStatus.Prog_Error
-				AND I_OrgControl.EnableDevices_K)
+		ELSIF(	NOT HM_ProgStatus.Prog_Error
+				AND I_Organiser.EnableDevices_K)
 		THEN
 			//>>
 			eE := U1_2;
@@ -280,18 +259,16 @@ CASE eE OF
 	//Total Reset
 	U1_1:
  		//if total reset command dropped >> Reset program data and to unfreeze state
-		IF(	NOT I_OrgControl.TotalReset_K)
+		IF(	NOT I_Organiser.TotalReset_K)
 		THEN
 			//Total reset main program
-			fbStep.M_Step(
-				IO_State:= eS, 
-				I_NewStep:= eTMP.TotalReset,
-				I_NewStepName := TO_STRING(eTMP.TotalReset), 
+			Step.M_Step(
+				I_NewStep:= eTpc.TotalReset_Example,
 				I_StepCanBeHeld:= FALSE);
 			
 			//disable multistepping for 1 round
 			{warning disable C0139}
-			fbStep.P_IsMultiStepRequired;
+			Step.P_IsMultiStepRequired;
 			
 			//>>
 			eE := U_0;
@@ -306,7 +283,7 @@ CASE eE OF
 		eE := U_0;
 END_CASE
 //Detection program in exception
-Q_ProgStatus.Prog_Exception := (eE > U_0);]]></ST>
+HM_ProgStatus.Prog_Exception := (eE > U_0);]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_Simulation" Id="{2a457d04-c313-40a1-bc63-270735b9d5ac}">
@@ -320,69 +297,65 @@ Q_ProgStatus.Prog_Exception := (eE > U_0);]]></ST>
 	
 *)
 
-//Initialise activations, which are controlled by the steps
+//Initialise activations, which are controlled by the simulation steps
 //fbPC_Example.I_SimulateState := eSensorState.Undetected;
 
 
 (*Step activations*)
 CASE eS OF
-	eTpc.TotalReset:
+	eTpc.TotalReset_Example:
 	;
 
-	eTpc.Rest:
-	;
-		//Simulate sensor on after delay
-		//IF(Tmr_Sim_StateTime.ET > T#33MS) THEN fbPC_Example.I_SimulateState := eSensorState.Detected; END_IF
-
-END_CASE	
-
-
-//This timer keeps track of the step duration. This value can be used to simulate delays for xxx.I_SimulateXXX inputs of blocks
-//See above example for the photocel simulation
-Tmr_Sim_StateTime(	IN:= NOT fbStep.Q_P_Stepped,
-					PT:= T#1D ); ]]></ST>
+	eTpc.Rest_Example:
+		//Example simulate sensor ON immediatly
+			//fbPC_Example.I_SimulateState := eSensorState.Detected;
+		
+		//Example simulate sensor ON in a step after a delay
+			//IF(Step.P_StepTime > T#33MS) THEN fbPC_Example.I_SimulateState := eSensorState.Detected; END_IF
+		
+END_CASE	]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_StepActivations" Id="{67496d37-6410-4af1-b602-edf8aa745e2f}">
       <Implementation>
         <ST><![CDATA[(*How it works:
-First activations which have to be done by a step are initialised to false
-		//section initialisation
-		fbSrv_Belt.I_K_Auto_Absolute := false;
+	First activations which have to be done by a step are initialised to false
+			//section initialisation
+			fbSrv_Belt.I_K_PosAbsolute := false;
+		
+	Then set activations for devices controlled by steps, to true:
+		CASE eS OF
+			eTMP.InitCyl:
+				Cyl_Example.I_K_AutoIn := TRUE;
+			...
+		END_CASE
+		
+		
+	At last activations/blocks calls that always have to be done are executed
 	
-Then set activations for devices controlled by steps, to true:
-	CASE eS OF
-		eTMP.InitCil:
-			fbCil_Example.I_K_AutoIn := TRUE;
-		...
-	END_CASE
-	
-	
-At last activations/blocks calls that always have to be done are executed
-
-	IO_ERR.ErrorThatIsAlwaysActive S= myCondition;	
-	..
-	fbSrv_Belt(
-		I_EN0:= TRUE,
-		...skipping a few rows here
-		//I_K_Auto_Homing:= ,				Note: activation controlled by state
-		I_K_Auto_Velocity:= FALSE,
-		I_SPD_Auto_Velocity:= 0,
-		//I_K_Auto_Absolute:= ,				Note: activation controlled by state
-		//I_POS_Auto_Absolute:= ,			Note: activation controlled by state
-		..skipping a few ros here
-		IO_MAN:= IO_MAN.Srv_Conveyor,
-		IO_SP:= IO_SP.Srv_Conveyor,
-		IO_STS:= IO_STS.Srv_Conveyor,
-		IO_WRN:= IO_WRN.Srv_Conveyor,
-		IO_ERR:= IO_ERR.Srv_Conveyor);
-	
-	
-	The advantages are:
-		-much easier to see what is activated in each step + easier to change
-		-less chance to create bugs, bugs are easier spotted
-		-it saves a lot of processor usage in comparison to the old method:
-			Q_K_SomeOutput := eStep=S1 OR eStep=S2 OR ....etc etc)
+		IO_ERR.ErrorThatIsAlwaysActive S= myCondition;	
+		..
+		fbSrv_Belt(
+			I_EN0:= TRUE,
+			...skipping a few rows here
+			//I_K_Auto_Homing:= ,				Note: activation controlled by state
+			I_K_Auto_Velocity:= FALSE,
+			I_SPD_Auto_Velocity:= 0,
+			//I_K_Auto_Absolute:= ,				Note: activation controlled by state
+			//I_POS_Auto_Absolute:= ,			Note: activation controlled by state
+			..skipping a few ros here
+			IO_MAN:= IO_MAN.Srv_Conveyor,
+			IO_SP:= IO_SP.Srv_Conveyor,
+			IO_STS:= IO_STS.Srv_Conveyor,
+			IO_WRN:= IO_WRN.Srv_Conveyor,
+			IO_ERR:= IO_ERR.Srv_Conveyor);
+		
+		
+		The advantages are:
+			-much easier to see what is activated in each step + easier to change
+			-less chance to create bugs, bugs are easier spotted
+			-it saves a lot of processor usage in comparison to the old method:
+				Q_K_SomeOutput := eStep=S1 OR eStep=S2 OR ....etc etc)
 *)
 
 (*Initialise step activated activations*)
@@ -390,20 +363,20 @@ At last activations/blocks calls that always have to be done are executed
 
 (*Activations by step*)
 	CASE eS OF
-		eTpc.TotalReset:
+		eTpc.TotalReset_Example:
 			(*Controls*)
 			(*Internals*)
 			(*Warnings/Errors*)
 	
 	
-		eTpc.Initialise:
+		eTpc.Initialise_Example:
 			(*Controls*)
 			(*Internals*)
 			(*Warnings/Errors*)
 	
-		eTpc.Rest:
+		eTpc.Rest_Example:
 			(*Controls*)
-				Q_ProgStatus.Prog_Rest := TRUE;
+				HM_ProgStatus.Prog_Rest := TRUE;
 			(*Internals*)
 			(*Warnings/Errors*)
 			
@@ -418,53 +391,61 @@ At last activations/blocks calls that always have to be done are executed
 
 (*Activations always*)
 
-(*Default positions for cilinders 
-	*If you don't want to specify in each step the IN OR out activation for a cilinder
+(*Default positions for cylinders 
+	*If you don't want to specify in each step the IN OR out activation for a cylinder
 	then you could do it like here:
 		In := NOT Out
 		>>now only the Out activation has to be programmed in the activations-case
 		
-	*However it is more readable if you don't use this way of activating cilinders and just specify in each step in or out
+	*However it is more readable if you don't use this way of activating cylinders and just specify in each step in or out
 *)
-	IF(NOT (eS = eTpc.TotalReset)) //if you need for cilinders to be activated in a certain way during init, this might need to be changed!
+	IF(NOT (eS = eTpc.TotalReset_Example))
 	THEN
-		//fbCil_Example.I_K_AutoOut := NOT fbCil_Example.I_K_AutoIn; 
+		//Cyl_Example.I_K_AutoOut := NOT Cyl_Example.I_K_AutoIn; 
 	END_IF
 	
 (*Warnings/Statusses*)
+	//update organiser with local status
+	HM_ProgStatus.Prog_Error :=	//emergencystop not ok
+						NOT I_K_ES_OK
+						//optional >> request go to error state from external
+						OR I_K_ExternalError
+						//error active in this block or one of the linked children
+						OR HMI.P_STS_InError;
+	I_Organiser.M_UpdateProgStatus(HM_ProgStatus);
+	
 	Q_STS_Empty := HM_Empty;
-	IO_STS.Empty := HM_Empty; //can be used to indicate on the HMI this machinepart is empty
+	HMI.STS.IsEmpty := HM_Empty; //can be used to indicate on the HMI this machinepart is empty
 	
 	//TODO TEMPLATE
 	//usually only done when connected to an external machine (customer) >> remove warning if not needed
-	IO_WRN.NotRdyRcv_Discharge := 	I_OrgControl.EnableDevices_K
+	HMI.WRN.NotRdyRcv_Discharge := 	I_Organiser.EnableDevices_K
 									AND FALSE;
-	IO_WRN.Standby := 	I_OrgControl.EnableDevices_K
+	HMI.WRN.Standby := 	I_Organiser.EnableDevices_K
 						AND HM_Empty;
 (*Internals*)
 	//Reset empty status
 	IF (	NOT I_STS_SUP_Empty
-			AND I_OrgControl.Auto_K)
+			AND I_Organiser.Auto_K)
 	THEN
 		HM_Empty := FALSE;
 	END_IF
 
 (*Timers*)
 
+
 (*Instance calls*)		
 		
-	//fbCil_....
+	//Cyl_....
 
-	//fbSrv_....	
+	//Srv_....	
 	
-	//etc
-	
-		]]></ST>
+	//etc]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_StepActivationsInit" Id="{e2474eae-d283-0ec5-3ed7-e90d9e6b223c}">
       <Implementation>
-        <ST><![CDATA[Q_ProgStatus.Prog_Rest := FALSE;]]></ST>
+        <ST><![CDATA[HM_ProgStatus.Prog_Rest := FALSE;]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_StepTransitions" Id="{59016bf7-b834-0a7f-0314-510f2d30212c}">
@@ -487,61 +468,84 @@ At last activations/blocks calls that always have to be done are executed
 (*Main program steps*)
 
 //if stepping not locked, by steplock mode >> can be toggled in HMI to lock certain steps for commissioning/debugging
-IF( NOT fbStep.Q_K_LockSteps)
+IF( NOT Step.Q_K_LockSteps)
 THEN
 //Repeat until conditions to step to next state are false OR looped already twice (normally programs don't loop multiple times!)
 REPEAT 
 	CASE eS OF
-		eTpc.TotalReset:
+		eTpc.TotalReset_Example:
 			//if initialise command from the organiser >> start initialisation
-			IF ( I_OrgControl.Init_K)
+			IF ( I_Organiser.Init_K)
 			THEN
-				//TODO Template remove (this line prevents an error unused variables)
-				IO_SP_Common.ProductHeight:=IO_SP_Common.ProductHeight;
 				//>>
-				fbStep.M_Step(
-					IO_State:= eS, 
-					I_NewStep:= eTpc.Initialise,
-					I_NewStepName := TO_STRING(eTpc.Initialise), 
-					I_StepCanBeHeld:= FALSE);
+				Step.M_Step(
+					I_NewStep:= eTpc.Initialise_Example,
+					//Optional: argument to log extra info for this step transition
+					I_NewStepLogInfo:= CONCAT('Start command at time:', SYSTEMTIME_TO_STRING(BknGlbl.LocalSystemTime)),
+					//>>@ true & HMI-stepmode is activated, then the next state will be locked until you press the button release step on the HMI (used for debugging / commissioning
+					//!Do not enable for states in which things are cooking: (heater enabled / motor running / etc) or at least consider carefully potential dangers.
+					I_StepCanBeHeld:= TRUE,
+					//Optional: >> the repeat around this CASE-statement will NOT execute, the next step will take at least 1 cycle == activations for that step are executed 	
+					I_BlockMultiStep:=TRUE); 
 			END_IF
-
 		
-		eTpc.Initialise:
+		eTpc.Initialise_Example:
 			IF( FALSE) 
 			THEN
 				//>>
-				fbStep.M_Step(
-					IO_State:= eS, 
-					I_NewStep:= eTpc.Rest,
-					I_NewStepName := TO_STRING(eTpc.Rest), 
-					I_StepCanBeHeld:= FALSE);
+				Step.M_Step(
+					I_NewStep:= eTpc.Rest_Example,
+					I_StepCanBeHeld:= TRUE);
 			END_IF
 
-		eTpc.Rest: 
-			IF( I_OrgControl.Auto_K
+		eTpc.Rest_Example: 
+			IF( I_Organiser.Auto_K
 				AND FALSE)
 			THEN
 				//>>
-				//fbStep.M_Step(...
+				Step.M_Step(
+					I_NewStep:= eTpc.Rest_Example,
+					//just an example what you can do (add state info for logging purposes), this argument is optional
+					I_NewStepLogInfo:= Concat('Last cycle time(s):', TO_STRING(TO_REAL(BknGlbl.SystemTimeInTicks - HM_LastTicksStateRest)/10000000)),
+					I_StepCanBeHeld:= FALSE);
+				HM_LastTicksStateRest := BknGlbl.SystemTimeInTicks;
 			END_IF
 
-	//unkown state, should never happen				
+	//unkown state, should never happen. Best to not do an autorecovery, just let it hang			
 	ELSE
-		utl_SystemMessage(I_Message:='prog error step missing');
+		utl_SystemMessageWithLogging(I_Message:='prog error step missing');
 	END_CASE 
 
 //until flag to multistep is false 
-UNTIL(NOT fbStep.P_IsMultiStepRequired)
+UNTIL(NOT Step.P_IsMultiStepRequired)
 END_REPEAT
-END_IF
-
-//State transition controller
-fbStep(
-	IO_OrgControl := I_OrgControl,
-	IO_STS:= IO_STS.Step, 
-	IO_WRN:= IO_WRN.Step);]]></ST>
+END_IF]]></ST>
       </Implementation>
     </Action>
+    <Property Name="P_EnumAsInt" Id="{8ff0248d-e32c-40fb-8bc5-640884d866fb}">
+      <Declaration><![CDATA[PROPERTY P_EnumAsInt : INT]]></Declaration>
+      <Get Name="Get" Id="{3ec08425-d81e-4c01-a15b-30bbe6a65652}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_EnumAsInt := eS;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{f1036c59-cf36-4c75-a772-71f9bc2ca46f}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[eS := P_EnumAsInt;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_EnumAsString" Id="{c55e0e27-dd05-42be-9260-43fe3c834889}">
+      <Declaration><![CDATA[PROPERTY P_EnumAsString : STRING(40)
+]]></Declaration>
+      <Get Name="Get" Id="{132aa2c6-aa24-488a-8da5-dd103f153ba9}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_EnumAsString := TO_STRING(eS);]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
   </POU>
 </TcPlcObject>

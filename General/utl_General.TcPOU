@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <POU Name="utl_General" Id="{2aa10803-ea27-477c-8c0e-b3facd0323fc}" SpecialFunc="None">
     <Declaration><![CDATA[(* 	General I/O handling 
 
@@ -9,24 +9,28 @@
 		Over time, more and more got included in the boikonlibrary so this block gets cleaner.
 		
 		Changes that might be needed:
-		*As the block is now, it is assumed that with a set of general buttons everything needs to be started >> I_PB_xxxxAll inputs. Change to your projects needs
+		*As the block is now, it is assumed that with a set of general buttons everything needs to be started >> I_PB_xxxx inputs. Change to your projects needs
 		*If your machine is divided into multiple subsections which have their own buttons / safety zones then I recommend to:
 			-make unique general fb's per section.
 				*General  				>calls the boikon library and handles stuff that is needed for all sections (if there are no xxx_all buttons than remove them here)
-				*General_Section 1		>handles buttons / safety zone for this section (does NOT call the boikonLibrary! that should only be done once)
+				*General_ZoneX			>handles buttons / safety zone for this section (does NOT call the boikonLibrary! that should only be done once)
 				*...
 		-I've added a TotalResetAll output to this general, the idea is that sometimes you need all organisers to be total reset at once. 
 		Especially if blocks are communicating with each other with interlocks this is needed (for those to be total reset together). 
 		In that case use this signal for those organisers + Hide the total reset button for these organisers in the HMI (the organiser viewscreen has a property for this) so the single organiser total reset can't be done.
 
-		*2023-09-14 HP
-		-big update happened, if things are missing / not working >> contact me
+	Versions
+		2023-09-14 HP
+			-big update happened, if things are missing / not working >> contact me
+		2024-02 HP
+			-another big update, new hmi structs + improvements
+			-addec cntrl_SafetyZone
+			-added cntrl_CxPowerSupply
+		2025-05 HP
+			-V0.7 another round of big updates
 		
 		
 	Usage:
-		Anything that does not belong to a specific machine part, can be implemented in this block.
-		For example pushbuttons start/stop/reset whole machine / safety / boikonLibrary / ...
-		
 		Use Q_SN_Start/Stop/Reset/TotalReset-All signals for the organisers that should be started whith the buttons defined here
 		Use Q_SN_ES_Zone1_OK for the scams that belong to this zone
 		Use Q_SN_ERR_General for the organisers (high if 1 of the errors defined here is set >>safety/air/ups/...)
@@ -50,255 +54,251 @@ VAR_OUTPUT
 	Q_SN_TotalResetAll:BOOL;
 END_VAR
 
-VAR_IN_OUT
-	IO_ERR: HMI_ERR_General;					//Errors (for HMI)
-	IO_WRN: HMI_WRN_General;					//Warnings (for HMI)
-	IO_SP: HMI_SP_General;						//HMI setpoints
-	IO_STS: HMI_STS_General;					//HMI statusses and controls
-END_VAR
-
 VAR
+(*Configuration*)	
+
+(*Logged variables*)
+
 (*Internals*)
 
-(*Instances for programs*)
-	//Total reset for all blocks connected to the general for this zone
-	fbPbSf_TotalResetAll:utl_HMI_PB_Safe;		//Pushbutton-safe for HMI totalreset button
-	//This block handles the libary functionality logging / setpoint saving / update errors HMI / update BknGlbl.xxxx (blinkers / info / ....)
-	// only have 1 instance per task! (in case there are multiple generals, don't create more instances of the boikon library!)	
-	fbBknLibrary:utl_BknLibrary(				//Handles library functionality (BknGlb-variables + logging)
-		NrOfBytesToProcesPerCycle:=33,			//error/setpoint change detection, how many bytes per cycle to check.
-		EnableCpuLoadWarning:=TRUE);			//dis/enable load warning
+(*Instances*)
+	HMI:HMI_General;						//All HMI related variables
+	OrganiserGeneral:cntrl_OrganiserFake;	//Fake organiser for HMI reset signals etc
+	GetCurrentTaskInfo:GETCURTASKINDEX;		//Get plc task information
+	PbSf_TotalResetAll:utl_PB_HmiSafe;		//Pushbutton-safe for HMI totalreset button >> total reset all programs of this safety zone (connect to correct organisers!)
+	BknLibrary:utl_BknLibrary(				//Handles library functionality (BknGlb-variables + logging)
+		EnableTaskCycleTimeExceedWarning:=TRUE);			//dis/enable cycletime exceeding warnings (you really shouldn't...)
 
-	//Manage ethercat devices
+	//TODO TEMPLATE >>
+		//Remove if you don't have a cx2100-xxx module
+		//Configure correctly if it has an ups and set the correct address (hw-config, second tab esb-device)
+		//NOTE: with button ENTER it will show the ip address of the first adapter then with UP/DOWN you can cycle through the adapters
+		//twincat on BSD>> before it worked I had to "disable virtual device names" in the hw-config for the usb host device
+	CxPowerSupply: cntrl_CxPowerSupply(
+					Options:= 0,
+					CxAddress:= 16#7004);
+
 	//TODO TEMPLATE >> 
 		//Make 1 instance per ethercat master
 		//per ethercat master device:
 		//Link "I_AmsNetID" to the master ethercat device. If this is not linked, then the block is disabled.
 		//if you need delayed auto start of the ethercat master then make this setting in the hw-config:
 		//	master device/ethercat/advanced settings/state machine/master settings/startup state >> set to init
-	fbEthercatManager:cntrl_EthercatManager(DelayedStartMaster:= TRUE);
+	EthercatManager:cntrl_EthercatManager(DelayedStartMaster:= TRUE);	//Ethercat devices manager
 	
-	//TODO TEMPLATE >> adapt safety template as needed + rename + add as many zones as you need (hint: use 1 general/zone)	
-	fbSafetyZone1:cntrl_SafetyZone1; //note: this block extends the basic mandatory functionality. The extension (located in your project) has to be adapted as needed
+	//TODO TEMPLATE 
+		//>> adapt safety template as needed + rename + add as many zones as you need (hint: use 1 general/zone)	
+	SafetyZone1:cntrl_SafetyZone1; //note: this block extends the basic mandatory functionality. The extension (located in your project) has to be adapted as needed
+	
+	//TODO TEMPLATE 
+		//make syncunits for groups of terminals which belongs together (all terminals behind a EK1122)
+		//make an instance per syncunit here and hw-link to the wc-state of the syncunit group 
+	I_WcState_MCC: cntrl_SyncUnitMonitor;			//SyncUnitGroup for main cabinet 
+	I_WcState_RIO1: cntrl_SyncUnitMonitor;			//SyncUnitGroup for RIO1
+	I_WcState_RIO1Servo1: cntrl_SyncUnitMonitor;	//SyncUnitGroup for servo group in RIO1
+	I_WcState_SafetyZone1: cntrl_SyncUnitMonitor;	//SyncUnitGroup for safety zone1
+	
 
-(*Timers*)
-
+	I_PS_AirpressureOk: cntrl_InputHmiStsErr;		//Pressure switch airpressure ok 
+	I_UPS_InBatteryMode: cntrl_InputHmiStsErr;		//UPS running on battery
+	I_Pb_StartAll: cntrl_Input;						//Pushbutton start that should start the whole machine. If a machine has different zones, then create per zone a general >> example djura subs
+	I_PbNc_StopAll:cntrl_Input;						//Pushbutton stop normally closed that should start the whole machine. If a machine has different zones, then create per zone a general >> example djura subs
+	I_Pb_ResetAll: cntrl_Input;						//Pushbutton reset that should start the whole machine. IF a machine has different zones, THEN create per zone a general >> example djura subs
 	
-(*IO*)
-	(*WCSTATES for monitoring the status of the ethercat bus
-		TODO TEMPLATE Make syncunit groups for all of your IO 
-			>>usually 1 per cabinet, but if an ethercat device can be turned of and this should not cause issues to other IO then this device needs a seperate syncunit group
-			>>make seperate groups for safety cards per zone
-		Add for each syncgroup a variable which is linked to the  hwconfig/ethercat device/syncunits/groupxxx
-		Add HMI errors and link in general.HMI
-	*)		
-	I_WcState_MCC01: cntrl_Signal;				//WcState syncunit for cabinet x *Note>>Change name to (include) cabinet number
-	I_WcState_RIO01: cntrl_Signal;				//WcState field module remote IO *Note>>Change name to (include) component ID
-	I_WcState_SafetyZone1: cntrl_Signal;		//WcState safety zone1
 	
-	//general IO
-	I_PS_AirpressureOk: cntrl_Signal;			//General airpressure ok 
-	I_UPS_InBatteryMode: cntrl_Signal;			//UPS running on battery
+(*Inputs / Outputs*)	
+	Q_Lp_StartAll AT %Q*:BOOL; 						//Lamp pushbutton start whole machine
+	Q_Lp_StopAll AT %Q*:BOOL; 						//Lamp pushbutton stop whole machine
+	Q_Lp_ResetAll AT %Q*:BOOL; 						//Lamp pushbutton reset whole machine
 	
-	//start/stop/reset buttons
-	I_Pb_StartAll: utl_LoggedInput;				//Pushbutton start that should start the whole machine. If a machine has different zones, then create per zone a general >> example djura subs
-	I_PbNc_StopAll:utl_LoggedInput;				//Pushbutton stop normally closed that should start the whole machine. If a machine has different zones, then create per zone a general >> example djura subs
-	I_Pb_ResetAll: utl_LoggedInput;				//Pushbutton reset that should start the whole machine. IF a machine has different zones, THEN create per zone a general >> example djura subs
-	Q_Lp_StartAll AT %Q*:BOOL; 					//Lamp pushbutton start whole machine
-	Q_Lp_StopAll AT %Q*:BOOL; 					//Lamp pushbutton stop whole machine
-	Q_Lp_ResetAll AT %Q*:BOOL; 					//Lamp pushbutton reset whole machine
-
-	//TODO TEMPLATE REMOVE: EXAMPLE usage/declarationn of arrays
-		MyListOfBools:ARRAY[0..glcn.MaxIndexForMyArray] OF BOOL;	//example how to define arrays (with constants) and use them in a for loop (for i<myConstant)
-		HM_CNT:INT;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(*Global variables, must run first (detection first scan)*)
-Globals();
+      <ST><![CDATA[(*All HMI related thingies: Errors/Warnings/Statusses/etc*)
+_M_HMI();
+
+(*Simulation*)
+A_Simulation();
+
+(*Global variables, must run first (detection first scan)*)
+A_Globals();
 
 (*Outputs / Signals / Globals / etc*)
-Activations();
-
-(*All HMI related thingies: Errors/Warnings/Statusses/etc*)
-HMI();
-]]></ST>
+A_Activations();]]></ST>
     </Implementation>
-    <Action Name="Activations" Id="{7d11f61c-53e0-44b1-a611-4c949307359c}">
+    <Method Name="_M_HMI" Id="{28e41cd6-f179-4a27-8542-79f8120e37e2}">
+      <Declaration><![CDATA[METHOD PRIVATE _M_HMI]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Update HMI variables (check error status + reset, check warnings)
+HMI.M_Update(	I_OrgControl:= OrganiserGeneral,
+				I_HMI_Parent := 0, 				//This is top level, no error propagation
+				I_ERR:= HMI.ERR,
+				I_WRN:= HMI.WRN,
+				I_MAN:= HMI.MAN);
+		
+//Statusses
+	
+//Warnings
+HMI.WRN.CheckBoundsTriggered := Glbl.OutOfBounds;
+	
+]]></ST>
+      </Implementation>
+    </Method>
+    <Action Name="A_Activations" Id="{7d11f61c-53e0-44b1-a611-4c949307359c}">
       <Implementation>
         <ST><![CDATA[//Signals 
-Q_SN_ES_Zone1_OK := fbSafetyZone1.Q_K_ES_OK; 
+Q_SN_ERR_General := HMI.P_STS_InError;
 
-Q_SN_ERR_General := utl_Any_FindFirstNonZeroByte(I_Data:=IO_ERR, I_Offset:=0) >= 0;	
+Q_SN_ES_Zone1_OK := SafetyZone1.Q_K_ES_OK; 
 
-Q_SN_StartAll :=(	I_Pb_StartAll.Q
-					OR .BknGlbl.SimPbStart);
+Q_SN_StartAll := I_Pb_StartAll.Q;
+					
+Q_SN_StopAll := NOT I_PbNc_StopAll.Q;
 
-Q_SN_StopAll := (	(	NOT I_PbNc_StopAll.Q
-						AND NOT .BknGlbl.SimEnable)
-					OR .BknGlbl.SimPbStop);
-
-Q_SN_ResetAll := (	I_Pb_ResetAll.Q
-					//NO! creates loop with the organisers >> OR I_SN_ResetErrors
-					OR .BknGlbl.SimPbReset);
+Q_SN_ResetAll := 	I_Pb_ResetAll.Q; 
+					//DO NOT ADD: I_SN_ResetErrors    
+						//ELSE a reset loop will happen (linked to organiser(s), org reset linked back to general)
 
 Q_SN_TotalResetAll := (	.BknGlbl.FirstScan
-						OR IO_STS.PBsf_TotalResetAll.PB_State
-						OR .BknGlbl.SimPbTotalReset);
+						OR PbSf_TotalResetAll.Q);
 
 (*Outputs*)
 Q_Lp_StartAll := 	I_SN_Lp_Pb_StartAll;
 Q_Lp_StopAll := 	I_SN_Lp_Pb_StopAll;
 Q_Lp_ResetAll := 	I_SN_Lp_Pb_ResetAll
 					OR Q_SN_ERR_General;
-					
+
+//TODO TEMPLATE
+	//If your machine has only 1 organiser OR you have a seperate organiser for each machine part then you can consider using "real" organisers in here (remove this fake organiser in that case)
+//Fake organiser >> handles reset signals + logging. Is extra needed because the controls declared in general need this variable's interface
+OrganiserGeneral(	I_K_Reset:= I_SN_ResetErrors OR Q_SN_ResetAll, 
+					I_K_Auto:= FALSE);
+			
 //Boikon library funtionality   
-fbBknLibrary(
-	I_SN_TotalReset:= Q_SN_TotalResetAll,
-	I_ProjectErrors:=MAIN.HMI_Errors,
-	I_ProjectWarnings:=MAIN.HMI_Warnings,
-	I_ProjectSetpoints:= MAIN.HMI_Setpoints,
-	IO_TaskInfo:= _TaskInfo,
-	IO_AppInfo:= _AppInfo,
-	IO_STS:= IO_STS.BknLibrary, 
-	IO_WRN:= IO_WRN.BknLibrary,
-	IO_SP:= IO_SP.BknLibrary);
+GetCurrentTaskInfo();
+BknLibrary(
+	I_HMI_Parent:= HMI, 
+	I_OrgControl:= OrganiserGeneral,
+	IO_TaskInfo:= _TaskInfo[GetCurrentTaskInfo.Index],
+	IO_AppInfo:= _AppInfo);
+
 	
-//TODO TEMPLATE see instruction @ declaration
+//TODO TEMPLATE see instructions @ declaration
+CxPowerSupply(
+	I_HMI_Parent:= HMI,
+	I_OrgControl:= OrganiserGeneral,
+	I_K_SimulationActive:= Glbl.SimEnable);
+
+//TODO TEMPLATE see instructions @ declaration
 //Ethercatdevice managers
-fbEthercatManager(
-	Q_STS_NrOfSlavesNotInOp=> , 
-	IO_STS:= IO_STS.EthercatManager);
+EthercatManager(
+	Q_STS_NrOfSlavesNotInOp=>);
 
 //TODO TEMPLATE >> see instructions @ instance declaration and comment inside this block
-fbSafetyZone1(
-	I_K_Enable:= 	NOT I_WcState_SafetyZone1.Q, 	//NOTE: connecting enable like this has the advantage that safety is started and ErrAcked at startup of ethercat
-												//Disadvantage is that it will auto reset errors at restart of ethercat (you might find this an advantage...) 
-	I_K_Restart:= 	I_Pb_ResetAll.Q
-					OR I_Pb_ResetAll.Q, 	//TODO TEMPLATE>> if possible only use a dedicated contact wired directly to a safety input and handle this in the safety project. Not this route
-											//We used to add an extra contact to a physical reset button and wire this directly to a safety input and handle it in the safety program 
-	Q_K_ES_OK=> , 
-	IO_STS:= IO_STS.SafetyZone1, 
-	IO_ERR:= IO_ERR.SafetyZone1);	
+	//note: nicest way to restart safety is to use a dedicated hw button. Here I've connected it to the more general reset signal/buttons
+SafetyZone1(
+	I_HMI_Parent:= HMI,
+	I_K_SimulationActive:= 	Glbl.SimEnable
+							AND NOT UnitTesting.EnableSafetyTest,		//TODO TEMPLATE >> remove this line (for unittesting I've a "real" safety setup on the testboard that manipulates safety card inputs with plc output)
+	I_K_Enable:= 	NOT I_WcState_SafetyZone1.Q_STS_SyncUnitDataOk, 	//NOTE: connecting enable like this has the advantage that safety is started and ErrAcked at startup of ethercat
+																		//Disadvantage is that it will auto reset errors at restart of ethercat (you might find this an advantage...)
+	I_OrgControl:= OrganiserGeneral,
+	I_STS_AirPressure_OK := I_PS_AirpressureOk.Q);
+
+//cntrl_Inputs need to be called cyclically
+I_Pb_StartAll(
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	//I_K_SimulateOn:= , >>overwritten by visu general 
+	);
+
+I_PbNc_StopAll(
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	//I_K_SimulateOn:= , >>overwritten by visu general 
+	);
+	
+I_Pb_ResetAll(
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	//I_K_SimulateOn:= , >>overwritten by visu general 
+	);
+
+//safebuttons need to be called cyclically
+PbSf_TotalResetAll();
 	
 //General statusses
 //TODO TEMPLATE >> read comment @ instance declaration 
-I_WcState_MCC01(
-	I_K_SimulationActive:= .BknGlbl.SimEnable, 
-	I_K_SimulateOn:= FALSE, //low is ok, high is something not ok
-	IO_STS:= IO_STS.WcState_MCC01);
+I_WcState_MCC(
+	I_HMI_Parent:= HMI,
+	I_OrgControl:= OrganiserGeneral,
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	I_K_SimulateDataValid:= TRUE);
 
-I_WcState_RIO01(
-	I_K_SimulationActive:= .BknGlbl.SimEnable, 
-	I_K_SimulateOn:= FALSE, //low is ok, high is something not ok
-	IO_STS:= IO_STS.WcState_RIO01);
+I_WcState_RIO1(
+	I_HMI_Parent:= HMI,
+	I_OrgControl:= OrganiserGeneral,
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	I_K_SimulateDataValid:= TRUE);
+				
+I_WcState_RIO1Servo1(
+	I_HMI_Parent:= HMI,
+	I_OrgControl:= OrganiserGeneral,
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	I_K_SimulateDataValid:= TRUE);
 
 I_WcState_SafetyZone1(
-	I_K_SimulationActive:= .BknGlbl.SimEnable, 
-	I_K_SimulateOn:= FALSE, //low is ok, high is something not ok
-	IO_STS:= IO_STS.WcState_Safety);
+	I_HMI_Parent:= HMI,
+	I_OrgControl:= OrganiserGeneral,
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	I_K_SimulateDataValid:= TRUE);
 	
 I_PS_AirpressureOk(
-	I_K_SimulationActive:= .BknGlbl.SimEnable,
-	I_K_SimulateOn:= .BknGlbl.SimEnable,
-	IO_STS:= IO_STS.PS_AirpressureOk);
+	I_HMI_Parent := HMI,
+	I_OrgControl := OrganiserGeneral,
+	I_K_SetError := NOT I_PS_AirpressureOk.Q,
+	I_K_SimulationActive:= Glbl.SimEnable OR UnitTesting.EnableSafetyTest, //TODO TEMPLATE, remove OR UnitTesting
+	I_K_SimulateOn:= TRUE);
 
 //TODO TEMPLATE >> dependant on your ups solution adapt as needed
 I_UPS_InBatteryMode(
-	I_K_SimulationActive:= .BknGlbl.SimEnable, 
-	I_K_SimulateOn:= FALSE, 
-	IO_STS:= IO_STS.UPS_InBatteryMode);
-
-//TODO TEMPLATE EXAMPLE
-{info 'TODO TEMPLATE REMOVE, also from setpoints struct. Used in HMI template just to test controls/showcase'}
-	BknGlbl.SimEmergencyStop S= IO_STS.TB_Sim_ES_OK; 
-	BknGlbl.SimEnable S= IO_STS.TB_Sim_ES_OK;
-
-	//usage of arrays >> use constants (also in declaration >> see declaration of the array)
-	//if possible (array only used inside 1 block), define the constant in the block itself, not in the globals
-	//* 
-	FOR HM_CNT := 0 TO glcn.MaxIndexForMyArray BY 1 
-	DO
-		MyListOfBools[HM_CNT] := TRUE;
-	END_FOR
-	
-	//coding style conditions:
-	// do not mix "AND" and "OR" without "(" / ")"   order of precedence might cause unexpected bugs (the order is: NOT, AND, OR, XOR, <</>>)  
-	// after a "(" add a tab, after a ")" remove a tab, keep this identation for the next line
-	// "OR" or "AND" always on a new line
-	// example: 
-	IF(	(	MyListOfBools[0]
-			OR MyListOfBools[1])
-		AND (	MyListOfBools[2]
-				OR(	MyListOfBools[3]
-					AND(	MyListOfBools[4]
-							OR MyListOfBools[5]))))
-	THEN
-		MyListOfBools[6]:=TRUE;
-	END_IF
-	// if not following these rules you will get this which is a whole lot harder to read
-		IF((MyListOfBools[0] OR MyListOfBools[1]) AND (MyListOfBools[2] OR(MyListOfBools[3] AND(MyListOfBools[4] OR MyListOfBools[5]))))
-	THEN
-		MyListOfBools[6]:=TRUE;
-	END_IF
-	
-	
-]]></ST>
+	I_HMI_Parent := HMI,
+	I_OrgControl := OrganiserGeneral,
+	I_K_SetError := I_UPS_InBatteryMode.Q,
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	I_K_SimulateOn:= FALSE);]]></ST>
       </Implementation>
     </Action>
-    <Action Name="Globals" Id="{74997590-c6d9-437a-894f-3cb139412f3c}">
+    <Action Name="A_Globals" Id="{74997590-c6d9-437a-894f-3cb139412f3c}">
       <Implementation>
         <ST><![CDATA[//if firstscan or program changed >> ...
 IF(	BknGlbl.FirstScan
-	OR BknGlbl.FirstCycleAfterUpload)
+	OR BknGlbl.FirstScanOnlineChange)
 THEN
-	IO_STS.Version := Global_Version.stLibVersion_Boikon_Template.sVersion;
+	//current project version >> autogenerated!
+	HMI.STS.Version := Global_Version.stLibVersion_Boikon_Template.sVersion;
 	//reset out of bounds detection
-	{IF defined (pou: CHECKBOUNDS)}
-		Glbl.OutOfBounds := FALSE;
-	{END_IF}
-END_IF
-
-//if not simulation mode set >> reset all simulation flags
-//note: what you can do is only activate simulation mode for a part of the machine, in that case you have to define per machine section a simulation flag.
-//		you can also only use this general simulation flag to put the whole machine in simulation. 
-IF(	NOT .BknGlbl.SimEnable)
-THEN
-	//example simulation bit. This bit should/could be used to put a machinepart into simulation mode
-	Glbl.Sim_MyMachinePart := FALSE;
+	Glbl.OutOfBounds := FALSE;
 END_IF]]></ST>
       </Implementation>
     </Action>
-    <Action Name="HMI" Id="{c4902ec3-eabf-4bde-a121-e8a672878598}">
+    <Action Name="A_Simulation" Id="{9ef72fcc-edaf-05c9-3b3e-5fdec2cb90c9}">
       <Implementation>
-        <ST><![CDATA[//Instance calls
-	//safebuttons need to be called cyclically
-	fbPbSf_TotalResetAll( IO_HMI_PB_Safe:= IO_STS.PBsf_TotalResetAll );
-	
-//Statusses
-	
-//Warnings
-	IO_WRN.CheckBoundsTriggered := Glbl.OutOfBounds;
-	
-//Errors
-	//reset errors (before setting of errors!)
-	IF(	I_SN_ResetErrors
-		OR I_Pb_ResetAll.Q
-		OR .BknGlbl.SimPbReset)
-	THEN
-		utl_Any_Reset(I_Data:=IO_ERR);
-	END_IF
+        <ST><![CDATA[//TODO Template >> adapt as needed
 
-	//TODO TEMPLATE >> read comment @ instance declaration
-	IO_ERR.WcState_MCC01 S= I_WcState_MCC01.Q; //Wcc state high >> something not ok
-	IO_ERR.WcState_RIO01 S= I_WcState_RIO01.Q; //Wcc state high >> something not ok
-	IO_ERR.WcState_Safety S= I_WcState_SafetyZone1.Q; //Wcc state high >> something not ok
-	
-	IO_ERR.PS_Airpressure S= NOT I_PS_AirpressureOk.Q;
-	IO_ERR.UPS_InBatteryMode S= I_UPS_InBatteryMode.Q;
-	
-
-]]></ST>
+//if simulation not enabled or firstscan detected >> reset all simulations
+IF(	NOT Glbl.SimEnable
+	OR BknGlbl.FirstScan)
+THEN
+	Glbl.SimEnable := FALSE;
+END_IF]]></ST>
       </Implementation>
     </Action>
+    <Property Name="P_SP_Shared" Id="{1efb4b09-a367-0549-00ee-376c84f89756}">
+      <Declaration><![CDATA[{attribute 'suppress_wrn_C0410'} //oh nooo... the number in the warning is c5410 but this is how you disable it????
+PROPERTY P_SP_Shared : REFERENCE TO HMI_SP_GeneralShared]]></Declaration>
+      <Get Name="Get" Id="{46fb6d76-e734-0d75-3ac6-56e447088b57}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_SP_Shared REF= HMI.SP.Shared;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
   </POU>
 </TcPlcObject>

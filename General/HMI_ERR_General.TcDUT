@@ -1,18 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="HMI_ERR_General" Id="{a39dcdd6-6984-4217-9f7c-62f8eb1a63fa}">
     <Declaration><![CDATA[TYPE HMI_ERR_General :
 STRUCT
 	//General IO
-	PS_Airpressure:BOOL;						//Error general: Airpressure
-	UPS_InBatteryMode:BOOL;						//Error general: Ups
-	
-	WcState_MCC01:BOOL;							//Error general: IO group MCC01 has invalid data / bus error
-	WcState_RIO01:BOOL;							//Error general: IO group RIO01 has invalid data / bus error
-	WcState_Safety:BOOL;						//Error general: IO group safety has invalid data / bus error
-	
-	//Safety
-	SafetyZone1:HMI_ERR_SafetyZone1;		//Safety zone 1
+	//prio's: emergency stop items == 100, e-circuit=99, default (nothing specified) = 50
+	//adjust as needed 
 END_STRUCT
 END_TYPE
 ]]></Declaration>

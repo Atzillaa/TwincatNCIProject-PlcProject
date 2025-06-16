@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+<TcPlcObject Version="1.1.0.1">
   <GVL Name="Glcn" Id="{f86596d9-1d4b-49d8-8ab9-4b28fda31ccb}">
     <Declaration><![CDATA[//project related global constants
 {attribute 'qualified_only'}
@@ -7,10 +7,11 @@ VAR_GLOBAL CONSTANT
 
 {info 'TODO: TEMPLATE REMOVE WHEN NOT NEEDED'}
 //array sizes >> use this to initialise the array AND then use it in the for loops which run through the arrays etc
-MaxIndexForMyArray:INT:=10; //only here as example, remove me
-END_VAR
-
-
-//attribute 'qualified_only': forces the user to add the DUT name in front of the variables]]></Declaration>
+	//MaxIndexForMyArray:INT:=10;
+	//to be used as:
+	//MyArray: array[0..MaxIndexForMyArray] of bool;
+	//and then
+	//FOR index:=0 to MaxIndexForMyArray by 1 DO ...
+END_VAR]]></Declaration>
   </GVL>
 </TcPlcObject>

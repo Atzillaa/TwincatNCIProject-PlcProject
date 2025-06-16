@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="HMI_General" Id="{708274bc-5c8a-0b91-0dc1-847f1414d8e2}" SpecialFunc="None">
+    <Declaration><![CDATA[(*	HMI variables
+
+	This block holds all HMI variables and handles communication with the HMI
+	
+	2024-02 HP
+		-initial
+*)
+{attribute 'no_explicit_call' := 'do not call this POU directly'}
+FUNCTION_BLOCK HMI_General EXTENDS HMI_BaseBlock
+
+//HMI variables that can be written to by the plc and HMI 
+VAR_INPUT
+	//Do not change these names, the HMI is hardcoded to use these exact names
+	MAN:HMI_MAN_General;				//HMI manuals
+	STS:HMI_STS_General;				//HMI statusses
+	WRN:HMI_WRN_General;				//HMI warnings
+	ERR:HMI_ERR_General;				//HMI errors
+END_VAR
+
+//Hmi variables that can only be written to by the HMI and read by the plc
+VAR_OUTPUT PERSISTENT
+	//Do not change these names, the HMI is hardcoded to use these exact names
+	SP:HMI_SP_General;					//HMI setpoints
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//this block should not be called]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

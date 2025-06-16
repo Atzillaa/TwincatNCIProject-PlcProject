@@ -1,12 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="HMI_ERR_SafetyZone1" Id="{6e2c828e-75fe-07ca-202e-7bf6b613f847}">
     <Declaration><![CDATA[//Extend the base errors with project errors
 TYPE HMI_ERR_SafetyZone1 EXTENDS HMI_ERR_SafetyLogic:
 STRUCT
-	ES_OK:BOOL;								//Error general: Emergency stop circuit
-	PB_ES_MainCabinet:BOOL;					//Error general: Emergencystop button main cabinet
-	DR_Front:BOOL;							//Error general: Door front machine 
+	ES_Circuit:BOOL;						//Error[prio=100] safety zone 1: Emergency stop circuit not ok
+	ES_Air:BOOL;							//Error[prio=100] safety zone 1: Emergency stop compressed air not ok
+	
+	PB_ES_MainCabinet:BOOL;					//Error[prio=100] safety zone 1: Emergencystop button main cabinet
+	DR_Front:BOOL;							//Error[prio=100] safety zone 1: Door front machine
+	LS_Entry1:BOOL;							//Error[prio=100] safety zone 1: Lightscreen entry 1
+	
+	ES_Servo1:BOOL;							//error[prio=100] safety card servo1 in error state
 END_STRUCT
 END_TYPE
 ]]></Declaration>

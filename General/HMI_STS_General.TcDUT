@@ -1,29 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <DUT Name="HMI_STS_General" Id="{e72b8229-4b31-4714-9921-2a9712bfb4fa}">
     <Declaration><![CDATA[TYPE HMI_STS_General :
 STRUCT
 	Version:STRING(23);								//Project version
-	BknLibrary:HMI_STS_BknLibrary;					//Boikon library
-	PBsf_TotalResetAll:HMI_PB_Safe;					//Button safe reset the whole machine (all organisers)
-
-	//General IO
-	//TODO TEMPLATE see instruction @ declaration
-		EthercatManager: HMI_STS_EthercatManager;	//Ethercatmanager MCC
-
-	//TODO TEMPLATE see instruction @ declaration in general
-		WcState_MCC01:HMI_STS_Signal;					//WcState MCC01 (syncunit data ok)
-		WcState_RIO01:HMI_STS_Signal;					//WcState MCC01 (syncunit data ok)
-		WcState_Safety:HMI_STS_Signal;					//WcState SAFETY (syncunit data ok)
-
-	PS_AirpressureOk:HMI_STS_Signal;				//Airpressure OK
-	UPS_InBatteryMode:HMI_STS_Signal;				//UPS
-	
-	//Safety
-	SafetyZone1:HMI_STS_SafetyZone1;			//Safety zone 1
-	
-{info 'TODO TEMPLATE REMOVE example / HMI-template test bits'}
-	TB_Sim_ES_OK:BOOL;								//Togglebutton simulate ES_OK
 END_STRUCT
 END_TYPE
 ]]></Declaration>

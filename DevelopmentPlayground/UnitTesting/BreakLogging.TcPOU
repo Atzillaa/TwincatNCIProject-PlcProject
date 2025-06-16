@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="BreakLogging" Id="{33751029-6458-0465-3e79-dc4adf321ad1}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'no-analysis'}
+FUNCTION BreakLogging : bool
+VAR
+	//this is bad, since var inside a function is a temp variable!
+	TestLog:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
+	
+	//out of curiousity
+	testVarInfo: __SYSTEM.VAR_INFO;
+	testIoVarInfo: __SYSTEM.VAR_INFO;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//send message to twincat editor error list
+ADSLOGSTR(
+	msgCtrlMask := ADSLOG_MSGTYPE_ERROR, 
+	msgFmtStr   := 'Unittesting: next error should be loggedchannel invalid path: ', 
+	strArg      := '');
+	
+//does not work
+Testlog.B := TRUE;
+Testlog.B := FALSE;
+
+//this would work (feeding an external logged channel by IO!
+//IO_MyLoggedVariable.B := BknGlbl.Blink_1s;
+
+//of course using a loggedchannel declared in a global var will work as well!
+//Glbl.MyLoggedChannel.B := BknGlbl.Blink_1sec;
+
+
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

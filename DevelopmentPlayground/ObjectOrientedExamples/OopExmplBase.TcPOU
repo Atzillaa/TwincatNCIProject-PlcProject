@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1">
   <POU Name="OopExmplBase" Id="{b12ca00b-217d-0ef8-05d0-60b7990f9376}" SpecialFunc="None">
     <Declaration><![CDATA[(*	This block is defined with the "ABSTRACT" keyword. This means it can not be used  directly, it can only be used to be expanded upon
 		>>create a new function which "EXTENDS" this block and add extra stuff as needed
