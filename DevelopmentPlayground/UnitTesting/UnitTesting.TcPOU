@@ -88,7 +88,8 @@ VAR
 					TMR_DelayErrorUndetect:= T#300MS)));
 	CntrlSensorState:utl_LoggedUInt(LoggingGroup := eLogGroups.Default, TrigAtInterval:= 0, TrigAtDeviation:= 0);
 	CntrlSensorTime:UINT;
-	CntrlSensorPulseCnt:uint;
+	CntrlSensorPulseCntRE:UINT;
+	CntrlSensorPulseCntFE:UINT;
 	
 	//Timer test
 	fbTmrOnOffTest:utl_TONH_TOFH;
@@ -204,7 +205,7 @@ A_cntrl_SafetyZone1();
 A_TestMemcpyVsMemmoveSpeed();	
 
 //Rolling fletcher 16 test 
-//todo test HM_HoustonWeHaveAProblem S= _M_RollingFletcher();
+HM_HoustonWeHaveAProblem S= _M_RollingFletcher();
 
 //String block tests
 _M_StringStuff();
@@ -227,19 +228,19 @@ END_FOR ]]></ST>
     <Method Name="_M_RollingFletcher" Id="{b5175fcc-c8e8-0800-14bf-acbd4e5ca084}">
       <Declaration><![CDATA[METHOD PRIVATE _M_RollingFletcher : BOOL
 VAR
-	testString1 AT %MB1000:STRING;
-	byteArray5 AT %MB1000:ARRAY[0..4] OF BYTE ;
-	byteArray8 AT %MB1000:ARRAY[0..7] OF BYTE ;
-	
 	index1,index2:INT;
 	
-	rollingHash: UINT;
-	rollingSum1:uint;
-	rollingSum2:UINT;
+	rollingHash: XWORD;
+	rollingSum1: XWORD;
+	rollingSum2: XWORD;
 	
-	fbFletcher:utl_Any_CheckSumFletcher16(NrOfBytesPerRun:= 999);
-	
+
 	HighAddress:POINTER TO BYTE;
+	
+	Data AT %MB0: ARRAY[0..5] OF BOOL := [FALSE, TRUE];
+	
+	data1: XWORD := 16#00FEFFFF4856B189; //16#FFFFFE0089B15648 in litle endian
+	data2: XWORD := 16#0123456789ABCDEF; //16#67452301EFCDAB89
 END_VAR
 ]]></Declaration>
       <Implementation>
@@ -247,90 +248,34 @@ END_VAR
 
 //init variables
 _M_RollingFletcher := FALSE;
-testString1 := 'abcdefgh';
-	
-	
-//test 1 hash should be: 0xc8f0
 
-	rollingHash := 0;
-	rollingSum1 := 0;
-	rollingSum2 := 0;
-	//testing byte by byte
-	FOR index1:=0 TO 4 BY 1 DO
-		utl_Any_Fletcher16RollingHash_CheckNonZero(
-			I_Data:= byteArray5[index1],
-			IO_AddressFirstHighByte:= HighAddress,
-			IO_CurrentHash:=rollingHash,
-			IO_Sum1:= rollingSum1,
-			IO_Sum2:= rollingSum2);
-	END_FOR
-	//if hashing error >> abort error
-	IF(rollingHash <> 16#C8F0)
-	THEN
-		utl_SystemMessage(I_Message:= 'utl_Any_Fletcher16RollingHash_CheckNonZero failed unit test 1');
-		_M_RollingFletcher := TRUE;
-		RETURN;
-	END_IF
+rollingHash := 0;
+rollingSum1 := 0;
+rollingSum2 := 0;
 
-	
-	fbFletcher(I_Data:= byteArray5, Q_Result=> rollingHash);
-	//if hashing error >> abort error
-	IF(rollingHash <> 16#C8F0)
-	THEN
-		utl_SystemMessage(I_Message:= 'utl_Any_CheckSumFletcher16 failed unit test 1');
-		_M_RollingFletcher := TRUE;
-		RETURN;
-	END_IF
 
-//test 2 hash should be: 0x2057
-	rollingHash := 0;
-	rollingSum1 := 0;
-	rollingSum2 := 0;
-	//testing byte by byte
-	FOR index1:=0 TO 7 BY 1 DO
-		utl_Any_Fletcher16RollingHash_CheckNonZero(
-			I_Data:= byteArray8[index1],
-			IO_AddressFirstHighByte:= HighAddress,
-			IO_CurrentHash:=rollingHash,
-			IO_Sum1:= rollingSum1,
-			IO_Sum2:= rollingSum2);
-	END_FOR
-	//if hashing error >> abort error
-	IF(rollingHash <> 16#0627)
-	THEN
-		utl_SystemMessage(I_Message:= 'utl_Any_Fletcher16RollingHash_CheckNonZero failed unit test 2 byte/byte');
-		_M_RollingFletcher := TRUE;
-		RETURN;
-	END_IF
+//https://gchq.github.io/CyberChef/#recipe=From_Hex('Space')Bit_shift_right(32,'Logical%20shift'/disabled)To_Hex('Space',0/disabled)Fletcher-64_Checksum()To_Decimal('Space',false/disabled)&input=RkZGRkZFMDA4OUIxNTY0OCA2NzQ1MjMwMUVGQ0RBQjg5Cgo&ienc=65001
+//NOTE>> library function uses fletcher big endian (otherwise we would have to byteswap everything)
+{attribute 'no-analysis'}
+utl_FletcherXword.M_UpdateSum1Sum2(I_Data:= data1, IO_Sum1:= rollingSum1, IO_Sum2:= rollingSum2);
+rollingHash := 	utl_FletcherXword.M_CalcEndHash(IO_Sum1:= rollingSum1, IO_Sum2:= rollingSum2);
+//if hashing error >> abort error
+IF(rollingHash <> 16#4A54B1874955B188) //==> hashing site: 16#00FEFFFF4856B189 >> FFFFFE0089B15648
+THEN
+	utl_SystemMessage(I_Message:= 'utl_Any_Fletcher16RollingHash_CheckNonZero failed unit test 1');
+	_M_RollingFletcher := TRUE;
+	RETURN;
+END_IF
 
-	//rolling>>test all in 1 go
-	rollingHash := 0;
-	rollingSum1 := 0;
-	rollingSum2 := 0;
-	utl_Any_Fletcher16RollingHash_CheckNonZero(
-			I_Data:= byteArray8,
-			IO_AddressFirstHighByte:= HighAddress,
-			IO_CurrentHash:=rollingHash,
-			IO_Sum1:= rollingSum1,
-			IO_Sum2:= rollingSum2);
-			
-	//if hashing error >> abort error
-	IF(rollingHash <> 16#0627)
-	THEN
-		utl_SystemMessage(I_Message:= 'utl_Any_Fletcher16RollingHash_CheckNonZero failed unit test 2, all in one go');
-		_M_RollingFletcher := TRUE;
-		RETURN;
-	END_IF		
-	
-	
-	fbFletcher(I_Data:= byteArray8, Q_Result=> rollingHash);
-	//if hashing error >> abort error
-	IF(rollingHash <> 16#0627)
-	THEN
-		utl_SystemMessage(I_Message:= 'utl_Any_CheckSumFletcher16 failed unit test 2');
-		_M_RollingFletcher := TRUE;
-		RETURN;
-	END_IF
+//test rolling functionality
+utl_FletcherXword.M_UpdateSum1Sum2(I_Data:= data2, IO_Sum1:= rollingSum1, IO_Sum2:= rollingSum2);
+rollingHash := 	utl_FletcherXword.M_CalcEndHash(IO_Sum1:= rollingSum1, IO_Sum2:= rollingSum2);
+IF(rollingHash <> 16#68F26D55D424C4DE) //==> hashing site: 16#0123456789ABCDEF >> 67452301EFCDAB89
+THEN
+	utl_SystemMessage(I_Message:= 'utl_Any_Fletcher16RollingHash_CheckNonZero failed unit test 2');
+	_M_RollingFletcher := TRUE;
+	RETURN;
+END_IF
 
 ]]></ST>
       </Implementation>
@@ -932,7 +877,8 @@ CASE CntrlSensorState.V OF
 		//if fault detected
 		IF(	fbCntrlSensor.Q_DetectedDirect
 			OR fbCntrlSensor.Q_DetectedDebounced
-			OR fbCntrlSensor.Q_DetectedDebouncedPulse)
+			OR fbCntrlSensor.Q_DetectedDebounced_RE
+			OR fbCntrlSensor.Q_DetectedDebounced_FE)
 		THEN
 			utl_SystemMessage(I_Message:= 'Cntrl_Sensor failed unit test 0');
 			HM_HoustonWeHaveAProblem := TRUE;
@@ -940,7 +886,8 @@ CASE CntrlSensorState.V OF
 
 		//if values ok >> continue		
 		IF(	NOT fbcntrlSensor.Q_DetectedDebounced
-			AND NOT fbCntrlSensor.Q_DetectedDebouncedPulse
+			AND NOT fbCntrlSensor.Q_DetectedDebounced_RE
+			AND NOT fbCntrlSensor.Q_DetectedDebounced_FE
 			AND CntrlSensorTime > 1100)
 		THEN
 			CntrlSensorTime := 0;
@@ -968,7 +915,8 @@ CASE CntrlSensorState.V OF
 			//sensor debounced should stay off
 			OR fbcntrlSensor.Q_DetectedDebounced
 			//sensor pulse is debounced >> should stay off
-			OR fbcntrlSensor.Q_DetectedDebouncedPulse
+			OR fbCntrlSensor.Q_DetectedDebounced_RE
+			OR fbCntrlSensor.Q_DetectedDebounced_FE
 			)
 		THEN
 			utl_SystemMessage(I_Message:= 'Cntrl_Sensor failed unit test 1');
@@ -998,7 +946,8 @@ CASE CntrlSensorState.V OF
 		IF( //sensor direct and debounced should be off
 			fbcntrlSensor.Q_DetectedDirect 
 			OR fbcntrlSensor.Q_DetectedDebounced
-			OR fbCntrlSensor.Q_DetectedDebouncedPulse
+			OR fbCntrlSensor.Q_DetectedDebounced_RE
+			OR fbCntrlSensor.Q_DetectedDebounced_FE
 			)
 		THEN
 			utl_SystemMessage(I_Message:= 'Cntrl_Sensor failed unit test 2');
@@ -1024,7 +973,8 @@ CASE CntrlSensorState.V OF
 			I_OrgControl:= HM_ItfOrgFake, 
 			I_ErrNotState:= );
 
-		CntrlSensorPulseCnt := CntrlSensorPulseCnt + TO_UINT(fbCntrlSensor.Q_DetectedDebouncedPulse);
+		CntrlSensorPulseCntRE := CntrlSensorPulseCntRE + TO_UINT(fbCntrlSensor.Q_DetectedDebounced_RE);
+		CntrlSensorPulseCntFE := CntrlSensorPulseCntFE + TO_UINT(fbCntrlSensor.Q_DetectedDebounced_FE);
 	
 		//input high
 		IF(CntrlSensorTIme < 500)
@@ -1054,7 +1004,8 @@ CASE CntrlSensorState.V OF
 					OR (	CntrlSensorTime > 600 
 							AND (	fbcntrlSensor.Q_DetectedDirect
 									OR fbcntrlSensor.Q_DetectedDebounced
-									OR CntrlSensorPulseCnt <> 1)))
+									OR CntrlSensorPulseCntRE <> 1
+									OR CntrlSensorPulseCntFE <> 1)))
 			THEN
 				utl_SystemMessage(I_Message:= 'Cntrl_Sensor failed unit test 3 @ input off');
 				HM_HoustonWeHaveAProblem := TRUE;			
@@ -1083,7 +1034,8 @@ CASE CntrlSensorState.V OF
 			I_OrgControl:= HM_ItfOrgFake,
 			I_ErrNotState:= );
 
-		CntrlSensorPulseCnt := CntrlSensorPulseCnt + TO_UINT(fbCntrlSensor.Q_DetectedDebouncedPulse);
+		CntrlSensorPulseCntRE := CntrlSensorPulseCntRE + TO_UINT(fbCntrlSensor.Q_DetectedDebounced_RE);
+		CntrlSensorPulseCntFE := CntrlSensorPulseCntFE + TO_UINT(fbCntrlSensor.Q_DetectedDebounced_FE);
 	
 		//input high
 		IF(CntrlSensorTIme < 500)
@@ -1113,7 +1065,8 @@ CASE CntrlSensorState.V OF
 					OR (	CntrlSensorTime > 525 
 							AND (	fbcntrlSensor.Q_DetectedDirect
 									OR fbcntrlSensor.Q_DetectedDebounced
-									OR CntrlSensorPulseCnt <> 2)))
+									OR CntrlSensorPulseCntRE <> 2
+									OR CntrlSensorPulseCntFE <> 2)))
 			THEN
 				utl_SystemMessage(I_Message:= 'Cntrl_Sensor failed unit test 3 @ input off');
 				HM_HoustonWeHaveAProblem := TRUE;			

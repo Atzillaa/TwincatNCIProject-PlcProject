@@ -678,7 +678,7 @@ A_StepActivationsInit();
 		//I_K_ErrNotState:= ,
 	
 	//Logged counter: example how we can count the debounced falling edges of a photocell
-		IF(PC_Example.Q_DetectedDebouncedPulse) THEN 	PC_Example_Count.V := PC_Example_Count.V + 1; END_IF
+		IF(PC_Example.Q_DetectedDebounced_RE) THEN 	PC_Example_Count.V := PC_Example_Count.V + 1; END_IF
 	
 	SN_DscReadyToReceive(
 		I_K_SimulationActive:= Glbl.Sim_MyMachinePart, 
