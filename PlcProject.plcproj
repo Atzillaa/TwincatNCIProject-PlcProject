@@ -18,7 +18,7 @@
     <LibraryReferences>{015cb6ed-99fd-4f18-9128-1eb89efb4ed6}</LibraryReferences>
     <Company>Boikon</Company>
     <Released>false</Released>
-    <ProjectVersion>0.7.0.1</ProjectVersion>
+    <ProjectVersion>0.7.0.1100</ProjectVersion>
     <CombineIds>false</CombineIds>
     <Title>Boikon Template</Title>
     <CompilerVersion>
@@ -146,50 +146,56 @@
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateClean\eTpc.TcDUT">
+    <Compile Include="_Scam\SCM_TemplateClean\EnumsAndState\eTpc.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateClean\HMI_ERR_TemplateClean.TcDUT">
+    <Compile Include="_Scam\SCM_TemplateClean\EnumsAndState\sTpc.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateClean\HMI_MAN_TemplateClean.TcDUT">
+    <Compile Include="_Scam\SCM_TemplateClean\HMI\HMI_ERR_TemplateClean.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateClean\HMI_SP_TemplateClean.TcDUT">
+    <Compile Include="_Scam\SCM_TemplateClean\HMI\HMI_MAN_TemplateClean.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateClean\HMI_STS_TemplateClean.TcDUT">
+    <Compile Include="_Scam\SCM_TemplateClean\HMI\HMI_SP_TemplateClean.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateClean\HMI_TemplateClean.TcPOU">
+    <Compile Include="_Scam\SCM_TemplateClean\HMI\HMI_STS_TemplateClean.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateClean\HMI_WRN_TemplateClean.TcDUT">
+    <Compile Include="_Scam\SCM_TemplateClean\HMI\HMI_TemplateClean.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Scam\SCM_TemplateClean\HMI\HMI_WRN_TemplateClean.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="_Scam\SCM_TemplateClean\SCM_TemplateClean.TcPOU">
       <SubType>Code</SubType>
       <ExcludeFromBuild>false</ExcludeFromBuild>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateMachinePart\eTMP.TcDUT">
+    <Compile Include="_Scam\SCM_TemplateMachinePart\EnumsAndState\eTMP.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI_ERR_TemplateMachinePart.TcDUT">
+    <Compile Include="_Scam\SCM_TemplateMachinePart\EnumsAndState\sTmp.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI_MAN_TemplateMachinePart.TcDUT">
+    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI\HMI_ERR_TemplateMachinePart.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI_SP_TemplateMachinePart.TcDUT">
+    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI\HMI_MAN_TemplateMachinePart.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI_STS_TemplateMachinePart.TcDUT">
+    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI\HMI_SP_TemplateMachinePart.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI_TemplateMachinePart.TcPOU">
+    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI\HMI_STS_TemplateMachinePart.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI_WRN_TemplateMachinePart.TcDUT">
+    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI\HMI_TemplateMachinePart.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Scam\SCM_TemplateMachinePart\HMI\HMI_WRN_TemplateMachinePart.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="_Scam\SCM_TemplateMachinePart\SCM_TemplateMachinePart.TcPOU">
@@ -205,6 +211,10 @@
     <Folder Include="Main" />
     <Folder Include="Version" />
     <Folder Include="_Controls\TemplateSafetyZone" />
+    <Folder Include="_Scam\SCM_TemplateClean\EnumsAndState" />
+    <Folder Include="_Scam\SCM_TemplateClean\HMI" />
+    <Folder Include="_Scam\SCM_TemplateMachinePart\HMI" />
+    <Folder Include="_Scam\SCM_TemplateMachinePart\EnumsAndState" />
     <Folder Include="_Utils" />
     <Folder Include="_Controls" />
     <Folder Include="_Globals" />
@@ -319,8 +329,8 @@
   <ProjectExtensions>
     <PlcProjectOptions>
       <XmlArchive>
-  <Data>
-    <o xml:space="preserve" t="OptionKey">
+        <Data>
+          <o xml:space="preserve" t="OptionKey">
       <v n="Name">"&lt;ProjectRoot&gt;"</v>
       <d n="SubKeys" t="Hashtable" ckt="String" cvt="OptionKey">
         <v>{192FAD59-8248-4824-A8DE-9177C94C195A}</v>
@@ -492,16 +502,16 @@
       </d>
       <d n="Values" t="Hashtable" />
     </o>
-  </Data>
-  <TypeList>
-    <Type n="Boolean">System.Boolean</Type>
-    <Type n="Hashtable">System.Collections.Hashtable</Type>
-    <Type n="Int32">System.Int32</Type>
-    <Type n="NewestVersionConstraintToSave">{af9bafe2-ba31-4b15-a2b9-48a0f2cd09fb}</Type>
-    <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
-    <Type n="String">System.String</Type>
-  </TypeList>
-</XmlArchive>
+        </Data>
+        <TypeList>
+          <Type n="Boolean">System.Boolean</Type>
+          <Type n="Hashtable">System.Collections.Hashtable</Type>
+          <Type n="Int32">System.Int32</Type>
+          <Type n="NewestVersionConstraintToSave">{af9bafe2-ba31-4b15-a2b9-48a0f2cd09fb}</Type>
+          <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
+          <Type n="String">System.String</Type>
+        </TypeList>
+      </XmlArchive>
     </PlcProjectOptions>
   </ProjectExtensions>
 </Project>

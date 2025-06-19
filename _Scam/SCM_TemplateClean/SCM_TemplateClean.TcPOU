@@ -92,7 +92,7 @@
 		-new hmi struct
 *)
 
-FUNCTION_BLOCK SCM_TemplateClean IMPLEMENTS ItfEnumConverter
+FUNCTION_BLOCK SCM_TemplateClean
 
 VAR CONSTANT
 END_VAR
@@ -118,14 +118,13 @@ VAR
 
 	(*Internals*)
 	HMI:HMI_TemplateClean;					//All Hmi variables
-	eS: eTpc; 								//Main state program
+	State:sTpc;								//Program state
 	eE:	(U_0,U1_0,U1_1,U1_2	);				//Main state exceptions
 	HM_ProgStatus:ProgStatus;				//Program general status bits	
 	HM_LastTicksStateRest:ULINT;			//System ticks value last time left rest state
 	HM_Empty:BOOL;							//Internal machinepart is empty
 		
 	(*Instances*)
-	Step:utl_Step;							//used for state transitioning
 	//Cyl_InfStopper:....					//Cylinder infeed stopper
 	
 	(*Inputs / Outputs*)	
@@ -152,7 +151,7 @@ END_VAR]]></Declaration>
 			HM_ProgStatus.Prog_Exception := FALSE;
 		END_IF
 		
-		eS:=eTpc.TotalReset_Example;
+		State.eS:=eTpc.TotalReset_Example;
 		
 		(*bits needed to keep the line running if a part midsection is disabled*)
 		HM_ProgStatus.Prog_Rest := TRUE;
@@ -192,9 +191,7 @@ END_VAR]]></Declaration>
         <ST><![CDATA[(* State transition controller
 	Handles multistep + step hold + statusses for hmi + logging*) 
 		//>>must be before all method calls, since the input arguments are used
-	Step(
-		I_StepEnumConverter := THIS^,
-		I_OrgControl := I_Organiser);
+	State(I_OrgControl := I_Organiser);
 
 
 (*Exceptions
@@ -262,13 +259,13 @@ CASE eE OF
 		IF(	NOT I_Organiser.TotalReset_K)
 		THEN
 			//Total reset main program
-			Step.M_Step(
+			State.M_Step(
 				I_NewStep:= eTpc.TotalReset_Example,
 				I_StepCanBeHeld:= FALSE);
 			
 			//disable multistepping for 1 round
 			{warning disable C0139}
-			Step.P_IsMultiStepRequired;
+			State.P_IsMultiStepRequired;
 			
 			//>>
 			eE := U_0;
@@ -302,7 +299,7 @@ HM_ProgStatus.Prog_Exception := (eE > U_0);]]></ST>
 
 
 (*Step activations*)
-CASE eS OF
+CASE State.eS OF
 	eTpc.TotalReset_Example:
 	;
 
@@ -362,7 +359,7 @@ END_CASE	]]></ST>
 	A_StepActivationsInit();
 
 (*Activations by step*)
-	CASE eS OF
+	CASE State.eS OF
 		eTpc.TotalReset_Example:
 			(*Controls*)
 			(*Internals*)
@@ -399,7 +396,7 @@ END_CASE	]]></ST>
 		
 	*However it is more readable if you don't use this way of activating cylinders and just specify in each step in or out
 *)
-	IF(NOT (eS = eTpc.TotalReset_Example))
+	IF(NOT (State.eS = eTpc.TotalReset_Example))
 	THEN
 		//Cyl_Example.I_K_AutoOut := NOT Cyl_Example.I_K_AutoIn; 
 	END_IF
@@ -468,17 +465,17 @@ END_CASE	]]></ST>
 (*Main program steps*)
 
 //if stepping not locked, by steplock mode >> can be toggled in HMI to lock certain steps for commissioning/debugging
-IF( NOT Step.Q_K_LockSteps)
+IF( NOT State.Q_K_LockSteps)
 THEN
 //Repeat until conditions to step to next state are false OR looped already twice (normally programs don't loop multiple times!)
 REPEAT 
-	CASE eS OF
+	CASE State.eS OF
 		eTpc.TotalReset_Example:
 			//if initialise command from the organiser >> start initialisation
 			IF ( I_Organiser.Init_K)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTpc.Initialise_Example,
 					//Optional: argument to log extra info for this step transition
 					I_NewStepLogInfo:= CONCAT('Start command at time:', SYSTEMTIME_TO_STRING(BknGlbl.LocalSystemTime)),
@@ -493,7 +490,7 @@ REPEAT
 			IF( FALSE) 
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTpc.Rest_Example,
 					I_StepCanBeHeld:= TRUE);
 			END_IF
@@ -503,7 +500,7 @@ REPEAT
 				AND FALSE)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTpc.Rest_Example,
 					//just an example what you can do (add state info for logging purposes), this argument is optional
 					I_NewStepLogInfo:= Concat('Last cycle time(s):', TO_STRING(TO_REAL(BknGlbl.SystemTimeInTicks - HM_LastTicksStateRest)/10000000)),
@@ -517,35 +514,10 @@ REPEAT
 	END_CASE 
 
 //until flag to multistep is false 
-UNTIL(NOT Step.P_IsMultiStepRequired)
+UNTIL(NOT State.P_IsMultiStepRequired)
 END_REPEAT
 END_IF]]></ST>
       </Implementation>
     </Action>
-    <Property Name="P_EnumAsInt" Id="{8ff0248d-e32c-40fb-8bc5-640884d866fb}">
-      <Declaration><![CDATA[PROPERTY P_EnumAsInt : INT]]></Declaration>
-      <Get Name="Get" Id="{3ec08425-d81e-4c01-a15b-30bbe6a65652}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[P_EnumAsInt := eS;]]></ST>
-        </Implementation>
-      </Get>
-      <Set Name="Set" Id="{f1036c59-cf36-4c75-a772-71f9bc2ca46f}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[eS := P_EnumAsInt;]]></ST>
-        </Implementation>
-      </Set>
-    </Property>
-    <Property Name="P_EnumAsString" Id="{c55e0e27-dd05-42be-9260-43fe3c834889}">
-      <Declaration><![CDATA[PROPERTY P_EnumAsString : STRING(40)
-]]></Declaration>
-      <Get Name="Get" Id="{132aa2c6-aa24-488a-8da5-dd103f153ba9}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[P_EnumAsString := TO_STRING(eS);]]></ST>
-        </Implementation>
-      </Get>
-    </Property>
   </POU>
 </TcPlcObject>

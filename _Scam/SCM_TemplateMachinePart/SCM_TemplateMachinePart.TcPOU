@@ -94,7 +94,7 @@
 			-this blocks keeps being updated with new blocks/styles/etc
 *)
 
-FUNCTION_BLOCK SCM_TemplateMachinePart IMPLEMENTS ItfEnumConverter
+FUNCTION_BLOCK SCM_TemplateMachinePart
 VAR_INPUT
 	I_Organiser: ItfOrgControl;								//Organiser control bits
 	I_SP_GeneralShared:REFERENCE TO HMI_SP_GeneralShared; 	//General shared setpoints for multiple blocks
@@ -122,7 +122,7 @@ VAR
 						TrigAtInterval:= 10, 			//log every 10 plc cycles
 						TrigAtDeviation:=1);			//Log if pos change >= 1
 (*Internals*)
-	eS: eTMP; 											//Main state program
+	State: sTmp; 											//Main state program
 	eE:	(U_0,U1_0,U1_1,U1_2	);							//Main state exceptions
 	HM_ProgStatus:ProgStatus;							//Program general status bits
 	HM_LastTicksStateRest:ULINT;						//System ticks value last time left rest state
@@ -135,7 +135,6 @@ VAR
 	
 (*Instances*)
 	HMI:HMI_TemplateMachinePart;						//All HMI related variables
-	Step:utl_Step;									//State stepper
 	Tmr_Empty:TON;										//Timer detection machine is empty*)
 	Tmr_Initialisation:TON;								//Timer template*)
 	Tmr_TestServoVelo:ton;
@@ -291,9 +290,7 @@ END_VAR]]></Declaration>
         <ST><![CDATA[(* State transition controller
 	Handles multistep + step hold + statusses for hmi + logging*) 
 		//>>must be before all method calls, since the input arguments are used
-	Step(
-		I_StepEnumConverter := THIS^,
-		I_OrgControl := I_Organiser);
+	State(I_OrgControl := I_Organiser);
 
 (*Exceptions
 	Here exeptions are handled.
@@ -362,13 +359,13 @@ CASE eE OF
 		IF(	NOT I_Organiser.TotalReset_K)
 		THEN
 			//Total reset main program
-			Step.M_Step(
+			State.M_Step(
 				I_NewStep:= eTMP.TotalReset,
 				I_StepCanBeHeld:= FALSE);
 			
 			//disable multistepping for 1 round
 			{warning disable C0139}
-			Step.P_IsMultiStepRequired;
+			State.P_IsMultiStepRequired;
 
 			//Reset main program flags
 			HM_Empty:=FALSE;
@@ -409,7 +406,7 @@ SN_DscReadyToReceive.I_K_SimulateOn := FALSE;
 PC_Example.I_SimulateState := eSensorState.Undetected;
 
 (*Step activations*)
-CASE eS OF
+CASE State.eS OF
 	eTMP.TotalReset:
 	;
 
@@ -420,10 +417,10 @@ CASE eS OF
 	;
 
 	eTMP.Rest:
-		PC_Example.P_BypassErrDetectionTime := Step.P_StepTime + T#100MS;
+		PC_Example.P_BypassErrDetectionTime := State.P_StepTime + T#100MS;
 		
 		//If delay time elapsed >> simulate sensor + discharge request
-		IF(Step.P_StepTime > T#1S) 
+		IF(State.P_StepTime > T#1S) 
 		THEN
 			SN_DscReadyToReceive.I_K_SimulateOn := TRUE; 
 			PC_Example.I_SimulateState := eSensorState.Detected;
@@ -489,7 +486,7 @@ A_StepActivationsInit();
 
 
 (*Activations by step*)
-	CASE eS OF
+	CASE State.eS OF
 		eTMP.TotalReset:
 			;
 		
@@ -619,20 +616,6 @@ A_StepActivationsInit();
 	END_CASE
 
 (*Activations always (not step dependant)*)
-
-(*Default positions for cylinders 
-	*If you don't want to specify in each step the IN OR out activation for a cylinder
-	then you could do it like here:
-		In := NOT Out
-		>>now only the Out activation has to be programmed in the activations-case
-		
-	*However it is more readable if you don't use this way of activating cylinders and just specify in each step in or out
-*)
-	IF(NOT (eS = eTMP.TotalReset))
-	THEN
-		//Cyl_Example.I_K_AutoOut := NOT Cyl_Example.I_K_AutoIn; 
-	END_IF
-
 
 (*Warnings/Statusses*)
 	//update organiser with local status
@@ -925,17 +908,17 @@ HM_DebugMultiStep_ResetInActivations := false;]]></ST>
 (*Main program steps*)
 
 //if stepping not locked, by steplock mode >> can be toggled in HMI to lock certain steps for commissioning/debugging
-IF( NOT Step.Q_K_LockSteps)
+IF( NOT State.Q_K_LockSteps)
 THEN
 //Repeat until conditions to step to next state are false OR looped already twice (normally programs don't loop multiple times!)
 REPEAT 
-	CASE eS OF
+	CASE State.eS OF
 		eTMP.TotalReset:
 			//if initialise command from the organiser >> start initialisation
 			IF ( I_Organiser.Init_K)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.InitCyl,
 					//Optional: argument to log extra info for this step transition
 					I_NewStepLogInfo:= CONCAT('Start command at time:', SYSTEMTIME_TO_STRING(BknGlbl.LocalSystemTime)),
@@ -953,7 +936,7 @@ REPEAT
 				AND NOT PC_Example.Q_DetectedDebounced) //note: >> set error detection in activations!
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.InitSrv,
 					I_StepCanBeHeld:= TRUE);
 			END_IF
@@ -964,7 +947,7 @@ REPEAT
 				AND Tmr_Initialisation.Q) 
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.InitCamQuickFocus,
 					I_StepCanBeHeld:= TRUE);
 			END_IF
@@ -975,7 +958,7 @@ REPEAT
 				AND Cam_OmronSmartCam.Q_K_AutoOrQuickCal_Ok)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.InitCamLoadJob,
 					I_StepCanBeHeld:= TRUE);
 			END_IF
@@ -986,7 +969,7 @@ REPEAT
 				AND Cam_OmronSmartCam.Q_K_LoadJob_Ok)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.Rest,
 					I_StepCanBeHeld:= TRUE);
 			END_IF
@@ -1015,7 +998,7 @@ REPEAT
 				Srv_Interrol.I_Position:= HMI.SP.POS_SrvBegin;
 				
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.SrvPosStart,
 					//just an example what you can do (add state info for logging purposes), this argument is optional
 					I_NewStepLogInfo:= Concat('Last cycle time(s):', TO_STRING(TO_REAL(BknGlbl.SystemTimeInTicks - HM_LastTicksStateRest)/10000000)),
@@ -1028,7 +1011,7 @@ REPEAT
 			THEN
 				
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.SemiAutoStart,
 					I_StepCanBeHeld:= TRUE);
 					
@@ -1042,7 +1025,7 @@ REPEAT
 				AND Srv_Interrol.Q_STS_TargetReached)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.SrvPosStartInterl,
 					I_StepCanBeHeld:= TRUE); //enabling step lock, so we can see at the machine how the servo is positioned if done 
 			END_IF
@@ -1061,7 +1044,7 @@ REPEAT
 				Srv_Interrol.I_Position:= HMI.SP.POS_SrvEnd;
 				
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.SrvPosEnd,
 					I_StepCanBeHeld:= FALSE);
 			END_IF
@@ -1073,7 +1056,7 @@ REPEAT
 				AND Srv_Interrol.Q_STS_TargetReached)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.SrvPosEndIntrl,
 					I_StepCanBeHeld:= TRUE); //enabling step lock, so we can see at the machine how the servo is positioned if done	
 			END_IF
@@ -1084,7 +1067,7 @@ REPEAT
 				AND NOT Srv_Interrol.Q_STS_TargetReached)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.CylOut,
 					I_StepCanBeHeld:= FALSE);				
 			END_IF
@@ -1095,7 +1078,7 @@ REPEAT
 				AND Vcg_Suckers.Q_K_VacuumOK)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.CylIn,
 					I_StepCanBeHeld:= TRUE);
 			END_IF
@@ -1113,7 +1096,7 @@ REPEAT
 				AND NOT Fdr_LzExample.Q_STS_TargetReached)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.MtrStartFwd,
 					I_StepCanBeHeld:= FALSE);
 			END_IF	
@@ -1130,7 +1113,7 @@ REPEAT
 				//init flag
 				HM_MtrRevDone:= FALSE;
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.MtrStop,
 					I_StepCanBeHeld:= TRUE);
 			END_IF
@@ -1149,14 +1132,14 @@ REPEAT
 				IF(NOT HM_MtrRevDone)
 				THEN
 					//>>
-					Step.M_Step(
+					State.M_Step(
 						I_NewStep:= eTMP.MtrStartRev,
 						I_StepCanBeHeld:= FALSE);
 				//else motor cycle done
 				//CamReady
 				ELSE				
 					//>>
-					Step.M_Step(
+					State.M_Step(
 						I_NewStep:= eTMP.CamReady,
 						I_StepCanBeHeld:= TRUE);
 				END_IF
@@ -1173,7 +1156,7 @@ REPEAT
 				HM_MtrRevDone:=TRUE;
 				
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.MtrStop,
 					I_StepCanBeHeld:= TRUE);
 			END_IF
@@ -1192,7 +1175,7 @@ REPEAT
 				AND NOT Cam_OmronSmartCam.Q_K_Trigger_Nok)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.CamTrig,
 					I_StepCanBeHeld:= TRUE);
 			END_IF
@@ -1209,7 +1192,7 @@ REPEAT
 				HM_DebugMultiStep_ResetInActivations := TRUE; //used for testing multistepping
 				
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.MultiStepTest2,
 					I_StepCanBeHeld:= TRUE);
 			END_IF			
@@ -1224,7 +1207,7 @@ REPEAT
 			IF(TRUE)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.MultiStepTest3,
 					I_StepCanBeHeld:= FALSE);				
 			END_IF
@@ -1235,23 +1218,23 @@ REPEAT
 			IF(HM_DebugMultiStep_ResetInActivations)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.MultiStepTest2,
 					I_StepCanBeHeld:= FALSE);				
 			//else done testing multistepping >> back to rest
 			ELSE
 
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.Rest,
 					I_StepCanBeHeld:= FALSE);	
 			END_IF		
 
 		eTMP.SemiAutoStart:
-			IF( Step.P_StepTime > T#2S)
+			IF( State.P_StepTime > T#2S)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.SemiAutoStop,
 					I_StepCanBeHeld:= TRUE);
 					
@@ -1259,7 +1242,7 @@ REPEAT
 			ELSIF(NOT I_Organiser.SemiAuto_K)
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.Rest,
 					I_StepCanBeHeld:= TRUE);
 			END_IF
@@ -1268,10 +1251,10 @@ REPEAT
 		//note: this will cause a deadlock, I'm doing it on purpose here to test things.
 		//*the program should always be able to return to a rest-step before you add another Semi-/Auto_K condition
 			IF( I_Organiser.SemiAuto_K
-				and Step.P_StepTime > T#2S)  
+				AND State.P_StepTime > T#2S)  
 			THEN
 				//>>
-				Step.M_Step(
+				State.M_Step(
 					I_NewStep:= eTMP.Rest,
 					I_StepCanBeHeld:= TRUE);
 			END_IF
@@ -1282,35 +1265,10 @@ REPEAT
 	END_CASE  
 
 //until flag to multistep is false 
-UNTIL(NOT Step.P_IsMultiStepRequired)
+UNTIL(NOT State.P_IsMultiStepRequired)
 END_REPEAT
 END_IF]]></ST>
       </Implementation>
     </Action>
-    <Property Name="P_EnumAsInt" Id="{2cc176bd-fbe1-4737-bb26-a0f98602cc1f}">
-      <Declaration><![CDATA[PROPERTY P_EnumAsInt : INT]]></Declaration>
-      <Get Name="Get" Id="{cbff2e38-1d7f-4ae7-9d18-8c157d767843}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[P_EnumAsInt := eS;]]></ST>
-        </Implementation>
-      </Get>
-      <Set Name="Set" Id="{983ad4b8-dccb-464f-9382-6f07f5713a5a}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[eS := P_EnumAsInt;]]></ST>
-        </Implementation>
-      </Set>
-    </Property>
-    <Property Name="P_EnumAsString" Id="{22eda469-20db-4389-a76e-7e4d864f78ae}">
-      <Declaration><![CDATA[PROPERTY P_EnumAsString : STRING(40)
-]]></Declaration>
-      <Get Name="Get" Id="{c1bcbde4-3c34-4a0a-bbc3-a616595397ec}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[P_EnumAsString := TO_STRING(eS);]]></ST>
-        </Implementation>
-      </Get>
-    </Property>
   </POU>
 </TcPlcObject>

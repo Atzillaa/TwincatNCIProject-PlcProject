@@ -5,7 +5,7 @@
       <Data>
         <o xml:space="preserve" t="VisualObject">
           <n n="LastVisuLanguageModelEntry" />
-          <v n="UniqueIdGenerator">"57"</v>
+          <v n="UniqueIdGenerator">"62"</v>
           <o n="VisualElemList" t="VisualElemList">
             <l n="VisualElementList" t="VisualElemCollection" cet="GenericVisualElem">
               <o>
@@ -323,7 +323,7 @@
                     </o>
                     <o>
                       <v n="Id">2477733581L</v>
-                      <v n="Value">"MAIN.ExampleMachinePart.eS"</v>
+                      <v n="Value">"MAIN.ExampleMachinePart.State"</v>
                     </o>
                     <o>
                       <v n="Id">823443203L</v>
@@ -1641,7 +1641,7 @@ Needs to be wired in correct way"</v>
                     </o>
                     <o>
                       <v n="Id">2477733581L</v>
-                      <v n="Value">"MAIN.ExampleMachinePart.eS"</v>
+                      <v n="Value">"MAIN.ExampleMachinePart.State"</v>
                     </o>
                     <o>
                       <v n="Id">823443203L</v>
@@ -3939,10 +3939,13 @@ Needs to be wired in correct way"</v>
               <v n="BgUseColor">16777215</v>
               <v n="BgUseGradient">false</v>
             </o>
+            <v n="AllElementsHaveDynamicVisibility">false</v>
           </o>
           <o n="GeneratedLMMDescriptions" t="GeneratedLanguageModelEntriesData">
             <o n="GeneratedVisuFbDescription" t="GenericFbDescription">
               <d n="FbMethods" t="CaseInsensitiveHashtable_1" ckt="String" cvt="Guid">
+                <v>AreAllElementsHidden</v>
+                <v>8c15070e-3512-5925-b457-83c9f1cdefa8</v>
                 <v>ContainsPoint</v>
                 <v>1800d9af-c19c-4ad8-9084-b4f7df350cbb</v>
                 <v>Destruct</v>
@@ -4194,6 +4197,9 @@ END_VAR"</v>
             <v n="DialogIsOpaque">false</v>
             <v n="DialogIsOpaqueIsSet">false</v>
             <v n="UseParentSizeProperties">true</v>
+            <n n="ToolboxCategory" />
+            <n n="ToolboxImageId" />
+            <v n="IsCustomCategory">false</v>
           </o>
         </Data>
         <TypeList>

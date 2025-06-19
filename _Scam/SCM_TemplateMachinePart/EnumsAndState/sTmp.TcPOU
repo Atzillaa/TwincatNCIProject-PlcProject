@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="sTmp" Id="{3d6e569b-8654-4cd8-959a-d643f645ce60}" SpecialFunc="None">
+    <Declaration><![CDATA[(*	SCAM-State
+	Lifts project unique variables to the project while keeping library functionality
+
+	BaseBlock
+		This blocks handles stuff that needs to be done @ state transitions
+			-logging
+			-multistepping
+			-steplocking
+
+
+	Usage:
+		Adaptions needed to this block
+		-Copy template
+		-Redefine variable "eS" to your state enum
+			*reasoning for var_input >> an input can be read/written to in the outside world as well as here
+		
+		Already done if you have copied the template
+		-Finish abstract properties
+
+
+	Usage in the scam:
+		-This block needs to be called once before the state transitions
+		-in the scam step-transitions, call the method M_Step(....) to jump to your requested state
+			-in arguments define if the step can be held / log extra info
+*)
+
+FUNCTION_BLOCK sTmp EXTENDS utl_ScmState
+VAR_INPUT
+	eS:eTMP;  //enum holding your project unique scam-state
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[SUPER^(I_OrgControl := I_OrgControl);]]></ST>
+    </Implementation>
+    <Property Name="P_StateAsInt" Id="{b207d7db-a9c3-4880-a4b0-bc949d5192e8}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY P_StateAsInt : INT
+]]></Declaration>
+      <Get Name="Get" Id="{8220f6fe-2ad6-442b-9e87-276116b368b5}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_StateAsInt := eS;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{461c86f6-f300-482d-ab66-d3caf7c8ecc7}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[eS := P_StateAsInt;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_StateAsString" Id="{07566dac-6dfd-42c1-b69b-791f759bfda7}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+PROPERTY P_StateAsString : STRING(40)
+]]></Declaration>
+      <Get Name="Get" Id="{d714f82b-c761-40cd-ab8a-be5656cd87cb}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_StateAsString := TO_STRING(eS);]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+  </POU>
+</TcPlcObject>
