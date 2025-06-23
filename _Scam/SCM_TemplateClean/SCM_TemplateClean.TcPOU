@@ -261,7 +261,7 @@ CASE eE OF
 			//Total reset main program
 			State.M_Step(
 				I_NewStep:= eTpc.TotalReset_Example,
-				I_StepCanBeHeld:= FALSE);
+				I_StepCanBeHeld:= TRUE);
 			
 			//disable multistepping for 1 round
 			{warning disable C0139}

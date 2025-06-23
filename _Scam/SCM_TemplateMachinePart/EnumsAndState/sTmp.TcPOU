@@ -52,8 +52,7 @@ PROPERTY P_StateAsInt : INT
       </Set>
     </Property>
     <Property Name="P_StateAsString" Id="{07566dac-6dfd-42c1-b69b-791f759bfda7}">
-      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
-PROPERTY P_StateAsString : STRING(40)
+      <Declaration><![CDATA[PROPERTY P_StateAsString : STRING(40)
 ]]></Declaration>
       <Get Name="Get" Id="{d714f82b-c761-40cd-ab8a-be5656cd87cb}">
         <Declaration><![CDATA[]]></Declaration>

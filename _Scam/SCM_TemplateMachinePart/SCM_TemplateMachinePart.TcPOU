@@ -361,7 +361,7 @@ CASE eE OF
 			//Total reset main program
 			State.M_Step(
 				I_NewStep:= eTMP.TotalReset,
-				I_StepCanBeHeld:= FALSE);
+				I_StepCanBeHeld:= TRUE);
 			
 			//disable multistepping for 1 round
 			{warning disable C0139}
@@ -417,7 +417,7 @@ CASE State.eS OF
 	;
 
 	eTMP.Rest:
-		PC_Example.P_BypassErrDetectionTime := State.P_StepTime + T#100MS;
+		PC_Example.P_BypassErrDetectionTime := State.P_StepTime + T#100MS; 
 		
 		//If delay time elapsed >> simulate sensor + discharge request
 		IF(State.P_StepTime > T#1S) 

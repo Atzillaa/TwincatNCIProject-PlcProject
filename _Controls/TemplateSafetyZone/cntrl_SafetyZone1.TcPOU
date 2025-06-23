@@ -48,13 +48,16 @@ VAR
 	
 	//TODO TEMPLATE 
 		//adapt as needed (i've added ES_DelayedOff so it can be logged, normally you don't need it in the plc side)
-	//twinsafe statusses		
-	Isf_STS_CrcSafetyProject AT%I*:WORD;			//Status crc code of safety project >> link to terminal which runs the safety project (activate map crc check under target)		
-	Isf_STS_AirActivated: cntrl_InputHmiSts;		//Status safety airvalves open	>> link to safety airvalves block via intermediate alias dig output
-	Isf_STS_ES_DelayedOffOk: cntrl_InputHmiSts;		//Status safety logic			>> link to safety logic "zone 1 es delayed ok" via intermediate alias dig output
-	//twinsafe statusses with error
+	//twinsafe statusses
+	//no errors
+	Isf_STS_CrcSafetyProject AT%I*:WORD;			//Status crc code of safety project >> link to terminal which runs the safety project (activate map crc check under target)
+	Isf_STS_AirActivated: cntrl_Input;				//Status safety airvalves open	>> link to safety airvalves block via intermediate alias dig output
+	Isf_STS_ES_DelayedOffOk: cntrl_Input;			//Status safety logic			>> link to safety logic "zone 1 es delayed ok" via intermediate alias dig output
+	//with errors
+	
 	Isf_STS_ES_OK: cntrl_InputHmiStsErr;			//Status safety logic			>> link to safety logic "zone 1 es ok" via intermediate alias dig output
 	Isf_STS_Servo1_InError: cntrl_InputHmiStsErr;	//status safety logic 			>> link to the safety-card error status of the servo drive
+
 	
 	//TODO TEMPLATE >> this is needed if you have the boikon safety valves in the safetygroup. This needs to know if the airpressure is ok, otherwise it will not try to start air (and cause safety errors because edm's not working)
 	Qsf_K_EnableSafeAir AT%Q*:BOOL;	//Status airpressure is ok
@@ -82,12 +85,7 @@ _A_HMI();
 //
 
 //io safety logic
-	Isf_STS_ES_OK(
-		I_OrgControl := I_OrgControl,
-		I_HMI_Parent := HMI,
-		I_K_SimulationActive:= I_K_SimulationActive,
-		I_K_SimulateOn:= I_K_SimulationActive);
-		
+	//presumably no error needed for these (if something is wrong with those the safety group should go in error and that will trigger error ES not OK
 	Isf_STS_ES_DelayedOffOk(
 		I_K_SimulationActive:= I_K_SimulationActive,
 		I_K_SimulateOn:= Isf_STS_ES_OK.Q);
@@ -95,6 +93,14 @@ _A_HMI();
 	Isf_STS_AirActivated(
 		I_K_SimulationActive:= I_K_SimulationActive,
 		I_K_SimulateOn:= Isf_STS_ES_OK.Q);
+
+	//signals with error detection
+	Isf_STS_ES_OK(
+		I_OrgControl := I_OrgControl,
+		I_HMI_Parent := HMI,
+		I_K_SetError := NOT Isf_STS_ES_OK.Q,
+		I_K_SimulationActive:= I_K_SimulationActive,
+		I_K_SimulateOn:= I_K_SimulationActive);
 		
 	Isf_STS_Servo1_InError(
 		I_OrgControl := I_OrgControl,
@@ -109,7 +115,8 @@ _A_HMI();
 							AND I_STS_AirPressure_OK;
 	Qsf_K_EnableSafeAir R= NOT I_STS_AirPressure_OK;
 		
-//io hw-terminals	
+//io hw-terminals
+	//signals with error detection
 	PB_ES_MainCabinet(
 		I_OrgControl := I_OrgControl,
 		I_HMI_Parent := HMI,
@@ -138,12 +145,7 @@ _A_HMI();
 
 //Errors
 //TODO TEMPLATE >> add / remove as needed
-	HMI.ERR.ES_Circuit S= NOT Isf_STS_ES_OK.Q;
-	HMI.ERR.ES_Air S= NOT Isf_STS_AirActivated.Q;
-	HMI.ERR.PB_ES_MainCabinet S= PB_ES_MainCabinet.Q;
-	HMI.ERR.DR_Front S= NOT DR_Front.Q;
-	HMI.ERR.LS_Entry1 S= NOT LS_Entry1.Q;
-	HMI.ERR.ES_Servo1 S= Isf_STS_Servo1_InError.Q;
+	//note: since for the doors/pb's/circuit/air cntrl_InputStsErr is chosen, the error is already created in those blocks
 
 //Statusses
 	HMI.STS.CrcCodeProject := Isf_STS_CrcSafetyProject;]]></ST>
