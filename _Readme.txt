@@ -73,39 +73,37 @@ visu programming:
 	textfield variable formatting: https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_plc_intro/3524724747.html#3524762891&id=
 	for time use %s (don't forget to also assign onmouseup event correctly)
 
-interesting pragma's
-
+Attributes
+!Rule SA0004 cannot be disabled by a pragma or an attribute
 	//several ways to suppress warnings >> it's a mess! 	
-	{analysis -0175} >>disables analysis warning SA0175 suspicious operation on string
-	{attribute 'suppress_wrn_C0410'} //oh nooo... the number in the warning is c5410 but this is how you disable it????
-	{attribute 'no-analysis'} exclude object from analysis
-	{attribute 'analysis' := '-33'}			//deactivate errors: unused variable '-27' = name already used
-	{warning disable/restore xxxx}
-		C0125>> ... is assigned to more than one enumeration
-		C0139>> code has no effect
-		C0195 / C0196>> signed to unsigned / unsigned to signed
-		C0197>> implicit conversion ... possible loss of information
-		C0371>> acces from external context (using for example IO_STS in a method while declared in the main body)
-		maybe these work as well???> https://content.he
+		{analysis -0175} >>disables analysis warning SA0175 suspicious operation on string
+		{attribute 'suppress_wrn_C0410'} //oh nooo... the number in the warning is c5410 but this is how you disable it????
+		{attribute 'no-analysis'} exclude object from analysis
+		{attribute 'analysis' := '-33'}			//deactivate errors: unused variable '-27' = name already used
+		{warning disable/restore xxxx}
+			C0125>> ... is assigned to more than one enumeration
+			C0139>> code has no effect
+			C0195 / C0196>> signed to unsigned / unsigned to signed
+			C0197>> implicit conversion ... possible loss of information
+			C0371>> acces from external context (using for example IO_STS in a method while declared in the main body)
+		
+	//general
+		{region 'my private space'}  {endregion} >>just like in c# create foldable blocks
+			>>I prefer to make regions with tabs >> folding in the editor is based on tabs!
+		{info 'shows this text as info during compiling'}
+		{warning 'shows this text as warning during compiling'}
+		{error 'shows this text as error during compiling'}
+		{attribute 'qualified_only'}			//forces the user to add the DUT name in front of the variables (needed if for example 2 enum structs have the same keys)
+		{attribute 'displaymode':='bin'}		// or 'dec' or 'hex' forces said display mode of the variable during monitoring
+		{attribute 'global_init_slot':= 'x'}	//cdetermines which blocks get initialised first. Globals have a adefault value of 49990 and POU's 50000
+		{attribute 'hide'}						//hides block in a library from a project
+		{attribute 'hide_all_locals'}			//hides local variables for online view
+ 
+	//Properties
+		{attribute 'monitoring':='call'}		//Forces during monitoring the get property is executed so a value can be seen (otherwise no monitoring of values when you looking at them online)
 
-	{region 'my private space'}  {endregion} >>just like in c# create foldable blocks
-		>>I prefer to make regions with tabs >> folding in the editor is based on tabs!
-	{info 'shows this text as info during compiling'}
-	{warning 'shows this text as warning during compiling'}
-
-lpme-codesys.com/en/CODESYS%20Static%20Analysis/_san_struct_reference_rules.html
-	{error 'shows this text as error during compiling'}
-	{attribute 'qualified_only'}			//forces the user to add the DUT name in front of the variables (needed if for example 2 enum structs have the same keys)
-	{attribute 'displaymode':='bin'}		// or 'dec' or 'hex' forces said display mode of the variable during monitoring
-	{attribute 'global_init_slot':= 'x'}	//cdetermines which blocks get initialised first. Globals have a adefault value of 49990 and POU's 50000
-	{attribute 'hide_all_locals'}			//(top of declacations) or 'hide' (above variable): hides all or single local variable(s) in online view'
-Properties
-	{attribute 'monitoring':='call'}		//Forces during monitoring the get property is executed so a value can be seen (otherwise no monitoring of values when you looking at them online)
-
-Programs
-	{attribute 'hide'}						//hides block in a library from a project
-	{attribute 'hide_all_locals'}			//hides local variables for online view
-	{attribute 'no_explicit_call' := 'do not call this POU directly, because ...'}
+	//Programs
+		{attribute 'no_explicit_call' := 'do not call this POU directly, because ...'}
 
 
 //interesting new features of tc3

@@ -46,11 +46,16 @@
 			Fdr		>>Frequency drive
 			Srv		>>servo
 			Vcg		>>Vacuum generator
-			//sensors
+			//Inputs
+			Dr		>>door
+			Pb		>>pushbutton
 			Pc		>>photocell
 			Px		>>proximity sensor (capacitive/inductive)
 			Ps		>>pressure sensor
 			Rs		>>reed switch
+			//Outputs
+			K		>>relais
+			Y		>>klep
 					
 			Example: Srv_LaserHeight / Cyl_TapeCutter / Tmr_CutDelay
 				

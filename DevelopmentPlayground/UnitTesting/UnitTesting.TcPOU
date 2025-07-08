@@ -253,8 +253,7 @@ rollingHash := 0;
 rollingSum1 := 0;
 rollingSum2 := 0;
 
-
-https://gchq.github.io/CyberChef/#recipe=From_Hex('Space')Fletcher-64_Checksum()&input=RkZGRkZFMDA4OUIxNTY0OAo2NzQ1MjMwMUVGQ0RBQjg5Cgo&ienc=65001
+//https://gchq.github.io/CyberChef/#recipe=From_Hex('Space')Fletcher-64_Checksum()&input=RkZGRkZFMDA4OUIxNTY0OAo2NzQ1MjMwMUVGQ0RBQjg5Cgo&ienc=65001
 //NOTE>> library function uses fletcher big endian (otherwise we would have to byteswap everything)
 {attribute 'no-analysis'}
 utl_FletcherXword.M_UpdateSum1Sum2(I_Data:= data1, IO_Sum1:= rollingSum1, IO_Sum2:= rollingSum2);

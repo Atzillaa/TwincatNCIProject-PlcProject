@@ -5,7 +5,7 @@
       <Data>
         <o xml:space="preserve" t="VisualObject">
           <n n="LastVisuLanguageModelEntry" />
-          <v n="UniqueIdGenerator">"30"</v>
+          <v n="UniqueIdGenerator">"37"</v>
           <o n="VisualElemList" t="VisualElemList">
             <l n="VisualElementList" t="VisualElemCollection" cet="GenericVisualElem">
               <o>
@@ -1850,7 +1850,7 @@ Only for boikon engineers"</v>
                     </o>
                     <o>
                       <v n="Id">1999528970L</v>
-                      <v n="Value">"IO_SafetyLogic.Isf_STS_ES_DelayedOffOk.HMI.STS.State"</v>
+                      <v n="Value">"IO_SafetyLogic.Isf_STS_ES_DelayedOffOk.Q"</v>
                     </o>
                     <o>
                       <v n="Id">3719097617L</v>
