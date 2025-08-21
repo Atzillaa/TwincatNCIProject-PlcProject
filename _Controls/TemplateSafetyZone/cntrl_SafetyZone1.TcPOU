@@ -52,7 +52,6 @@ VAR
 	//no errors
 	Isf_STS_CrcSafetyProject AT%I*:WORD;			//Status crc code of safety project >> link to terminal which runs the safety project (activate map crc check under target)
 	Isf_STS_AirActivated: cntrl_Input;				//Status safety airvalves open	>> link to safety airvalves block via intermediate alias dig output
-	Isf_STS_ES_DelayedOffOk: cntrl_Input;			//Status safety logic			>> link to safety logic "zone 1 es delayed ok" via intermediate alias dig output
 	//with errors
 	
 	Isf_STS_ES_OK: cntrl_InputHmiStsErr;			//Status safety logic			>> link to safety logic "zone 1 es ok" via intermediate alias dig output
@@ -85,11 +84,6 @@ _A_HMI();
 //
 
 //io safety logic
-	//presumably no error needed for these (if something is wrong with those the safety group should go in error and that will trigger error ES not OK
-	Isf_STS_ES_DelayedOffOk(
-		I_K_SimulationActive:= I_K_SimulationActive,
-		I_K_SimulateOn:= Isf_STS_ES_OK.Q);
-		
 	Isf_STS_AirActivated(
 		I_K_SimulationActive:= I_K_SimulationActive,
 		I_K_SimulateOn:= Isf_STS_ES_OK.Q);
@@ -171,8 +165,8 @@ METHOD PROTECTED _M_SafetyOk : BOOL
 
 //just for info for the safetylogic visualisation (indicator status ES_OK)
 
-//todo template >> adjust as needed (normally you only have these 2)
-_M_SafetyOk := Isf_STS_ES_OK.Q AND Isf_STS_ES_DelayedOffOk.Q; // and Isf_K_AirPressureApplied.Q;]]></ST>
+//todo template >> adjust as needed
+_M_SafetyOk := Isf_STS_ES_OK.Q;]]></ST>
       </Implementation>
     </Method>
   </POU>

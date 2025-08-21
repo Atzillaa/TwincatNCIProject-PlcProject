@@ -23,7 +23,6 @@
     <Title>Boikon Template</Title>
     <CompilerVersion>
     </CompilerVersion>
-    <AllowChecksForLibrary>false</AllowChecksForLibrary>
     <POUsForPropertyAccessIncluded>false</POUsForPropertyAccessIncluded>
     <GlobalVersionStructureIncluded>true</GlobalVersionStructureIncluded>
     <CompilerDefines>IsTemplate</CompilerDefines>
