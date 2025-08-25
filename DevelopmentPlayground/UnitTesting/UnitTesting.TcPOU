@@ -10,6 +10,14 @@ END_VAR
 VAR
 	HM_HoustonWeHaveAProblem:BOOL;
 
+	//dummies
+	HM_OrganiserFake:cntrl_OrganiserFake;
+	HM_ItfOrgFake:ItfOrgControl;
+		
+	//out of curiousity
+	testVarInfo: __SYSTEM.VAR_INFO := __VARINFO(MAIN.General);
+	testPouInfo: STRING := __POUNAME();
+
 
 	//Array functions test
 	//
@@ -155,13 +163,15 @@ VAR
 	HM_LoggedChannelBenchStart:BOOL; //activate benchmarking for a logged channel
 	SW_LoggedChannelBenc: Profiler;
 	
-	//dummies
-	HM_OrganiserFake:cntrl_OrganiserFake;
-	HM_ItfOrgFake:ItfOrgControl;
-		
-	//out of curiousity
-	testVarInfo: __SYSTEM.VAR_INFO := __VARINFO(MAIN.General);
-	testPouInfo: STRING := __POUNAME();
+	//Banner multicolor lamps
+	BannerOrg1:cntrl_OrganiserFake;
+	BannerOrg2:cntrl_OrganiserFake;
+	BannerTest: Cntrl_BannerKxx(Intensity:= 0);
+	Banner_PB_dbg: ARRAY[0..10] OF BOOL;
+	Banner_Color1:eBannerKxx_Color;
+	Banner_Color2:eBannerKxx_Color;
+	Banner_AnimationType:eBannerKxx_AnimationType;
+
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -211,7 +221,10 @@ HM_HoustonWeHaveAProblem S= _M_RollingFletcher();
 _M_StringStuff();
 
 //Logging
-A_LoggedChannels();]]></ST>
+A_LoggedChannels();
+
+//Banner signal lamp
+A_cntrl_BannerKxx();]]></ST>
     </Implementation>
     <Method Name="_M_Any_ArrayInitValues" Id="{d7a71b1a-10c1-0248-0992-5b4320aee6aa}">
       <Declaration><![CDATA[METHOD PRIVATE _M_Any_ArrayInitValues]]></Declaration>
@@ -735,6 +748,47 @@ END_IF
 
 
 
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_cntrl_BannerKxx" Id="{bd278358-14dd-40b3-baea-fdfff85cb02c}">
+      <Implementation>
+        <ST><![CDATA[
+BannerTest();
+
+IF(Banner_PB_dbg[0])
+THEN
+	BannerTest.M_SetColorOff();
+	Banner_PB_dbg[0]:=FALSE;
+	
+ELSIF(Banner_PB_dbg[1])
+THEN
+	BannerTest.M_SetColorSteady(Banner_Color1);
+	Banner_PB_dbg[1]:=FALSE;
+
+ELSIF(Banner_PB_dbg[2])
+THEN
+	BannerTest.M_Set2ColorAnimation(
+		Banner_Color1, Banner_Color2,
+		Banner_AnimationType, 
+		Banner_PB_dbg[10]); //rotation direction
+	Banner_PB_dbg[2]:=FALSE;
+	
+//test 1 organiser
+ELSIF(Banner_PB_dbg[3])
+THEN
+	BannerTest.M_UpdateOrganiserState(BannerOrg1);
+
+//test multiorganiser
+ELSIF(Banner_PB_dbg[4])
+THEN
+	BannerTest.M_UpdateOrganiserState(BannerOrg1);
+	BannerTest.M_UpdateOrganiserState(BannerOrg2);
+
+
+END_IF
 
 
 ]]></ST>

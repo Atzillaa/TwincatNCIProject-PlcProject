@@ -7,11 +7,14 @@
 {warning 'upload boot project at online change is disabled in project settings, RE-ENABLE!!!!'}
 PROGRAM MAIN
 VAR
-	General: Utl_General;								(*General 123*)
+	General: Utl_General;								//General >> holds all stuff not belonging to a specific machine part (generic lamps / doors /etc)
 
 	Organiser:cntrl_Organiser(						
 		SP_TmrReset := T#1S,
-		SP_TmrResetES := T#3S);							(*Machine organiser*)
+		SP_TmrResetES := T#3S);							//Machine(part) organiser
+		
+	LP_OrgGroupMachinePart:Cntrl_BannerKxx(
+		Intensity:= 0);									//Status lamp for organiser(s) group machine part
 END_VAR
 
 //TODO TEMPLATE >> Remove this section 
@@ -22,8 +25,8 @@ END_VAR
 		{attribute 'analysis' := '-33'}
 		TestScmClean: SCM_TemplateClean;					//Remove >> Only here so it will get error checked
 		ExampleMachinePart: SCM_TemplateMachinePart;		//Remove >> Example for how to use
-	
-		HM_ProfileBlocks:bool;
+		
+		HM_ProfileBlocks:BOOL;
 		StopWatchGeneral:profiler;
 		StopWatchMachineStuff:profiler;
 		index:INT;
@@ -32,6 +35,7 @@ END_VAR
 		sw2:profiler;
 		sw3:profiler;
 		sw4:profiler;
+	
 	END_VAR
 {END_IF}]]></Declaration>
     <Implementation>
@@ -102,7 +106,6 @@ a_General();
 //Note: if the machine consists of several machine parts with their own organiser then for a cleaner structure make a seperate action for each part
 //todo think about this
 
-
 Organiser(
 	//Emergencystop zone for scams connected to this organiser
 	I_SN_ES_OK:= General.Q_SN_ES_Zone1_OK,
@@ -119,6 +122,11 @@ Organiser(
 	Q_LP_Start=>, 
 	Q_LP_Stop=>, 
 	Q_LP_Reset=>);
+
+(*Example how to use the BannerKxxx multicolorlamp to show the status of organiser(s)
+	Note: you can also manually control the lamp with the given M_Set... methods, but then don't call M_UpdateOrganiserState anymore! *)
+LP_OrgGroupMachinePart.M_UpdateOrganiserState(Organiser); //call this method for each organiser belonging to this group
+LP_OrgGroupMachinePart();
 
 ExampleMachinePart(
 	I_K_ES_OK:= General.Q_SN_ES_Zone1_OK, 			//Emergency stop for this zone OK. @ mutliple zones, fbGeneral must be adapted to supply these signals for each zone
