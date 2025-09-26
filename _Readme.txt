@@ -73,7 +73,12 @@ visu programming:
 	textfield variable formatting: https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_plc_intro/3524724747.html#3524762891&id=
 	for time use %s (don't forget to also assign onmouseup event correctly)
 
-Attributes
+Attributes warnings
+	sometimes this style works (in code)
+		{attribute 'warning disable' := 'C0327'}
+	other time sonly this (type definition)
+		{warning disable C0327}
+
 !Rule SA0004 cannot be disabled by a pragma or an attribute
 	//several ways to suppress warnings >> it's a mess! 	
 		{analysis -0175} >>disables analysis warning SA0175 suspicious operation on string

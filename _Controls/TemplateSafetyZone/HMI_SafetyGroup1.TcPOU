@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
-  <POU Name="HMI_SafetyZone1" Id="{8fee68d7-3918-0caf-3a4e-836782cbe436}" SpecialFunc="None">
+  <POU Name="HMI_SafetyGroup1" Id="{8fee68d7-3918-0caf-3a4e-836782cbe436}" SpecialFunc="None">
     <Declaration><![CDATA[(*	HMI variables
 
 	This block holds all HMI variables and handles communication with the HMI
@@ -10,14 +10,14 @@
 *)
 
 {attribute 'no_explicit_call' := 'do not call this POU directly'}
-FUNCTION_BLOCK HMI_SafetyZone1 EXTENDS HMI_BaseBlock
+FUNCTION_BLOCK HMI_SafetyGroup1 EXTENDS HMI_BaseBlock
 //HMI variables that can be written to by the plc and HMI 
 VAR_INPUT
 	//Do not change these names, the HMI is hardcoded to use these exact names
 	MAN:HMI_NotUsed;				//HMI manuals
-	STS:HMI_STS_SafetyZone1;		//HMI statusses
-	WRN:HMI_NotUsed;				//HMI warnings
-	ERR:HMI_ERR_SafetyZone1;		//HMI errors
+	STS:HMI_STS_SafetyGroup1;		//HMI statusses
+	WRN:HMI_WRN_SafetyGroup1;		//HMI warnings
+	ERR:HMI_ERR_SafetyGroup1;		//HMI errors
 END_VAR
 
 //Hmi variables that can only be written to by the HMI and read by the plc

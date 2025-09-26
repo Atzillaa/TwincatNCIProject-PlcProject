@@ -88,7 +88,7 @@ VAR
 	
 	//TODO TEMPLATE 
 		//>> adapt safety template as needed + rename + add as many zones as you need (hint: use 1 general/zone)	
-	SafetyZone1:cntrl_SafetyZone1; //note: this block extends the basic mandatory functionality. The extension (located in your project) has to be adapted as needed
+	SafetyZone1:cntrl_SafetyGroup1; //note: this block extends the basic mandatory functionality. The extension (located in your project) has to be adapted as needed
 	
 	//TODO TEMPLATE 
 		//make syncunits for groups of terminals which belongs together (all terminals behind a EK1122)
@@ -139,6 +139,9 @@ HMI.M_Update(	I_OrgControl:= OrganiserGeneral,
 	
 //Warnings
 HMI.WRN.CheckBoundsTriggered := Glbl.OutOfBounds;
+
+//Errors
+HMI.ERR.ExampleErrorPreConfiggedPrio s= BknGlbl.FirstScan;
 	
 ]]></ST>
       </Implementation>
@@ -148,7 +151,7 @@ HMI.WRN.CheckBoundsTriggered := Glbl.OutOfBounds;
         <ST><![CDATA[//Signals 
 Q_SN_ERR_General := HMI.P_STS_InError;
 
-Q_SN_ES_Zone1_OK := SafetyZone1.Q_K_ES_OK; 
+Q_SN_ES_Zone1_OK := SafetyZone1.Q_K_ES_Zone1_OK; 
 
 Q_SN_StartAll := I_Pb_StartAll.Q;
 					
@@ -199,7 +202,7 @@ SafetyZone1(
 	I_HMI_Parent:= HMI,
 	I_K_SimulationActive:= 	Glbl.SimEnable
 							AND NOT UnitTesting.EnableSafetyTest,		//TODO TEMPLATE >> remove this line (for unittesting I've a "real" safety setup on the testboard that manipulates safety card inputs with plc output)
-	I_K_Enable:= 	NOT I_WcState_SafetyZone1.Q_STS_SyncUnitDataOk, 	//NOTE: connecting enable like this has the advantage that safety is started and ErrAcked at startup of ethercat
+	I_K_Enable:= I_WcState_SafetyZone1.Q_STS_SyncUnitDataOk, 			//NOTE: connecting enable like this has the advantage that safety is started and ErrAcked at startup of ethercat
 																		//Disadvantage is that it will auto reset errors at restart of ethercat (you might find this an advantage...)
 	I_OrgControl:= OrganiserGeneral,
 	I_STS_AirPressure_OK := I_PS_AirpressureOk.Q);

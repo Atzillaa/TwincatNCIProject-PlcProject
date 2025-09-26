@@ -14,7 +14,7 @@ VAR
 		SP_TmrResetES := T#3S);							//Machine(part) organiser
 		
 	LP_OrgGroupMachinePart:Cntrl_BannerKxx(
-		Intensity:= 0);									//Status lamp for organiser(s) group machine part
+		Intensity:= eBannerKxx_Intensity.Low);									//Status lamp for organiser(s) group machine part
 END_VAR
 
 //TODO TEMPLATE >> Remove this section 
@@ -25,6 +25,11 @@ END_VAR
 		{attribute 'analysis' := '-33'}
 		TestScmClean: SCM_TemplateClean;					//Remove >> Only here so it will get error checked
 		ExampleMachinePart: SCM_TemplateMachinePart;		//Remove >> Example for how to use
+		
+		//test why double reset needed after pb-es
+		Reset_K:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
+		Reset_RE_K:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
+		General_ES_OK:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
 		
 		HM_ProfileBlocks:BOOL;
 		StopWatchGeneral:profiler;
@@ -49,7 +54,10 @@ a_General();
 {IF defined (IsTemplate)}
 	b_MachinePart();
 	
-	UnitTesting(); 
+	UnitTesting();
+	Reset_K.B := Organiser.Reset_K;
+	Reset_RE_K.B := Organiser.Reset_K_RE;
+	General_ES_OK.b := General.Q_SN_ES_Zone1_OK;
 	
 	//if do some performance analysis >> .
 	//cx2040 2015-00-00-45
@@ -128,7 +136,23 @@ Organiser(
 LP_OrgGroupMachinePart.M_UpdateOrganiserState(Organiser); //call this method for each organiser belonging to this group
 LP_OrgGroupMachinePart();
 
-ExampleMachinePart(
+//some shenanigans please ignore but can serve as example how to use the banner as in manual mode
+//desktop test plc break alarm
+IF(	(	BknGlbl.LocalSystemTime.wHour = 10
+		AND_THEN BknGlbl.LocalSystemTime.wMinute <= 15)
+	OR	(	BknGlbl.LocalSystemTime.wHour = 12
+			AND_THEN BknGlbl.LocalSystemTime.wMinute >= 30)
+	OR	(	BknGlbl.LocalSystemTime.wHour >= 17))
+THEN
+	LP_OrgGroupMachinePart.M_Set2ColorAnimation(
+		I_Color1 := eBannerKxx_Color.Yellow,
+		I_Color2 := eBannerKxx_Color.Red,
+		I_Animation:= eBannerKxx_AnimationType.HalfHalfRotate,
+		TRUE); 
+	LP_OrgGroupMachinePart();
+END_IF
+
+ExampleMachinePart( //todo remove true
 	I_K_ES_OK:= General.Q_SN_ES_Zone1_OK, 			//Emergency stop for this zone OK. @ mutliple zones, fbGeneral must be adapted to supply these signals for each zone
 	I_K_ExternalError:= General.Q_SN_ERR_General,	//External error which should put this scam in exception as well
 														//>>adapt to your needs!!! if you only want to add airpressure NOK then add this signal as output in general and use it here

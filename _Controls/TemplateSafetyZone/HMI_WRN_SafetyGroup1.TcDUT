@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="HMI_WRN_SafetyGroup1" Id="{9f8d9e31-10ae-4039-96b3-71c0f18da1f8}">
+    <Declaration><![CDATA[//Extend the base errors with project errors
+TYPE HMI_WRN_SafetyGroup1 EXTENDS HMI_WRN_SafetyLogic:
+STRUCT
+	//note: errors for inputs moved to input-instances
+	;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

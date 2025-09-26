@@ -136,7 +136,8 @@ VAR
 	HM_CamReceivedData: ARRAY[0..100] OF BYTE;			//Received data from camera
 	HM_CamOmronFhEthReceivedData: STRING;				//Received data from omron FhEth controller
 	
-	HM_DebugMultiStep_ResetInActivations:bool;			//enable testing if multistep works correctly
+	HM_DebugMultiStep_ResetInActivations:BOOL;			//enable testing if multistep works correctly
+	HM_DebugServoRestart:bool;
 	
 (*Instances*)
 	HMI:HMI_TemplateMachinePart;						//All HMI related variables
@@ -207,18 +208,21 @@ VAR
 		EnableSoftLimits:=FALSE,		//enable software limits (with button manual disable hw-limits, the parameter in the nc-task is set to 0, we need to know if it should be reenabled afterwards
 		InputNrHomingSensor:=0,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
 		InputNrHwLimitNeg:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
-		InputNrHwLimitPos:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
+		InputNrHwLimitPos:=4,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
 		JogMinusOffHomeSensor:=FALSE,	//"jog-"  when moving off homing sensor (if false then jog+ is used) in homing function
 		HomingsensorIs_NC:=FALSE,		//the homing sensor is of type normally closed (note limitswitches are always normally closed)
 		TmrErr_JogOffHomeSensor:=T#3S,	//time to try and jog off homing sensor t#0S = disable
-		HomeTorqueMode:=eSrvHomeTorqueMode.NoTorque, //homing using torque instead of sensor: 0 > no torque mode, 1 torque mode Jog+, 2 torque mode Jog-		
-		HomeTorqueSpeed:=0,				//Speed to use for homing in torque mode
-		HomingMode:= MC_DIRECT,			//homing mode to use >> MC_DefaultHoming MC_Direct MC_ForceCalibration MC_ResetCalibration
-		CouplingSyncPosFirst:=FALSE,	//at couple command, sync the position first to the master axis
-		SPD_CouplingSyncSpeed:=0,		//speed to use when syncing position for coupling
-		DST_CouplingSyncMaxDiff:=0,		//max difference allowed when sync couling >> otherwise error
-		SPD_JOG_Max:=250,				//max allowed allowed jog speed (also used to jog of homing sensor during homing)
-		SPD_AbsModVel_MaxMan:=500		//max allowed speed in manual absolute,velocity, modulo mode	
+	
+		HomeTorqueSpeed:=0,						//Speed to use for homing in torque mode
+		HomingMode:= eSrvHomingModes.Direct,	//homing mode to use >> Default, Direct, Set, Reset, TorquePositiveDirection, TorqueNegativeDirection
+		CouplingSyncPosFirst:=FALSE,			//at couple command, sync the position first to the master axis
+		SPD_CouplingSyncSpeed:=0,				//speed to use when syncing position for coupling
+		DST_CouplingSyncMaxDiff:=0,				//max difference allowed when sync couling >> otherwise error
+		//MAKE SURE VALUE IS CORRECT (set to 0 to use nc-task configured dynamics)
+		DEC_EmergencyError:=5000,				//deceleration ramp to use for emergency/error situation <= 0 means use default ramp
+		//SET LOWER!!! >> jog=50, velo=250
+		SPD_JOG_Max:=5000,						//max allowed allowed jog speed (also used to jog of homing sensor during homing)
+		SPD_AbsModVel_MaxMan:=5000				//max allowed speed in manual absolute,velocity, modulo mode	
 		);
 	//Ganty			>> Gantry controlled with 2 beckhoff servo's connected to the same drive-belt
 	Gantry_Example:cntrl_SingleBeltGantry(
@@ -721,18 +725,20 @@ A_StepActivationsInit();
 		//I_Speed:= 
 		);
 	
+	
+	//todo debug test
+	Srv_Example.I_K_PosAbsolute R= HM_DebugServoRestart;
 	Srv_Example(
 		I_HMI_Parent:= HMI,
 		I_PTR_MasterAxis:=0, 
 		I_K_SimulationActive:= Glbl.Sim_MyMachinePart, 
 		I_ES_OK:= I_K_ES_OK, 
 		I_OrgControl:= I_Organiser, 
-		I_K_NCI_Mode:= FALSE, 
 		//..several commands.. 
 		I_CPF_CoupleFactor:= 1, 
 		I_K_CoupleAxis:= FALSE, 
 		I_K_UnCoupleAxis:= FALSE, 
-		I_K_ExternalSetpoint:= FALSE);
+		I_K_ExternalSetpoint:= FALSE); HM_DebugServoRestart := FALSE;
 		
 		(*log actual position / velocity. 
 			*Constantly logging positions causes a lot of data for the logger!

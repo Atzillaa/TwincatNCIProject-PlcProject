@@ -5,7 +5,7 @@
       <Data>
         <o xml:space="preserve" t="VisualObject">
           <n n="LastVisuLanguageModelEntry" />
-          <v n="UniqueIdGenerator">"62"</v>
+          <v n="UniqueIdGenerator">"65"</v>
           <o n="VisualElemList" t="VisualElemList">
             <l n="VisualElementList" t="VisualElemCollection" cet="GenericVisualElem">
               <o>
@@ -3832,7 +3832,7 @@ Needs to be wired in correct way"</v>
                           </o>
                           <o>
                             <v n="Flags">2L</v>
-                            <v n="BasicTypeNodeValue">"MAIN.General.SafetyZone1"</v>
+                            <n n="BasicTypeNodeValue" />
                             <v n="BasicTypeNodeAcceptsExpression">true</v>
                             <n n="BasicTypeNodeFastAccess" />
                             <a n="BasicTypeNodeEnumValues" et="String" />
@@ -3844,8 +3844,8 @@ Needs to be wired in correct way"</v>
                             <l n="TypeNodeChildren" t="ArrayList" />
                             <o n="TypeNodeType" t="TypeNodeType">
                               <v n="TypeClass" t="TypeClass">Reference</v>
-                              <v n="QualifiedName">"cntrl_SafetyZone1"</v>
-                              <v n="Name">"cntrl_SafetyZone1"</v>
+                              <v n="QualifiedName">"cntrl_SafetyGroup1"</v>
+                              <v n="Name">"cntrl_SafetyGroup1"</v>
                             </o>
                             <v n="TypeNodeName">"IO_SafetyLogic"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">
@@ -3896,10 +3896,6 @@ Needs to be wired in correct way"</v>
                     <o>
                       <v n="Id">1969234701L</v>
                       <v n="Value">"'SafetyZone 1'"</v>
-                    </o>
-                    <o>
-                      <v n="Id">83490878L</v>
-                      <v n="Value">"MAIN.General.SafetyZone1"</v>
                     </o>
                   </l>
                 </o>
@@ -3956,6 +3952,8 @@ Needs to be wired in correct way"</v>
                 <v>a96d3344-b0d4-4fae-94dc-c9a86c3ac89e</v>
                 <v>FB_Reinit</v>
                 <v>cc7e268c-b2b6-4f6e-a858-591fb7036a3b</v>
+                <v>GetCallerNamespace</v>
+                <v>0c00617d-4db8-5da0-b749-31568c449dd9</v>
                 <v>GetClientData</v>
                 <v>2f638e11-374e-4021-ab78-e38cb81ccae9</v>
                 <v>GetDialogInterface</v>

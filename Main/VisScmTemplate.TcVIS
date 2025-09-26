@@ -5,7 +5,7 @@
       <Data>
         <o xml:space="preserve" t="VisualObject">
           <n n="LastVisuLanguageModelEntry" />
-          <v n="UniqueIdGenerator">"106"</v>
+          <v n="UniqueIdGenerator">"107"</v>
           <o n="VisualElemList" t="VisualElemList">
             <l n="VisualElementList" t="VisualElemCollection" cet="GenericVisualElem">
               <o>
@@ -839,11 +839,11 @@
                     </o>
                     <o>
                       <v n="Id">1649127785L</v>
-                      <v n="Value">148</v>
+                      <v n="Value">368</v>
                     </o>
                     <o>
                       <v n="Id">357335551L</v>
-                      <v n="Value">480</v>
+                      <v n="Value">436</v>
                     </o>
                     <o>
                       <v n="Id">2422045748L</v>
@@ -1162,11 +1162,11 @@
                     </o>
                     <o>
                       <v n="Id">550940142L</v>
-                      <v n="Value">451</v>
+                      <v n="Value">671</v>
                     </o>
                     <o>
                       <v n="Id">1473355128L</v>
-                      <v n="Value">589</v>
+                      <v n="Value">545</v>
                     </o>
                     <o>
                       <v n="Id">493260384L</v>
@@ -1207,7 +1207,10 @@
                             <v n="TypeNodeName">"I_UnitName"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">
                               <v n="AttrFlags">0UL</v>
-                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" />
+                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" ckt="String" cvt="String">
+                                <v>Editor_TypeMatchVariable</v>
+                                <v>true</v>
+                              </d>
                               <v n="ConvDone">true</v>
                             </o>
                             <v n="TypeNodeId" t="Int16">255</v>
@@ -1238,7 +1241,10 @@
                             <v n="TypeNodeName">"IO_cntrl"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">
                               <v n="AttrFlags">0UL</v>
-                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" />
+                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" ckt="String" cvt="String">
+                                <v>Editor_TypeMatchVariable</v>
+                                <v>true</v>
+                              </d>
                               <v n="ConvDone">true</v>
                             </o>
                             <v n="TypeNodeId" t="Int16">256</v>
@@ -1397,11 +1403,11 @@
                     </o>
                     <o>
                       <v n="Id">1649127785L</v>
-                      <v n="Value">728</v>
+                      <v n="Value">948</v>
                     </o>
                     <o>
                       <v n="Id">357335551L</v>
-                      <v n="Value">480</v>
+                      <v n="Value">436</v>
                     </o>
                     <o>
                       <v n="Id">2422045748L</v>
@@ -1720,11 +1726,11 @@
                     </o>
                     <o>
                       <v n="Id">550940142L</v>
-                      <v n="Value">953</v>
+                      <v n="Value">1173</v>
                     </o>
                     <o>
                       <v n="Id">1473355128L</v>
-                      <v n="Value">594</v>
+                      <v n="Value">550</v>
                     </o>
                     <o>
                       <v n="Id">493260384L</v>
@@ -1769,7 +1775,10 @@
                             <v n="TypeNodeName">"I_UnitName"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">
                               <v n="AttrFlags">0UL</v>
-                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" />
+                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" ckt="String" cvt="String">
+                                <v>Editor_TypeMatchVariable</v>
+                                <v>true</v>
+                              </d>
                               <v n="ConvDone">true</v>
                             </o>
                             <v n="TypeNodeId" t="Int16">255</v>
@@ -1800,7 +1809,10 @@
                             <v n="TypeNodeName">"IO_cntrl"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">
                               <v n="AttrFlags">0UL</v>
-                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" />
+                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" ckt="String" cvt="String">
+                                <v>Editor_TypeMatchVariable</v>
+                                <v>true</v>
+                              </d>
                               <v n="ConvDone">true</v>
                             </o>
                             <v n="TypeNodeId" t="Int16">256</v>
@@ -3633,11 +3645,11 @@
                     </o>
                     <o>
                       <v n="Id">1649127785L</v>
-                      <v n="Value">148</v>
+                      <v n="Value">368</v>
                     </o>
                     <o>
                       <v n="Id">357335551L</v>
-                      <v n="Value">736</v>
+                      <v n="Value">692</v>
                     </o>
                     <o>
                       <v n="Id">2422045748L</v>
@@ -3956,11 +3968,11 @@
                     </o>
                     <o>
                       <v n="Id">550940142L</v>
-                      <v n="Value">446</v>
+                      <v n="Value">666</v>
                     </o>
                     <o>
                       <v n="Id">1473355128L</v>
-                      <v n="Value">833</v>
+                      <v n="Value">789</v>
                     </o>
                     <o>
                       <v n="Id">493260384L</v>
@@ -4005,7 +4017,10 @@
                             <v n="TypeNodeName">"I_UnitName"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">
                               <v n="AttrFlags">0UL</v>
-                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" />
+                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" ckt="String" cvt="String">
+                                <v>Editor_TypeMatchVariable</v>
+                                <v>true</v>
+                              </d>
                               <v n="ConvDone">true</v>
                             </o>
                             <v n="TypeNodeId" t="Int16">255</v>
@@ -4036,7 +4051,10 @@
                             <v n="TypeNodeName">"IO_cntrl"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">
                               <v n="AttrFlags">0UL</v>
-                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" />
+                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" ckt="String" cvt="String">
+                                <v>Editor_TypeMatchVariable</v>
+                                <v>true</v>
+                              </d>
                               <v n="ConvDone">true</v>
                             </o>
                             <v n="TypeNodeId" t="Int16">256</v>
@@ -8104,6 +8122,8 @@
                 <v>5265df8f-79fc-4c31-b10b-7093cb2ee1c4</v>
                 <v>FB_Reinit</v>
                 <v>8764e8b0-060c-46a0-b878-612afdb25115</v>
+                <v>GetCallerNamespace</v>
+                <v>900d6176-6468-5260-a37d-d58454ffdd36</v>
                 <v>GetClientData</v>
                 <v>0421487d-0a4e-4e7b-9a4f-9b68eee41be3</v>
                 <v>GetDialogInterface</v>
@@ -8266,17 +8286,17 @@
               <v>0</v>
               <o>
                 <v n="Width">1925</v>
-                <v n="Height">921</v>
+                <v n="Height">877</v>
               </o>
               <v>1</v>
               <o>
                 <v n="Width">1925</v>
-                <v n="Height">921</v>
+                <v n="Height">877</v>
               </o>
               <v>2</v>
               <o>
                 <v n="Width">1925</v>
-                <v n="Height">921</v>
+                <v n="Height">877</v>
               </o>
             </d2>
             <v n="Version">2</v>

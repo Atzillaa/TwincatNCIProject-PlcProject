@@ -721,6 +721,11 @@ Only for boikon engineers"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"236"</v>
+              <v n="TextDefault">"ES Zone1 Ok"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"990"</v>
               <v n="TextDefault">"ES_Air ok"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -1692,8 +1697,18 @@ Needs to be wired in correct way"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"1127"</v>
+              <v n="TextDefault">"Sero LS positive"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"780"</v>
               <v n="TextDefault">"Service &gt;&gt; first check and fix reason of error"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2718"</v>
+              <v n="TextDefault">"Servo LS positive"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>

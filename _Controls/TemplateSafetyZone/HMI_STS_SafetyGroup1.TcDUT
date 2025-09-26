@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
-  <DUT Name="HMI_STS_SafetyZone1" Id="{50f4144c-cfd0-019f-281a-6ed87517e512}">
+  <DUT Name="HMI_STS_SafetyGroup1" Id="{50f4144c-cfd0-019f-281a-6ed87517e512}">
     <Declaration><![CDATA[//Extend the base statusses with project statusses
-TYPE HMI_STS_SafetyZone1 EXTENDS HMI_STS_SafetyLogic:
+TYPE HMI_STS_SafetyGroup1 EXTENDS HMI_STS_SafetyLogic:
 STRUCT
 	CrcCodeProject:WORD;		//CRC code safety project
 END_STRUCT

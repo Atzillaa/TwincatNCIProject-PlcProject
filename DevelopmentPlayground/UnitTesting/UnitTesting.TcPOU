@@ -8,169 +8,157 @@ VAR CONSTANT
 END_VAR
 
 VAR
-	HM_HoustonWeHaveAProblem:BOOL;
+	//internals
+		HM_HoustonWeHaveAProblem:BOOL;
+		HM_OrganiserFake:cntrl_OrganiserFake;
+		HM_ItfOrgFake:ItfOrgControl;
+		tmpUint:UINT;
+		tmpInt1:INT;
 
-	//dummies
-	HM_OrganiserFake:cntrl_OrganiserFake;
-	HM_ItfOrgFake:ItfOrgControl;
-		
 	//out of curiousity
-	testVarInfo: __SYSTEM.VAR_INFO := __VARINFO(MAIN.General);
-	testPouInfo: STRING := __POUNAME();
-
+		testVarInfo: __SYSTEM.VAR_INFO := __VARINFO(MAIN.General);
+		testPouInfo: STRING := __POUNAME();
 
 	//Array functions test
-	//
-	arrCnt_1: ARRAY[1..ARRSIZE] OF INT;
-	arrCnt_2: ARRAY[1..ARRSIZE] OF INT;
-	arrCnt_3: ARRAY[1..ARRSIZE] OF INT;
-	arrStr5: ARRAY[0..10] OF STRING(5);
-	arrStr10: ARRAY[0..2] OF STRING(10);
-	arrResetElementMonkyTestDone:BOOL;
-	//\\
+		arrCnt_1: ARRAY[1..ARRSIZE] OF INT;
+		arrCnt_2: ARRAY[1..ARRSIZE] OF INT;
+		arrCnt_3: ARRAY[1..ARRSIZE] OF INT;
+		arrStr5: ARRAY[0..10] OF STRING(5);
+		arrStr10: ARRAY[0..2] OF STRING(10);
+		arrResetElementMonkyTestDone:BOOL;
 
-	
-	tmpBool:BOOL;
-	tmpUint:UINT;
-	tmpInt1:INT;
-	tmpInt2:INT;
-	tmpInt3:INT;
-	tmpInt4:INT;
-	tmpReal1:REAL;
-	tmpReal2:REAL;
-	
-	
 	//timer test
-	fbUtl_TimeElapsedInitDone:BOOL;
-	fbUtl_TimeElapsed:utl_TimeElapsed;
+		fbUtl_TimeElapsedInitDone:BOOL;
+		fbUtl_TimeElapsed:utl_TimeElapsed;
 	
 	//SAFETY TEST
-	//simulate feedbacks outputs for safety example program (so we can test run on the plc test-board)
-	//normal output card, hardwired to safety input card for testing purposes
-	EnableSafetyTest:BOOL;
-	Sft_PB_ES:BOOL; 					//simulate pushbutton ok
-	Sft_FB_K_ES_OK:BOOL;				//simulate feedback relais feedback
-	Sft_FB_K_ES_StuckOn:BOOL;			//simulate es relais welded togerther
-	Sft_Y_FB1:BOOL;  					//simulate air valve 1 feedback
-	Sft_Y_FB2:BOOL;  					//simulate air valve 2 feedback
-	Sft_Y1_Leaking:BOOL;				//simulate air valve 2 is leaking
-	Sft_Y2_Leaking:BOOL;				//simulate air valve 2 is leaking
-	
-	//restart safety !!!THIS IS FOR TESTING, DON'T RESTART SAFETY WITH THE PLC! (connect reset button to safe input and use that as restart)
-	//for unittesting, a plc-output is hardwired to a safety input but we don't do this in the wild!
-	Qsf_ES_K_Restart:cntrl_Output;
-	
-	//Safe Speed / Safe Position
-	Qsf_Servo_RefCam AT %Q*:BOOL; //connected to drive digital inputs
-	Qsf_K_EnableSafeSpeed AT %Q*:BOOL;
-	Qsf_K_EnableSafePosition AT %Q*:BOOL;
-	
-	//feedback main es relais
-	Isf_ES_OK:cntrl_Input;
-	Qsf_ES_K_FB:cntrl_Output;	
-	Tmr_Q_ES_K_FB:utl_TONH_TOFH;
+		//simulate feedbacks outputs for safety example program (so we can test run on the plc test-board)
+		//normal output card, hardwired to safety input card for testing purposes
+		EnableSafetyTest:BOOL;
+		Sft_PB_ES:BOOL; 					//simulate pushbutton ok
+		Sft_FB_K_ES_OK:BOOL;				//simulate feedback relais feedback
+		Sft_FB_K_ES_StuckOn:BOOL;			//simulate es relais welded togerther
+		Sft_Y_FB1:BOOL;  					//simulate air valve 1 feedback
+		Sft_Y_FB2:BOOL;  					//simulate air valve 2 feedback
+		Sft_Y1_Leaking:BOOL;				//simulate air valve 2 is leaking
+		Sft_Y2_Leaking:BOOL;				//simulate air valve 2 is leaking
+		
+		//restart safety !!!THIS IS FOR TESTING, DON'T RESTART SAFETY WITH THE PLC! (connect reset button to safe input and use that as restart)
+		//for unittesting, a plc-output is hardwired to a safety input but we don't do this in the wild!
+		Qsf_ES_K_Restart:cntrl_Output;
+		
+		//Safe Speed / Safe Position
+		Qsf_Servo_RefCam AT %Q*:BOOL; //connected to drive digital inputs
+		Qsf_K_EnableSafeSpeed AT %Q*:BOOL := TRUE;
+		Qsf_K_EnableSafePosition AT %Q*:BOOL := TRUE;
+		
+		//feedback main es relais
+		Isf_ES_OK:cntrl_Input;
+		Qsf_ES_K_FB:cntrl_Output;	
+		Tmr_Q_ES_K_FB:utl_TONH_TOFH;
+		
+		//feedback safety valves
+		Isf_Y_Air1:cntrl_Input; //valve	
+		Qsf_YPS1_FB:cntrl_Output;//FB-PS
+		Tmr_Q_Y_PS1_FB:utl_TONH_TOFH;
+		
+		Isf_Y_Air2:cntrl_Input; //valve
+		Qsf_YPS2_FB:cntrl_Output; //FB-PS
+		Tmr_Q_Y_PS2_FB:utl_TONH_TOFH;
+		
+		//pb es ok
+		Qsf_ES_PB1_OK:cntrl_Output;
+		Tmr_Q_ES_PB1_OK:ton;
+		Qsf_ES_PB2_OK:cntrl_Output;
+		Tmr_Q_ES_PB2_OK:ton;
 
-	//feedback safety valves
-	Isf_Y_Air1:cntrl_Input; //valve	
-	Qsf_YPS1_FB:cntrl_Output;//FB-PS
-	Tmr_Q_Y_PS1_FB:utl_TONH_TOFH;
-
-	Isf_Y_Air2:cntrl_Input; //valve
-	Qsf_YPS2_FB:cntrl_Output; //FB-PS
-	Tmr_Q_Y_PS2_FB:utl_TONH_TOFH;
-	
-	//pb es ok
-	Qsf_ES_PB1_OK:cntrl_Output;
-	Tmr_Q_ES_PB1_OK:ton;
-	Qsf_ES_PB2_OK:cntrl_Output;
-	Tmr_Q_ES_PB2_OK:ton;
-	//\\
-	
 	//Sensor test
-	fbcntrlSensor:cntrl_Sensor(Options:= eSensorConfig.Default):=(
-			HMI:=(
-				SP:=(
-					TMR_DelayDetected:=T#50MS , 
-					TMR_DelayUndetected:= T#100MS, 
-					TMR_DelayErrorDetect:= T#200MS, 
-					TMR_DelayErrorUndetect:= T#300MS)));
-	CntrlSensorState:utl_LoggedUInt(LoggingGroup := eLogGroups.Default, TrigAtInterval:= 0, TrigAtDeviation:= 0);
-	CntrlSensorTime:UINT;
-	CntrlSensorPulseCntRE:UINT;
-	CntrlSensorPulseCntFE:UINT;
-	
-	//Timer test
-	fbTmrOnOffTest:utl_TONH_TOFH;
-	
-	TmrOnOffTested:BOOL;
-	TmrOnOffState:INT;
-	TmrOnOffCnt:INT;
-	fbTmrOnOffTest_I:utl_LoggedBool(LoggingGroup:=eLogGroups.Default);
-	fbTmrOnOffTest_Q_On:utl_LoggedBool(LoggingGroup:=eLogGroups.Default);
-	fbTmrOnOffTest_Q_Off:utl_LoggedBool(LoggingGroup:=eLogGroups.Default);
-	fbTmrOnOffTest_Q_OnOff:utl_LoggedBool(LoggingGroup:=eLogGroups.Default);
-	
-	
-	logUtlTimeElapsed100ms:utl_LoggedDint(LoggingGroup:= eLogGroups.Default, TrigAtInterval:= 0, TrigAtDeviation:= 1);
-	
+		fbcntrlSensor:cntrl_Sensor(Options:= eSensorConfig.Default):=(
+				HMI:=(
+					SP:=(
+						TMR_DelayDetected:=T#50MS , 
+						TMR_DelayUndetected:= T#100MS, 
+						TMR_DelayErrorDetect:= T#200MS, 
+						TMR_DelayErrorUndetect:= T#300MS)));
+		CntrlSensorState:utl_LoggedUInt(LoggingGroup := eLogGroups.Default, TrigAtInterval:= 0, TrigAtDeviation:= 0);
+		CntrlSensorTime:UINT;
+		CntrlSensorPulseCntRE:UINT;
+		CntrlSensorPulseCntFE:UINT;
 
-	//memcopy vs memove test
-	arrMcpyTest: ARRAY[0..10] OF INT;
+	//Timer test
+		fbTmrOnOffTest:utl_TONH_TOFH;
+		
+		TmrOnOffTested:BOOL;
+		TmrOnOffState:INT;
+		TmrOnOffCnt:INT;
+		fbTmrOnOffTest_I:utl_LoggedBool(LoggingGroup:=eLogGroups.Default);
+		fbTmrOnOffTest_Q_On:utl_LoggedBool(LoggingGroup:=eLogGroups.Default);
+		fbTmrOnOffTest_Q_Off:utl_LoggedBool(LoggingGroup:=eLogGroups.Default);
+		fbTmrOnOffTest_Q_OnOff:utl_LoggedBool(LoggingGroup:=eLogGroups.Default);
+		
+		logUtlTimeElapsed100ms:utl_LoggedDint(LoggingGroup:= eLogGroups.Default, TrigAtInterval:= 0, TrigAtDeviation:= 1);
 	
-	TimeMemCpyNrLoops:INT;
-	TimeMemcpy: PROFILER;
-	TimeMemove: PROFILER;
+	//memcopy vs memove test
+		arrMcpyTest: ARRAY[0..10] OF INT;
+		
+		TimeMemCpyNrLoops:INT;
+		TimeMemcpy: PROFILER;
+		TimeMemove: PROFILER;
 	
 	//string testing
-	HM_StrBenchStart:BOOL;
-	Str_BenchNrLoops:INT;
-	SW_Utl_String_SingleConcat: Profiler;
-	SW_Utl_StringDuoConct: Profiler;
-	SW_Utl_Any_CopyOffsetSingle:Profiler;
-	SW_Utl_Any_CopyOffsetDuo:Profiler;
-	SW_BeckhoffConcat: Profiler;
-	SW_BeckhoffConcatDuo: Profiler;
-
+		HM_StrBenchStart:BOOL;
+		Str_BenchNrLoops:INT;
+		SW_Utl_String_SingleConcat: Profiler;
+		SW_Utl_StringDuoConct: Profiler;
+		SW_Utl_Any_CopyOffsetSingle:Profiler;
+		SW_Utl_Any_CopyOffsetDuo:Profiler;
+		SW_BeckhoffConcat: Profiler;
+		SW_BeckhoffConcatDuo: Profiler;
 
 	//Logged channel tests		
-	LoggedChannelsState:INT;
-	LoggedChannelCnt:UINT;
-	LoggedChannelStateInfo:utl_LoggedString(eLogGroups.Default);
-	LoggedBool: utl_LoggedBool(
-		LoggingGroup:= eLogGroups.Default);
-	LoggedDint: utl_LoggedDint(
-		LoggingGroup:= eLogGroups.Default, 
-		TrigAtInterval:= 300,
-		TrigAtDeviation:= 10);
-	LoggedInt: utl_LoggedInt(
-		LoggingGroup:= eLogGroups.Default,
-		TrigAtInterval:= 300,
-		TrigAtDeviation:= 10);
-	LoggedReal: utl_LoggedReal(
-		LoggingGroup:= eLogGroups.Default,
-		TrigAtInterval:= 300,
-		TrigAtDeviation:= 10.5);
-	LoggedString: utl_LoggedString(
-		LoggingGroup:= eLogGroups.Default);
-	HM_InfoStrings: ARRAY[0..BknlogCnstInternal.MaxIndexLogStrings] OF STRING;
-	LoggedStrings: utl_LoggedStrings( 
-		LoggingGroup:= eLogGroups.Default);
-	LoggedUint: utl_LoggedUInt(
-		LoggingGroup:= eLogGroups.Default,
-		TrigAtInterval:= 300,
-		TrigAtDeviation:= 10);		
-	loggedMyVeryLongChannelNameWillThisWreakHavocAndCorruptMyChannelNameIThinkItNeedsToBeLongerThisMightDoItJustALittleMoreUntilHereOkMakeItLongerabcdefghijklmnopqrstuvwxyz0123456789ThisIsGettingAbsurdNoProblemWithThisLengthOkLetsBumpTheLengthToOverTMaxStringThisIsTooLong:utl_LoggedString(LoggingGroup:= eLogGroups.Default);
-	HM_LoggedChannelBenchStart:BOOL; //activate benchmarking for a logged channel
-	SW_LoggedChannelBenc: Profiler;
-	
+		LoggedChannelsState:INT;
+		LoggedChannelCnt:UINT;
+		LoggedChannelStateInfo:utl_LoggedString(eLogGroups.Default);
+		LoggedBool: utl_LoggedBool(
+			LoggingGroup:= eLogGroups.Default);
+		LoggedDint: utl_LoggedDint(
+			LoggingGroup:= eLogGroups.Default, 
+			TrigAtInterval:= 300,
+			TrigAtDeviation:= 10);
+		LoggedInt: utl_LoggedInt(
+			LoggingGroup:= eLogGroups.Default,
+			TrigAtInterval:= 300,
+			TrigAtDeviation:= 10);
+		LoggedReal: utl_LoggedReal(
+			LoggingGroup:= eLogGroups.Default,
+			TrigAtInterval:= 300,
+			TrigAtDeviation:= 10.5);
+		LoggedString: utl_LoggedString(
+			LoggingGroup:= eLogGroups.Default);
+		HM_InfoStrings: ARRAY[0..BknlogCnstInternal.MaxIndexLogStrings] OF STRING;
+		LoggedStrings: utl_LoggedStrings( 
+			LoggingGroup:= eLogGroups.Default);
+		LoggedUint: utl_LoggedUInt(
+			LoggingGroup:= eLogGroups.Default,
+			TrigAtInterval:= 300,
+			TrigAtDeviation:= 10);		
+		loggedMyVeryLongChannelNameWillThisWreakHavocAndCorruptMyChannelNameIThinkItNeedsToBeLongerThisMightDoItJustALittleMoreUntilHereOkMakeItLongerabcdefghijklmnopqrstuvwxyz0123456789ThisIsGettingAbsurdNoProblemWithThisLengthOkLetsBumpTheLengthToOverTMaxStringThisIsTooLong:utl_LoggedString(LoggingGroup:= eLogGroups.Default);
+		HM_LoggedChannelBenchStart:BOOL; //activate benchmarking for a logged channel
+		SW_LoggedChannelBenc: Profiler;
+
 	//Banner multicolor lamps
-	BannerOrg1:cntrl_OrganiserFake;
-	BannerOrg2:cntrl_OrganiserFake;
-	BannerTest: Cntrl_BannerKxx(Intensity:= 0);
-	Banner_PB_dbg: ARRAY[0..10] OF BOOL;
-	Banner_Color1:eBannerKxx_Color;
-	Banner_Color2:eBannerKxx_Color;
-	Banner_AnimationType:eBannerKxx_AnimationType;
+		BannerOrg1:cntrl_OrganiserFake;
+		BannerOrg2:cntrl_OrganiserFake;
+		BannerTest: Cntrl_BannerKxx(Intensity:= 0);
+		Banner_PB_dbg: ARRAY[0..10] OF BOOL;
+		Banner_Color1:eBannerKxx_Color;
+		Banner_Color2:eBannerKxx_Color;
+		Banner_AnimationType:eBannerKxx_AnimationType;
+
+	//Servo (from examplemachinepart) Testing
+		//hw-limit
+		LS_Positive:cntrl_Output;
+		
 
 END_VAR
 ]]></Declaration>
@@ -224,7 +212,10 @@ _M_StringStuff();
 A_LoggedChannels();
 
 //Banner signal lamp
-A_cntrl_BannerKxx();]]></ST>
+A_cntrl_BannerKxx();
+
+//Servo tests
+A_cntrl_Servo();]]></ST>
     </Implementation>
     <Method Name="_M_Any_ArrayInitValues" Id="{d7a71b1a-10c1-0248-0992-5b4320aee6aa}">
       <Declaration><![CDATA[METHOD PRIVATE _M_Any_ArrayInitValues]]></Declaration>
@@ -857,7 +848,10 @@ main.General.SafetyZone1.PbSf_ResetSafetyErrors.P_BypassStateTrue;
 
 
 //restart safety !!!THIS IS FOR TESTING, DON'T RESTART SAFETY WITH THE PLC! (connect reset button to safe input and use that as restart)
-Qsf_ES_K_Restart(I_K_SimulationActive:= FALSE, I_K_State := main.General.I_SN_ResetErrors OR main.General.Q_SN_ResetAll); 
+Qsf_ES_K_Restart(
+	I_K_SimulationActive:= FALSE, 
+	I_K_State := main.Organiser.Tmr_ResetES.IN
+				 AND main.Organiser.Tmr_ResetEs.ET < T#100MS); 
 
 //Emergency stop pushbutton
 Tmr_Q_ES_PB1_OK(
@@ -868,9 +862,9 @@ Tmr_Q_ES_PB2_OK(
 	PT:=);
 
 //instance calls
-Isf_ES_OK();
-Isf_Y_Air1();
-Isf_Y_Air2();
+Isf_ES_OK(); //note >> output from safety == test pulse!!!
+Isf_Y_Air1();//note >> output from safety == test pulse!!!
+Isf_Y_Air2();//note >> output from safety == test pulse!!!
 
 //Simulate ES-pushbutton
 Qsf_ES_PB1_OK(
@@ -1200,6 +1194,20 @@ END_CASE
 
 
 ]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_cntrl_Servo" Id="{98e6fb60-d33e-4009-bd57-1e06bc1436a6}">
+      <Implementation>
+        <ST><![CDATA[{warning disable C0139}
+//Limitswitch control
+LS_Positive.I_K_State S= BknGlbl.FirstScan;
+main.ExampleMachinePart.srv_Example.AxisRefExt.P_HwLimitswitchPosDriveInputNr;
+//Limitswitch status
+main.ExampleMachinePart.srv_Example.AxisRefExt.I_DigitalInputs;
+main.ExampleMachinePart.srv_Example.AxisRefExt.Q_STS_HW_LimitPos;
+
+LS_Positive(	I_K_SimulationActive:= FALSE, 
+				I_K_State:= ); //controlled in visu]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_LoggedChannels" Id="{b1ac8928-a8f8-4b1d-9a81-5638d980a322}">
