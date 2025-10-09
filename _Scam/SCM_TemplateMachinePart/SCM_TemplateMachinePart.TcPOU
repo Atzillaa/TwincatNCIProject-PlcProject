@@ -112,6 +112,7 @@ END_VAR
 
 VAR_OUTPUT
 	Q_SN_SUP_Request:BOOL;							//Signal supply requesting products
+	Q_STS_RefillPlanos:BOOL;						//Status plano buffer needs refill 
 	Q_STS_Empty:BOOL;								//this part is empty (go in energy saving / standby mode, stop conveyors etc)
 END_VAR
 
@@ -163,7 +164,7 @@ VAR
 	//cntrl_Sensor	>> outputs: product detected / not detected. It can be used for any detection for example: airpressure, an object, etc.	
 	//* If you init setpoints like this, then these values will only be used at first time download of the block. 
 	// >> you will have to do a "plc" / "reset origin"
-	PC_Example:cntrl_Sensor(
+	PC_ProductInfeed:cntrl_Sensor(
 		//fb_init
 		Options:= eSensorConfig.InputNO)
 		//Example how to preset setpoint variables
@@ -173,11 +174,16 @@ VAR
 					TMR_DelayDetected:=T#100MS , 
 					TMR_DelayUndetected:= T#101MS, 
 					TMR_DelayErrorDetect:= T#2S1MS, 
-					TMR_DelayErrorUndetect:= T#2S2MS)));
+					TMR_DelayErrorUndetect:= T#2S2MS)));	//Photocell product infeed position
+	
+	
+	PC_PlanoBufferLL: cntrl_Sensor(
+		Options:= eSensorConfig.Default);					//Photocell planobuffer low level 	
+					
  
 	//Valve			>> used to control cylinders with valves and reedcontacts
 	Cyl_Example:cntrl_Valve
-		(Options:= eValveConfig.Default);				
+		(Options:= eValveConfig.Default);	
 
 	//Motor			>> standard motor with forward/reverse + ana speed all direct IO
 	Mtr_Example:cntrl_Motor(
@@ -284,370 +290,53 @@ END_VAR]]></Declaration>
 		A_StepTransitions();
 	END_IF
 	
-(*Step activations*)
-	A_StepActivations();
-	
-//todo remove
-//PC_Example._A_Test();
-
-
-
-]]></ST>
+(*	Activations*)
+	//Reset all outputs controlled by states
+	A_ActivationsInit();
+	//Activate outputs controlled by state
+	A_ActivationsState();
+	//Activate outputs not controlled by state + call all instances
+	A_ActivationsAlways();]]></ST>
     </Implementation>
-    <Action Name="A_Exceptions" Id="{59ea5e50-40c5-0779-31a0-efd767274b79}">
-      <Implementation>
-        <ST><![CDATA[(* State transition controller
-	Handles multistep + step hold + statusses for hmi + logging*) 
-		//>>must be before all method calls, since the input arguments are used
-	State(I_OrgControl := I_Organiser);
-
-(*Exceptions
-	Here exeptions are handled.
-	*most basic version:
-		Rest U_0 := Q_ProgStatus.Prog_Exception:=false
-			the main program is executed
-	
-		Rest >> Error := Q_ProgStatus.Prog_Exception:=true
-		1)	@ any error >> exception state (U1_0)
-			this will freeze the main program states
-		2)	if the organiser is back in an automatic state and there are no errors
-			it will step to U1_2 and from there to the idle state U_0
-			*TODO TEMPLATE >> if needed, do actions on this transition (rarely used)
-				But you could for example at a specific error force the main program to a recovery step
-			
-			
-		Rest >> Totalreset := Q_ProgStatus.Prog_Exception:=true
-		1)	@ organiser total reset command >> exception total reset (U1_1)
-		
-		2)	@ NOT organiser total reset command >> 
-				>> now bits that need to be reset @ total reset are reset
-				TODO Template >> add bits which needs to be reset
-				>> the main program is reset to the first step (usually named: TotalReset)
-				>>back to rest (U_0)
-
-	**this described the basic version which can be used in 99% of the cases,
-	you can adapt it to your needs. 
-*)
-
-CASE eE OF
-	//rest
-	U_0:
-		
-		//if program in error >> to error state
-		IF(	HM_ProgStatus.Prog_Error
-			AND NOT I_Organiser.TotalReset_K)
-		THEN
-			//>>
-			eE := U1_0;
-		//else if total reset command >> to total reset state
-		ELSIF(	I_Organiser.TotalReset_K)
-		THEN
-			//>>
-			eE := U1_1;
-		END_IF
-
-	//error
-	U1_0:
-		//if total reset command >> to total reset state
-		IF(	I_Organiser.TotalReset_K)
-		THEN
-			//>>
-			eE := U1_1;
-			
-		//else if no error active and organiser back in an automatic state
-		ELSIF(	NOT HM_ProgStatus.Prog_Error
-				AND I_Organiser.EnableDevices_K)
-		THEN
-			//>>
-			eE := U1_2;
-		END_IF
-
-	//Total Reset
-	U1_1:
- 		//if total reset command dropped >> Reset program data and to unfreeze state
-		IF(	NOT I_Organiser.TotalReset_K)
-		THEN
-			//Total reset main program
-			State.M_Step(
-				I_NewStep:= eTMP.TotalReset,
-				I_StepCanBeHeld:= TRUE);
-			
-			//disable multistepping for 1 round
-			{warning disable C0139}
-			State.P_IsMultiStepRequired;
-
-			//Reset main program flags
-			HM_Empty:=FALSE;
-			//only done as example/testing, should be removed
-			HMI.ERR.ExampleAddPrioForHmiError := TRUE;
-			
-			//>>
-			eE := U_0;
-		END_IF
-		
-	//Unfreeze
-	U1_2:
-		//>>
-		eE := U_0;
-
-	ELSE
-		eE := U_0;
-END_CASE
-
-//Detection program in exception
-HM_ProgStatus.Prog_Exception := (eE > U_0);]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="A_Simulation" Id="{d1a764dc-1bbc-49c4-b464-5e183332d204}">
+    <Action Name="A_ActivationsAlways" Id="{7f43319a-34da-47f2-9cfc-9b246623e45b}">
       <Implementation>
         <ST><![CDATA[(*
-	Code that only needs to be executed if simulation is active (this action is only called if sim is active)
-
-	Notes:	
-	-Cntrl_Servo/motor/valve already simulate their state correctly themselves, cntrl_StateSensor must be told which state to simulate >> example below
-		Of course you could also add timers / other conditions (servo pos?!) for states
-	
-	-you can use ( Tmr_StateTime.PT > T# xxx) to start simulating things after the state has been active for a certain time
+	State undependant activations + instance calls
 *)
 
-//Initialise activations, which are controlled by the simulation steps
-SN_DscReadyToReceive.I_K_SimulateOn := FALSE;
-PC_Example.I_SimulateState := eSensorState.Undetected;
-
-(*Step activations*)
-CASE State.eS OF
-	eTMP.TotalReset:
-	;
-
-	eTMP.InitCyl:
-	;
-	
-	eTMP.InitSrv:
-	;
-
-	eTMP.Rest:
-		PC_Example.P_BypassErrDetectionTime := State.P_StepTime + T#100MS; 
-		
-		//If delay time elapsed >> simulate sensor + discharge request
-		IF(State.P_StepTime > T#1S) 
-		THEN
-			SN_DscReadyToReceive.I_K_SimulateOn := TRUE; 
-			PC_Example.I_SimulateState := eSensorState.Detected;
-		END_IF
-		
-	eTMP.SrvPosStart:
-	;
-		
-	eTMP.SrvPosStartInterl:
-	;
-END_CASE	
-
-//feedback request to input
-I_SN_SUP_Request_OK := Q_SN_SUP_Request; ]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="A_StepActivations" Id="{cebbb77e-c522-4e9d-a607-ae06b2e6f976}">
-      <Implementation>
-        <ST><![CDATA[(*How it works:
-	First activations which have to be done by a step are initialised to false
-			//section initialisation
-			fbSrv_Belt.I_K_PosAbsolute := false;
-		
-	Then set activations for devices controlled by steps, to true:
-		CASE eS OF
-			eTMP.InitCyl:
-				Cyl_Example.I_K_AutoIn := TRUE;
-			...
-		END_CASE
-		
-		
-	At last activations/blocks calls that always have to be done are executed
-	
-		IO_ERR.ErrorThatIsAlwaysActive S= myCondition;	
-		..
-		fbSrv_Belt(
-			I_EN0:= TRUE,
-			...skipping a few rows here
-			//I_K_Auto_Homing:= ,				Note: activation controlled by state
-			I_K_Auto_Velocity:= FALSE,
-			I_SPD_Auto_Velocity:= 0,
-			//I_K_Auto_Absolute:= ,				Note: activation controlled by state
-			//I_POS_Auto_Absolute:= ,			Note: activation controlled by state
-			..skipping a few ros here
-			IO_MAN:= IO_MAN.Srv_Conveyor,
-			IO_SP:= IO_SP.Srv_Conveyor,
-			IO_STS:= IO_STS.Srv_Conveyor,
-			IO_WRN:= IO_WRN.Srv_Conveyor,
-			IO_ERR:= IO_ERR.Srv_Conveyor);
-		
-		
-		The advantages are:
-			-much easier to see what is activated in each step + easier to change
-			-less chance to create bugs, bugs are easier spotted
-			-it saves a lot of processor usage in comparison to the old method:
-				Q_K_SomeOutput := eStep=S1 OR eStep=S2 OR ....etc etc)
-*)
-
-(*
-	Initialise step activated activations
-*)
-A_StepActivationsInit();
-
-
-(*Activations by step*)
-	CASE State.eS OF
-		eTMP.TotalReset:
-			;
-		
-		eTMP.InitCyl:
-			Cyl_Example.I_K_AutoIn:= TRUE; 
-		
-			(*Warnings/Errors*)
-				//a sensor error can be triggered by activating the I_K_ErrNot.... input >> uses internally a timer
-				//usually we want the machine to be empty in the init phase so setting error here if it is not
-				PC_Example.I_ErrNotState := eSensorState.Undetected; 
-				//or an error can also be set directly
-				//IF( [some condition] ) then IO_ERR.PC_ProductPassedStopper.NotLow := true; END_IF  !!!Errors must be a set! 
-		
-		eTMP.InitSrv:
-			Cyl_Example.I_K_AutoIn:= TRUE; 
-			Mtr_Example.I_K_Auto_Fwd:= TRUE;
-			Srv_Example.I_K_Homing:= TRUE;
-			Tmr_Initialisation.IN:= Mtr_Example.P_STS_Running;
-		
-			(*Warnings/Errors*)
-				//S= >> SET!!! , all errors have to be set. In tc3 we can now use S= instead of "IF(..)THEN err:=true; end_if"
-				HMI.ERR.InitNotEmpty S= PC_Example.Q_DetectedDebounced;  	//detection machine is not empty during init
-				PC_Example.I_ErrNotState := eSensorState.Undetected;			//it is nice to also trigger this error, especially if there are multiple sensors. This at a faulty sensor the operator knows which sensor causes the problem
-		
-		eTMP.InitCamQuickFocus:
-			Cyl_Example.I_K_AutoIn:= TRUE; 
-			Cam_OmronSmartCam.I_K_QuickFocus:= TRUE;
-		
-		eTMP.InitCamLoadJob:
-			Cyl_Example.I_K_AutoIn:= TRUE; 
-			Cam_OmronFh.I_K_LoadScene:= TRUE;
-			Cam_OmronFh.I_SceneToLoad:= 2;
-			Cam_OmronSmartCam.I_K_LoadJob:= TRUE;
-			Cam_OmronSmartCam.P_SP_JobToLoad:= 1; //note: these kind of variables can also be set @RE step (>>when stepping from previous step to here)			(*Internals*)
-				
-		eTMP.Rest:
-			HM_ProgStatus.Prog_Rest:= TRUE;
-			Q_SN_SUP_Request:= TRUE;
-			Cyl_Example.I_K_AutoIn:= TRUE; 
-			
-			(*Warnings/Errors*)
-				//just an example, no need to add this specific warning. The camera itself generates an error if it fails to connect
-				HMI.WRN.CameraNotReady:= 	I_Organiser.EnableDevices_K
-											AND NOT Cam_OmronSmartCam.Q_STS_Ready;  
-				
-				//if the supply is running >> the photocell should get high after x-time, set error detection of the pc
-				IF(	I_SN_SUP_Request_OK
-					AND NOT I_STS_SUP_Empty
-					AND I_Organiser.EnableDevices_K)
-				THEN
-					PC_Example.I_ErrNotState:= eSensorState.Detected; 
-				END_IF
-
-		eTMP.SrvPosStart:
-			Cyl_Example.I_K_AutoIn:= TRUE; 
-			Srv_Example.I_K_PosAbsolute:= TRUE;
-			//there are multiple ways of setting a speed, this way per step the speed can be changed but it can also set fixed at the servo block
-			//also note how for the gripper, settings are applied at the step change >>better way if during the step the settings do not have to change
-			Srv_Example.I_SP_Speed:= 50;
-			Srv_Interrol.I_K_AbsPositioning := TRUE; 
-			
-		eTMP.SrvPosStartInterl:
-			Cyl_Example.I_K_AutoIn:= TRUE;
-			
-			(*Warnings/Errors*)
-				PC_Example.I_ErrNotState:= eSensorState.UnDetected; 
-	
-		eTMP.SrvPosEnd:
-			Cyl_Example.I_K_AutoIn:= TRUE;
-			Srv_Example.I_K_PosAbsolute:= TRUE;
-			Srv_Example.I_SP_Speed:= 50; //there are multiple ways of setting a speed, this way per step the speed can be changed but it can also set fixed at the servo block
-			Srv_Interrol.I_K_AbsPositioning := TRUE;
-			
-		eTMP.SrvPosEndIntrl:
-			Cyl_Example.I_K_AutoIn:= TRUE;
-			
-		eTMP.CylOut:
-			Cyl_Example.I_K_AutoOut:= TRUE;
-			Vcg_Suckers.I_K_Auto_Vacuum:=TRUE;
-			
-		eTMP.CylIn:
-			Cyl_Example.I_K_AutoIn:= TRUE;
-			Vcg_Suckers.I_K_Auto_BlowOff:=TRUE;	
-			
-		eTMP.MtrStartFwd:
-			Cyl_Example.I_K_AutoIn:= TRUE;	
-			Mtr_Example.I_K_Auto_Fwd:= TRUE;
-
-			//fdr's speed = block input
-			Fdr_CtExample.I_K_Auto_Fwd:= TRUE;
-			Fdr_CtExample.I_Speed:= -1; //<0 means use HMI.SP.Speed
-			Fdr_LzExample.I_K_Auto_Fwd:= TRUE;
-			Fdr_LzExample.I_Speed := 50;
-			
-		eTMP.MtrStop:
-			Cyl_Example.I_K_AutoIn:= TRUE;
-		
-		eTMP.MtrStartRev:
-			Cyl_Example.I_K_AutoIn:= TRUE;	
-			Mtr_Example.I_K_Auto_Rev:= TRUE;
-
-			//fdr's speed = HMI.SP
-			Fdr_CtExample.I_K_Auto_Rev:= TRUE;
-			Fdr_CtExample.I_Speed:= 75; //<0 means use HMI.SP.Speed
-			Fdr_LzExample.I_K_Auto_Rev:= TRUE;
-			Fdr_LzExample.I_Speed := -1; //<0 means use HMI.SP.Speed
-	
-		eTMP.CamReady:
-			Cyl_Example.I_K_AutoIn:= TRUE;			
-		
-		eTMP.CamTrig:
-			Cyl_Example.I_K_AutoIn:= TRUE;
-			Cam_OmronFh.I_K_Trigger:= TRUE;
-			Cam_OmronFhEth.I_K_Trigger:= TRUE;
-			Cam_OmronSmartCam.I_K_Trigger:= TRUE;	
-			
-	(*
-		S_Example:
-			//Comm signals
-			//Timers
-			//Internals
-			//Controls
-			//Warnings
-			//Errors
-	*)
-	
-	END_CASE
-
-(*Activations always (not step dependant)*)
-
-(*Warnings/Statusses*)
-	//update organiser with local status
+//update organiser
 	HM_ProgStatus.Prog_Error :=	//emergencystop not ok
-						NOT I_K_ES_OK
-						//optional >> request go to error state from external
-						OR I_K_ExternalError
-						//error active in this block or one of the linked children
-						OR HMI.P_STS_InError;
+								NOT I_K_ES_OK
+								//optional >> request go to error state from external
+								OR I_K_ExternalError
+								//error active in this block or one of the linked children
+								OR HMI.P_STS_InError;
 	I_Organiser.M_UpdateProgStatus(HM_ProgStatus);
-	
+
+//Internal flags
+	//if running and product detected or supply might be supplying products > reset empty status
+	IF (	I_Organiser.EnableDevices_K
+			AND (	PC_ProductInfeed.Q_DetectedDebounced
+					OR NOT I_STS_SUP_Empty))
+	THEN
+		HM_Empty := FALSE;
+	END_IF
+
+//Warnings/Statusses
 	Q_STS_Empty := HM_Empty;
 	HMI.STS.IsEmpty := HM_Empty; //can be used to indicate on the HMI this machinepart is empty
+	Q_STS_RefillPlanos := NOT PC_PlanoBufferLL.Q_DetectedDebounced;
+	HMI.WRN.PlanoBufferNeedsRefill := NOT PC_PlanoBufferLL.Q_DetectedDebounced;
+	HMI.WRN.NotRdyRcv_Discharge := 	I_Organiser.EnableDevices_K
+									AND NOT SN_DscReadyToReceive.Q;
+
 	//if pulse 1s >> increase hmi test int until max reached which resets to 0
 	IF(BknGlbl.Blink_P_1s)
 	THEN
 		HMI.STS.testInt := HMI.STS.testInt + 1; IF(HMI.STS.testInt > 5) THEN HMI.STS.testInt := 0; END_IF;
 	END_IF
 
-	HMI.WRN.NotRdyRcv_Discharge := 	I_Organiser.EnableDevices_K
-									AND NOT SN_DscReadyToReceive.Q;
-
-(*Timers*)
+//Timers
 	Tmr_Empty(	//IN:= ,
 				PT:= T#30S );	
 	
@@ -658,11 +347,11 @@ A_StepActivationsInit();
 	Tmr_TestServoVelo(	//IN:= , 
 						PT:= T#5S);
 
-(*Instance calls*)
+//Instance calls
 	//Safe button (protection against loss of communication with the HMI >> will set state to low)
 	PBsf_Example();
 
-	PC_Example(
+	PC_ProductInfeed(
 		I_HMI_Parent:= HMI,
 		I_K_SimulationActive:= Glbl.Sim_MyMachinePart, 
 		I_OrgControl := I_Organiser);
@@ -670,7 +359,14 @@ A_StepActivationsInit();
 		//I_K_ErrNotState:= ,
 	
 	//Logged counter: example how we can count the debounced falling edges of a photocell
-		IF(PC_Example.Q_DetectedDebounced_RE) THEN 	PC_Example_Count.V := PC_Example_Count.V + 1; END_IF
+		IF(PC_ProductInfeed.Q_DetectedDebounced_RE) THEN 	PC_Example_Count.V := PC_Example_Count.V + 1; END_IF
+	
+	PC_PlanoBufferLL(
+		I_HMI_Parent:= HMI,
+		I_OrgControl:= I_Organiser,
+		I_K_SimulationActive:= Glbl.Sim_MyMachinePart,
+		I_SimulateState:= eSensorState.Detected, 
+		I_ErrNotState:= eSensorState.None);
 	
 	SN_DscReadyToReceive(
 		I_K_SimulationActive:= Glbl.Sim_MyMachinePart, 
@@ -848,24 +544,23 @@ A_StepActivationsInit();
 		I_K_LoadScene:= ,
 		I_K_UpdateStatus:= , 
 		//I_K_Trigger:= 
-		);
-		
-	//block that will resolve results from camera measurement output
-	Cam_OmronFhEthResult(
-		I_K_TrigOk:= Cam_OmronFhEth.Q_K_TriggerOk,
-		I_DataUsedSize:= Cam_OmronFhEth.Q_STS_TriggerNrBytesReceived, 
-		I_Data:= HM_CamOmronFhEthReceivedData);]]></ST>
+			);
+			
+		//block that will resolve results from camera measurement output
+		Cam_OmronFhEthResult(
+			I_K_TrigOk:= Cam_OmronFhEth.Q_K_TriggerOk,
+			I_DataUsedSize:= Cam_OmronFhEth.Q_STS_TriggerNrBytesReceived, 
+			I_Data:= HM_CamOmronFhEthReceivedData);]]></ST>
       </Implementation>
     </Action>
-    <Action Name="A_StepActivationsInit" Id="{e6d8a9f5-49ec-0932-3bd6-e3c1647ce1fd}">
+    <Action Name="A_ActivationsInit" Id="{e6d8a9f5-49ec-0932-3bd6-e3c1647ce1fd}">
       <Implementation>
-        <ST><![CDATA[//Initialise all step controlled activations to false
-HM_Empty R= I_STS_SUP_Empty
-			OR (	I_Organiser.EnableDevices_K
-					AND PC_Example.Q_DetectedDebounced);
+        <ST><![CDATA[(*	
+	Initialisation of state dependant activations
+*)
 HM_ProgStatus.Prog_Rest := FALSE;
 Q_SN_SUP_Request := FALSE;
-PC_Example.I_ErrNotState := eSensorState.None;
+PC_ProductInfeed.I_ErrNotState := eSensorState.None;
 Mtr_Example.I_K_Auto_Fwd := FALSE;
 Mtr_Example.I_K_Auto_Rev := FALSE;
 Fdr_CtExample.I_K_Auto_Fwd := FALSE;
@@ -897,6 +592,293 @@ Tmr_Initialisation.IN := FALSE;
 Tmr_Wrn_NoSupply.IN := FALSE;
 
 HM_DebugMultiStep_ResetInActivations := false;]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_ActivationsState" Id="{cebbb77e-c522-4e9d-a607-ae06b2e6f976}">
+      <Implementation>
+        <ST><![CDATA[(*
+	State dependant activations
+*)
+CASE State.eS OF
+	eTMP.TotalReset:
+		;
+	
+	eTMP.InitCyl:
+		Cyl_Example.I_K_AutoIn:= TRUE; 
+	
+		(*Warnings/Errors*)
+			//a sensor error can be triggered by activating the I_K_ErrNot.... input >> uses internally a timer
+			//usually we want the machine to be empty in the init phase so setting error here if it is not
+			PC_ProductInfeed.I_ErrNotState := eSensorState.Undetected; 
+			//or an error can also be set directly
+			//IF( [some condition] ) then IO_ERR.PC_ProductPassedStopper.NotLow := true; END_IF  !!!Errors must be a set! 
+	
+	eTMP.InitSrv:
+		Cyl_Example.I_K_AutoIn:= TRUE; 
+		Mtr_Example.I_K_Auto_Fwd:= TRUE;
+		Srv_Example.I_K_Homing:= TRUE;
+		Tmr_Initialisation.IN:= Mtr_Example.P_STS_Running;
+	
+		(*Warnings/Errors*)
+			//S= >> SET!!! , all errors have to be set. In tc3 we can now use S= instead of "IF(..)THEN err:=true; end_if"
+			HMI.ERR.InitNotEmpty S= PC_ProductInfeed.Q_DetectedDebounced;  	//detection machine is not empty during init
+			PC_ProductInfeed.I_ErrNotState := eSensorState.Undetected;			//it is nice to also trigger this error, especially if there are multiple sensors. This at a faulty sensor the operator knows which sensor causes the problem
+	
+	eTMP.InitCamQuickFocus:
+		Cyl_Example.I_K_AutoIn:= TRUE; 
+		Cam_OmronSmartCam.I_K_QuickFocus:= TRUE;
+	
+	eTMP.InitCamLoadJob:
+		Cyl_Example.I_K_AutoIn:= TRUE; 
+		Cam_OmronFh.I_K_LoadScene:= TRUE;
+		Cam_OmronFh.I_SceneToLoad:= 2;
+		Cam_OmronSmartCam.I_K_LoadJob:= TRUE;
+		Cam_OmronSmartCam.P_SP_JobToLoad:= 1; //note: these kind of variables can also be set @RE step (>>when stepping from previous step to here)			(*Internals*)
+			
+	eTMP.Rest:
+		HM_ProgStatus.Prog_Rest:= TRUE;
+		Q_SN_SUP_Request:= TRUE;
+		Cyl_Example.I_K_AutoIn:= TRUE; 
+		
+		(*Warnings/Errors*)
+			//just an example, no need to add this specific warning. The camera itself generates an error if it fails to connect
+			HMI.WRN.CameraNotReady:= 	I_Organiser.EnableDevices_K
+										AND NOT Cam_OmronSmartCam.Q_STS_Ready;  
+			
+			//if the supply is running >> the photocell should get high after x-time, set error detection of the pc
+			IF(	I_SN_SUP_Request_OK
+				AND NOT I_STS_SUP_Empty
+				AND I_Organiser.EnableDevices_K)
+			THEN
+				PC_ProductInfeed.I_ErrNotState:= eSensorState.Detected; 
+			END_IF
+
+	eTMP.SrvPosStart:
+		Cyl_Example.I_K_AutoIn:= TRUE; 
+		Srv_Example.I_K_PosAbsolute:= TRUE;
+		//there are multiple ways of setting a speed, this way per step the speed can be changed but it can also set fixed at the servo block
+		//also note how for the gripper, settings are applied at the step change >>better way if during the step the settings do not have to change
+		Srv_Example.I_SP_Speed:= 50;
+		Srv_Interrol.I_K_AbsPositioning := TRUE; 
+		
+	eTMP.SrvPosStartInterl:
+		Cyl_Example.I_K_AutoIn:= TRUE;
+		
+		(*Warnings/Errors*)
+			PC_ProductInfeed.I_ErrNotState:= eSensorState.UnDetected; 
+
+	eTMP.SrvPosEnd:
+		Cyl_Example.I_K_AutoIn:= TRUE;
+		Srv_Example.I_K_PosAbsolute:= TRUE;
+		Srv_Example.I_SP_Speed:= 50; //there are multiple ways of setting a speed, this way per step the speed can be changed but it can also set fixed at the servo block
+		Srv_Interrol.I_K_AbsPositioning := TRUE;
+		
+	eTMP.SrvPosEndIntrl:
+		Cyl_Example.I_K_AutoIn:= TRUE;
+		
+	eTMP.CylOut:
+		Cyl_Example.I_K_AutoOut:= TRUE;
+		Vcg_Suckers.I_K_Auto_Vacuum:=TRUE;
+		
+	eTMP.CylIn:
+		Cyl_Example.I_K_AutoIn:= TRUE;
+		Vcg_Suckers.I_K_Auto_BlowOff:=TRUE;	
+		
+	eTMP.MtrStartFwd:
+		Cyl_Example.I_K_AutoIn:= TRUE;	
+		Mtr_Example.I_K_Auto_Fwd:= TRUE;
+
+		//fdr's speed = block input
+		Fdr_CtExample.I_K_Auto_Fwd:= TRUE;
+		Fdr_CtExample.I_Speed:= -1; //<0 means use HMI.SP.Speed
+		Fdr_LzExample.I_K_Auto_Fwd:= TRUE;
+		Fdr_LzExample.I_Speed := 50;
+		
+	eTMP.MtrStop:
+		Cyl_Example.I_K_AutoIn:= TRUE;
+	
+	eTMP.MtrStartRev:
+		Cyl_Example.I_K_AutoIn:= TRUE;	
+		Mtr_Example.I_K_Auto_Rev:= TRUE;
+
+		//fdr's speed = HMI.SP
+		Fdr_CtExample.I_K_Auto_Rev:= TRUE;
+		Fdr_CtExample.I_Speed:= 75; //<0 means use HMI.SP.Speed
+		Fdr_LzExample.I_K_Auto_Rev:= TRUE;
+		Fdr_LzExample.I_Speed := -1; //<0 means use HMI.SP.Speed
+
+	eTMP.CamReady:
+		Cyl_Example.I_K_AutoIn:= TRUE;			
+	
+	eTMP.CamTrig:
+		Cyl_Example.I_K_AutoIn:= TRUE;
+		Cam_OmronFh.I_K_Trigger:= TRUE;
+		Cam_OmronFhEth.I_K_Trigger:= TRUE;
+		Cam_OmronSmartCam.I_K_Trigger:= TRUE;	
+		
+(*
+	S_Example:
+		//Comm signals
+		//Timers
+		//Internals
+		//Controls
+		//Warnings
+		//Errors
+*)
+
+END_CASE]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Exceptions" Id="{59ea5e50-40c5-0779-31a0-efd767274b79}">
+      <Implementation>
+        <ST><![CDATA[(* State transition controller
+	Handles multistep + step hold + statusses for hmi + logging*) 
+		//>>must be before all method calls, since the input arguments are used
+	State(I_OrgControl := I_Organiser);
+
+(*Exceptions
+	Here exeptions are handled.
+	*most basic version:
+		Rest U_0 := Q_ProgStatus.Prog_Exception:=false
+			the main program is executed
+	
+		Rest >> Error := Q_ProgStatus.Prog_Exception:=true
+		1)	@ any error >> exception state (U1_0)
+			this will freeze the main program states
+		2)	if the organiser is back in an automatic state and there are no errors
+			it will step to U1_2 and from there to the idle state U_0
+			*TODO TEMPLATE >> if needed, do actions on this transition (rarely used)
+				But you could for example at a specific error force the main program to a recovery step
+			
+			
+		Rest >> Totalreset := Q_ProgStatus.Prog_Exception:=true
+		1)	@ organiser total reset command >> exception total reset (U1_1)
+		
+		2)	@ NOT organiser total reset command >> 
+				>> now bits that need to be reset @ total reset are reset
+				TODO Template >> add bits which needs to be reset
+				>> the main program is reset to the first step (usually named: TotalReset)
+				>>back to rest (U_0)
+
+	**this described the basic version which can be used in 99% of the cases,
+	you can adapt it to your needs. 
+*)
+
+CASE eE OF
+	//rest
+	U_0:
+		
+		//if program in error >> to error state
+		IF(	HM_ProgStatus.Prog_Error
+			AND NOT I_Organiser.TotalReset_K)
+		THEN
+			//>>
+			eE := U1_0;
+		//else if total reset command >> to total reset state
+		ELSIF(	I_Organiser.TotalReset_K)
+		THEN
+			//>>
+			eE := U1_1;
+		END_IF
+
+	//error
+	U1_0:
+		//if total reset command >> to total reset state
+		IF(	I_Organiser.TotalReset_K)
+		THEN
+			//>>
+			eE := U1_1;
+			
+		//else if no error active and organiser back in an automatic state
+		ELSIF(	NOT HM_ProgStatus.Prog_Error
+				AND I_Organiser.EnableDevices_K)
+		THEN
+			//>>
+			eE := U1_2;
+		END_IF
+
+	//Total Reset
+	U1_1:
+ 		//if total reset command dropped >> Reset program data and to unfreeze state
+		IF(	NOT I_Organiser.TotalReset_K)
+		THEN
+			//Total reset main program
+			State.M_Step(
+				I_NewStep:= eTMP.TotalReset,
+				I_StepCanBeHeld:= TRUE);
+			
+			//disable multistepping for 1 round
+			{warning disable C0139}
+			State.P_IsMultiStepRequired;
+
+			//Reset main program flags
+			HM_Empty:=FALSE;
+			//only done as example/testing, should be removed
+			HMI.ERR.ExampleAddPrioForHmiError := TRUE;
+			
+			//>>
+			eE := U_0;
+		END_IF
+		
+	//Unfreeze
+	U1_2:
+		//>>
+		eE := U_0;
+
+	ELSE
+		eE := U_0;
+END_CASE
+
+//Detection program in exception
+HM_ProgStatus.Prog_Exception := (eE > U_0);]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Simulation" Id="{d1a764dc-1bbc-49c4-b464-5e183332d204}">
+      <Implementation>
+        <ST><![CDATA[(*
+	Code that only needs to be executed if simulation is active (this action is only called if sim is active)
+
+	Notes:	
+	-Cntrl_Servo/motor/valve already simulate their state correctly themselves, cntrl_StateSensor must be told which state to simulate >> example below
+		Of course you could also add timers / other conditions (servo pos?!) for states
+	
+	-you can use ( Tmr_StateTime.PT > T# xxx) to start simulating things after the state has been active for a certain time
+*)
+
+//Initialise activations, which are controlled by the simulation steps
+SN_DscReadyToReceive.I_K_SimulateOn := FALSE;
+PC_ProductInfeed.I_SimulateState := eSensorState.Undetected;
+
+(*Step activations*)
+CASE State.eS OF
+	eTMP.TotalReset:
+	;
+
+	eTMP.InitCyl:
+	;
+	
+	eTMP.InitSrv:
+	;
+
+	eTMP.Rest:
+		PC_ProductInfeed.P_BypassErrDetectionTime := State.P_StepTime + T#100MS; 
+		
+		//If delay time elapsed >> simulate sensor + discharge request
+		IF(State.P_StepTime > T#1S) 
+		THEN
+			SN_DscReadyToReceive.I_K_SimulateOn := TRUE; 
+			PC_ProductInfeed.I_SimulateState := eSensorState.Detected;
+		END_IF
+		
+	eTMP.SrvPosStart:
+	;
+		
+	eTMP.SrvPosStartInterl:
+	;
+END_CASE	
+
+//feedback request to input
+I_SN_SUP_Request_OK := Q_SN_SUP_Request; ]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_StepTransitions" Id="{e5c112d9-080a-0573-2cab-53022f8e059b}">
@@ -944,7 +926,7 @@ REPEAT
 		eTMP.InitCyl:
 			//if cylinder initialised and no products in the machine >> InitSrv
 			IF( Cyl_Example.Q_STS_In
-				AND NOT PC_Example.Q_DetectedDebounced) //note: >> set error detection in activations!
+				AND NOT PC_ProductInfeed.Q_DetectedDebounced) //note: >> set error detection in activations!
 			THEN
 				//>>
 				State.M_Step(
@@ -992,7 +974,7 @@ REPEAT
 				AND NOT HM_Empty					//machine is not empty (inclusive supply)
 				AND I_SN_SUP_Request_OK				//supply delivered product
 				AND SN_DscReadyToReceive.Q 			//discharge is requesting products
- 				AND PC_Example.Q_DetectedDebounced 	//expected the sensor to be high >> activate error monitoring in activations
+ 				AND PC_ProductInfeed.Q_DetectedDebounced 	//expected the sensor to be high >> activate error monitoring in activations
 
 				//interlocking >> check blocks returned to rest/ready state
 				AND Cam_OmronFh.Q_STS_Ready
@@ -1044,7 +1026,7 @@ REPEAT
 		eTMP.SrvPosStartInterl:
 			//if interlockings with servo/supply done
 			//>>SrvPosEnd
-			IF( 	NOT PC_Example.Q_DetectedDebounced			//let's also check the sensor dropped again >> make sure to trigger error detection in activations
+			IF( 	NOT PC_ProductInfeed.Q_DetectedDebounced			//let's also check the sensor dropped again >> make sure to trigger error detection in activations
 					AND NOT I_SN_SUP_Request_OK					//product was handled, check if supply acknowledges
 					//interl. next step a command is given so we need to interlock here
 					AND NOT Srv_Example.Q_K_PosAbsoluteOk

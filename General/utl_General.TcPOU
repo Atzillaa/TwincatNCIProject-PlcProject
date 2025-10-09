@@ -19,17 +19,6 @@
 		Especially if blocks are communicating with each other with interlocks this is needed (for those to be total reset together). 
 		In that case use this signal for those organisers + Hide the total reset button for these organisers in the HMI (the organiser viewscreen has a property for this) so the single organiser total reset can't be done.
 
-	Versions
-		2023-09-14 HP
-			-big update happened, if things are missing / not working >> contact me
-		2024-02 HP
-			-another big update, new hmi structs + improvements
-			-addec cntrl_SafetyZone
-			-added cntrl_CxPowerSupply
-		2025-05 HP
-			-V0.7 another round of big updates
-		
-		
 	Usage:
 		Use Q_SN_Start/Stop/Reset/TotalReset-All signals for the organisers that should be started whith the buttons defined here
 		Use Q_SN_ES_Zone1_OK for the scams that belong to this zone
@@ -42,6 +31,12 @@ VAR_INPUT
 	I_SN_Lp_Pb_StartAll:BOOL;					//Signal activate lamp pushbutton >> if only 1 organiser, connect directly to specific organiser output, in case of multiple organisers make it sensible yourself
 	I_SN_Lp_Pb_StopAll:BOOL;					//Signal activate lamp pushbutton >> if only 1 organiser, connect directly to specific organiser output, in case of multiple organisers make it sensible yourself
 	I_SN_Lp_Pb_ResetAll:BOOL;					//Signal activate lamp pushbutton >> if only 1 organiser, connect directly to specific organiser output, in case of multiple organisers make it sensible yourself
+	
+	//Machine status (used for signal column)
+	I_STS_Error:BOOL;							//Status any machine-part is in error (any organiser in error state)
+	I_STS_Running:BOOL;							//Status all machine-parts are running (all organisers in Auto_K)
+	I_STS_NoDischarge:BOOL;						//Status discharge (next machine) not accepting products
+	I_STS_OperatorInput:BOOL;					//Status any machine-part needs operator interaction
 END_VAR
 
 VAR_OUTPUT
@@ -68,6 +63,9 @@ VAR
 	PbSf_TotalResetAll:utl_PB_HmiSafe;		//Pushbutton-safe for HMI totalreset button >> total reset all programs of this safety zone (connect to correct organisers!)
 	BknLibrary:utl_BknLibrary(				//Handles library functionality (BknGlb-variables + logging)
 		EnableTaskCycleTimeExceedWarning:=TRUE);			//dis/enable cycletime exceeding warnings (you really shouldn't...)
+
+	//TODO TEMPLATE >> This is a template block which uses the boikon default. You might have to adapt this block based on the customers requirements
+	SignalColumn: utl_SignalColumn;
 
 	//TODO TEMPLATE >>
 		//Remove if you don't have a cx2100-xxx module
@@ -184,6 +182,12 @@ BknLibrary(
 	IO_TaskInfo:= _TaskInfo[GetCurrentTaskInfo.Index],
 	IO_AppInfo:= _AppInfo);
 
+//Machine status signal column	
+SignalColumn(
+	I_STS_Error:= I_STS_Error , 
+	I_STS_Running:= I_STS_Running, 
+	I_STS_NoDischarge:= I_STS_NoDischarge, 
+	I_STS_OperatorInput:= I_STS_OperatorInput);
 	
 //TODO TEMPLATE see instructions @ declaration
 CxPowerSupply(

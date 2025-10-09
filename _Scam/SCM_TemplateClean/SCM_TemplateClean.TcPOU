@@ -91,11 +91,14 @@
 		
 	Changes
 		2019-12 HP
-		-New tc3 template
+			-New tc3 template
 		DateTime.Now() HP
-		-this blocks keeps being updated with new blocks/styles/etc
+			-this blocks keeps being updated with new blocks/styles/etc
 		2024-02 HP
-		-new hmi struct
+			-new hmi struct
+		2025-10 HP
+			-Better split of activations over actions
+		
 *)
 
 FUNCTION_BLOCK SCM_TemplateClean
@@ -147,7 +150,7 @@ END_VAR]]></Declaration>
 			OR I_Organiser.TotalReset_K)
 		THEN
 			//Make sure output of devices are turned off.
-			A_StepActivationsInit();
+			A_ActivationsInit();
 			
 			//reset HMI variables
 			utl_Any_Reset(I_Data:= HMI.ERR);
@@ -190,8 +193,96 @@ END_VAR]]></Declaration>
 	END_IF
 
 (*	Activations*)
-	A_StepActivations(); ]]></ST>
+	//Reset all activations controlled by states
+	A_ActivationsInit();
+	//Activations controlled by state
+	A_ActivationsState();
+	//Activations not controlled by state + instance calls
+	A_ActivationsAlways();]]></ST>
     </Implementation>
+    <Action Name="A_ActivationsAlways" Id="{8afecdd7-ac67-4dcd-ad16-8f534e152d9a}">
+      <Implementation>
+        <ST><![CDATA[(*
+	State undependant activations + instance calls
+*)
+
+//update organiser with local status
+	HM_ProgStatus.Prog_Error :=	//emergencystop not ok
+						NOT I_K_ES_OK
+						//optional >> request go to error state from external
+						OR I_K_ExternalError
+						//error active in this block or one of the linked children
+						OR HMI.P_STS_InError;
+	I_Organiser.M_UpdateProgStatus(HM_ProgStatus);
+
+//Internal flags
+	//Reset empty status
+	IF (	NOT I_STS_SUP_Empty
+			AND I_Organiser.Auto_K)
+	THEN
+		HM_Empty := FALSE;
+	END_IF
+
+//Warnings/Statusses	
+	Q_STS_Empty := HM_Empty;
+	HMI.STS.IsEmpty := HM_Empty; //can be used for a indicator (green/grey circle) on the HMI this machinepart is empty
+	
+	//TODO TEMPLATE
+	//usually only done when connected to an external machine (customer) >> remove warning if not needed
+	HMI.WRN.NotRdyRcv_Discharge := 	I_Organiser.EnableDevices_K
+									AND FALSE;
+	HMI.WRN.Standby := 	I_Organiser.EnableDevices_K
+						AND HM_Empty;
+
+//Timers
+	//Tmr_...
+
+//Instance calls		
+	//Cyl_....
+	//Srv_....	
+	//etc]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_ActivationsInit" Id="{e2474eae-d283-0ec5-3ed7-e90d9e6b223c}">
+      <Implementation>
+        <ST><![CDATA[(*	
+	Initialisation of state dependant activations
+*)
+
+HM_ProgStatus.Prog_Rest := FALSE;]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_ActivationsState" Id="{67496d37-6410-4af1-b602-edf8aa745e2f}">
+      <Implementation>
+        <ST><![CDATA[(*
+	State dependant activations
+*)
+CASE State.eS OF
+	eTpc.TotalReset_Example:
+		//Controls
+		//Internals
+		//Warnings/Errors
+
+	eTpc.Initialise_Example:
+		//Controls
+		//Internals
+		//Warnings/Errors
+
+	eTpc.Rest_Example:
+		//Controls
+			HM_ProgStatus.Prog_Rest := TRUE;
+		//Internals
+		//Warnings/Errors
+		
+(*
+	S_Example:
+		//Controls
+		//Internals
+		//Warnings/Errors
+*)
+END_CASE]]></ST>
+      </Implementation>
+    </Action>
     <Action Name="A_Exceptions" Id="{83afa6e6-ad6d-0ee1-2c0b-705a40832f0d}">
       <Implementation>
         <ST><![CDATA[(* State transition controller
@@ -317,138 +408,6 @@ CASE State.eS OF
 			//IF(Step.P_StepTime > T#33MS) THEN fbPC_Example.I_SimulateState := eSensorState.Detected; END_IF
 		
 END_CASE	]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="A_StepActivations" Id="{67496d37-6410-4af1-b602-edf8aa745e2f}">
-      <Implementation>
-        <ST><![CDATA[(*How it works:
-	First activations which have to be done by a step are initialised to false
-			//section initialisation
-			fbSrv_Belt.I_K_PosAbsolute := false;
-		
-	Then set activations for devices controlled by steps, to true:
-		CASE eS OF
-			eTMP.InitCyl:
-				Cyl_Example.I_K_AutoIn := TRUE;
-			...
-		END_CASE
-		
-		
-	At last activations/blocks calls that always have to be done are executed
-	
-		IO_ERR.ErrorThatIsAlwaysActive S= myCondition;	
-		..
-		fbSrv_Belt(
-			I_EN0:= TRUE,
-			...skipping a few rows here
-			//I_K_Auto_Homing:= ,				Note: activation controlled by state
-			I_K_Auto_Velocity:= FALSE,
-			I_SPD_Auto_Velocity:= 0,
-			//I_K_Auto_Absolute:= ,				Note: activation controlled by state
-			//I_POS_Auto_Absolute:= ,			Note: activation controlled by state
-			..skipping a few ros here
-			IO_MAN:= IO_MAN.Srv_Conveyor,
-			IO_SP:= IO_SP.Srv_Conveyor,
-			IO_STS:= IO_STS.Srv_Conveyor,
-			IO_WRN:= IO_WRN.Srv_Conveyor,
-			IO_ERR:= IO_ERR.Srv_Conveyor);
-		
-		
-		The advantages are:
-			-much easier to see what is activated in each step + easier to change
-			-less chance to create bugs, bugs are easier spotted
-			-it saves a lot of processor usage in comparison to the old method:
-				Q_K_SomeOutput := eStep=S1 OR eStep=S2 OR ....etc etc)
-*)
-
-(*Initialise step activated activations*)
-	A_StepActivationsInit();
-
-(*Activations by step*)
-	CASE State.eS OF
-		eTpc.TotalReset_Example:
-			(*Controls*)
-			(*Internals*)
-			(*Warnings/Errors*)
-	
-	
-		eTpc.Initialise_Example:
-			(*Controls*)
-			(*Internals*)
-			(*Warnings/Errors*)
-	
-		eTpc.Rest_Example:
-			(*Controls*)
-				HM_ProgStatus.Prog_Rest := TRUE;
-			(*Internals*)
-			(*Warnings/Errors*)
-			
-	(*
-		S_Example:
-			(*Controls*)
-			(*Internals*)
-			(*Warnings/Errors*)
-	*)
-	END_CASE
-
-
-(*Activations always*)
-
-(*Default positions for cylinders 
-	*If you don't want to specify in each step the IN OR out activation for a cylinder
-	then you could do it like here:
-		In := NOT Out
-		>>now only the Out activation has to be programmed in the activations-case
-		
-	*However it is more readable if you don't use this way of activating cylinders and just specify in each step in or out
-*)
-	IF(NOT (State.eS = eTpc.TotalReset_Example))
-	THEN
-		//Cyl_Example.I_K_AutoOut := NOT Cyl_Example.I_K_AutoIn; 
-	END_IF
-	
-(*Warnings/Statusses*)
-	//update organiser with local status
-	HM_ProgStatus.Prog_Error :=	//emergencystop not ok
-						NOT I_K_ES_OK
-						//optional >> request go to error state from external
-						OR I_K_ExternalError
-						//error active in this block or one of the linked children
-						OR HMI.P_STS_InError;
-	I_Organiser.M_UpdateProgStatus(HM_ProgStatus);
-	
-	Q_STS_Empty := HM_Empty;
-	HMI.STS.IsEmpty := HM_Empty; //can be used to indicate on the HMI this machinepart is empty
-	
-	//TODO TEMPLATE
-	//usually only done when connected to an external machine (customer) >> remove warning if not needed
-	HMI.WRN.NotRdyRcv_Discharge := 	I_Organiser.EnableDevices_K
-									AND FALSE;
-	HMI.WRN.Standby := 	I_Organiser.EnableDevices_K
-						AND HM_Empty;
-(*Internals*)
-	//Reset empty status
-	IF (	NOT I_STS_SUP_Empty
-			AND I_Organiser.Auto_K)
-	THEN
-		HM_Empty := FALSE;
-	END_IF
-
-(*Timers*)
-
-
-(*Instance calls*)		
-		
-	//Cyl_....
-
-	//Srv_....	
-	
-	//etc]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="A_StepActivationsInit" Id="{e2474eae-d283-0ec5-3ed7-e90d9e6b223c}">
-      <Implementation>
-        <ST><![CDATA[HM_ProgStatus.Prog_Rest := FALSE;]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_StepTransitions" Id="{59016bf7-b834-0a7f-0314-510f2d30212c}">

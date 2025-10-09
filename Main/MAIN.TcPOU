@@ -7,29 +7,31 @@
 {warning 'upload boot project at online change is disabled in project settings, RE-ENABLE!!!!'}
 PROGRAM MAIN
 VAR
-	General: Utl_General;								//General >> holds all stuff not belonging to a specific machine part (generic lamps / doors /etc)
+	//General >> holds all stuff not belonging to a specific machine part (generic lamps / doors /etc)
+	General: Utl_General;
 
+	//TODO TEMPLATE: here in the example only 1 organiser is used, add + rename as needed
 	Organiser:cntrl_Organiser(						
 		SP_TmrReset := T#1S,
-		SP_TmrResetES := T#3S);							//Machine(part) organiser
-		
-	LP_OrgGroupMachinePart:Cntrl_BannerKxx(
-		Intensity:= eBannerKxx_Intensity.Low);									//Status lamp for organiser(s) group machine part
+		SP_TmrResetES := T#3S);							
 END_VAR
 
-//TODO TEMPLATE >> Remove this section 
+//TODO TEMPLATE >> Remove this section, it is for testing the library and template
 //*Also remove the define from here: project/properties/compile/compiler defines/IsTemplate
 {IF defined (IsTemplate)}
 	{warning 'Template testing is enabled >> Remove the define and clean all "TODO TEMPLATE" locations'}
 	VAR
 		{attribute 'analysis' := '-33'}
-		TestScmClean: SCM_TemplateClean;					//Remove >> Only here so it will get error checked
-		ExampleMachinePart: SCM_TemplateMachinePart;		//Remove >> Example for how to use
+		//Scam-template >> use tool supplied in the folder, to make a copy for your own scam implementation 
+		TestScmClean: SCM_TemplateClean;
 		
-		//test why double reset needed after pb-es
-		Reset_K:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
-		Reset_RE_K:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
-		General_ES_OK:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
+		//Fully functional test scam which uses almost all library blocks >> can be used as example how to do things 
+		ExampleMachinePart: SCM_TemplateMachinePart;
+		
+		//Banner-Multicolor signal lamp
+		//NOTE: You can use it this way for multiple organisers as well, just keep calling ..M_UpdateOrganiserState(xxx) for each organiser  
+		LP_OrgGroupMachinePart:Cntrl_BannerKxx(
+			Intensity:= eBannerKxx_Intensity.Low);
 		
 		HM_ProfileBlocks:BOOL;
 		StopWatchGeneral:profiler;
@@ -40,7 +42,7 @@ END_VAR
 		sw2:profiler;
 		sw3:profiler;
 		sw4:profiler;
-	
+		LogTest:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
 	END_VAR
 {END_IF}]]></Declaration>
     <Implementation>
@@ -55,10 +57,7 @@ a_General();
 	b_MachinePart();
 	
 	UnitTesting();
-	Reset_K.B := Organiser.Reset_K;
-	Reset_RE_K.B := Organiser.Reset_K_RE;
-	General_ES_OK.b := General.Q_SN_ES_Zone1_OK;
-	
+
 	//if do some performance analysis >> .
 	//cx2040 2015-00-00-45
 	IF(HM_ProfileBlocks)
@@ -95,16 +94,24 @@ a_General();
     <Action Name="a_General" Id="{ef997c49-6f4c-4175-83bc-febdc880087c}">
       <Implementation>
         <ST><![CDATA[General(
-	I_SN_ResetErrors:= Organiser.Reset_K, //use as needed, this is internally OR'ed with physical input PB_ResetAll
-	//controls the lights for the general start/stop/reset buttons
-	I_SN_Lp_Pb_StartAll:= Organiser.Q_LP_Start, //since in this example there is only 1 org, only 1 org connected here
-	I_SN_Lp_Pb_StopAll:= Organiser.Q_LP_Stop, //since in this example there is only 1 org, only 1 org connected here 
-	I_SN_Lp_Pb_ResetAll:= Organiser.Q_LP_Reset, //since in this example there is only 1 org, only 1 org connected here
-	Q_SN_ES_Zone1_OK=> , //connect to corresponding organisers >> if multiple zones are needed then create extra outputs+code in general
-	Q_SN_StartAll=> , //connect to all organisers that have to start with the physical start/stop/reset-all buttons 
-	Q_SN_StopAll=> , //connect to all organisers that have to start with the physical start/stop/reset-all buttons 
-	Q_SN_ResetAll=> , //connect to all organisers that have to start with the physical start/stop/reset-all buttons 
-	Q_SN_TotalResetAll=> , //connect to all organisers that have to start with the physical start/stop/reset-all buttons 
+	//Reset command + general start/stop/reset button lights > add organisers as needed, use OR
+	I_SN_ResetErrors:= Organiser.Reset_K,
+	I_SN_Lp_Pb_StartAll:= Organiser.Q_LP_Start,
+	I_SN_Lp_Pb_StopAll:= Organiser.Q_LP_Stop,
+	I_SN_Lp_Pb_ResetAll:= Organiser.Q_LP_Reset,
+	
+	//Machine status
+	I_STS_Error:=,
+	I_STS_NoDischarge:=,
+	I_STS_OperatorInput:=,
+	I_STS_Running:=,	
+	
+	//Organiser/SCAM control-outputs
+	Q_SN_ES_Zone1_OK=>, 
+	Q_SN_StartAll=>,
+	Q_SN_StopAll=>,
+	Q_SN_ResetAll=> ,
+	Q_SN_TotalResetAll=>
 );]]></ST>
       </Implementation>
     </Action>

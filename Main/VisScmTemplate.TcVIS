@@ -5,7 +5,7 @@
       <Data>
         <o xml:space="preserve" t="VisualObject">
           <n n="LastVisuLanguageModelEntry" />
-          <v n="UniqueIdGenerator">"107"</v>
+          <v n="UniqueIdGenerator">"109"</v>
           <o n="VisualElemList" t="VisualElemList">
             <l n="VisualElementList" t="VisualElemCollection" cet="GenericVisualElem">
               <o>
@@ -2335,7 +2335,10 @@
                             <v n="TypeNodeName">"I_UnitName"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">
                               <v n="AttrFlags">0UL</v>
-                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" />
+                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" ckt="String" cvt="String">
+                                <v>Editor_TypeMatchVariable</v>
+                                <v>true</v>
+                              </d>
                               <v n="ConvDone">true</v>
                             </o>
                             <v n="TypeNodeId" t="Int16">255</v>
@@ -2348,7 +2351,7 @@
                           </o>
                           <o>
                             <v n="Flags">2L</v>
-                            <v n="BasicTypeNodeValue">"MAIN.ExampleMachinePart.PC_Example"</v>
+                            <v n="BasicTypeNodeValue">"MAIN.ExampleMachinePart.PC_ProductInfeed"</v>
                             <v n="BasicTypeNodeAcceptsExpression">true</v>
                             <n n="BasicTypeNodeFastAccess" />
                             <a n="BasicTypeNodeEnumValues" et="String" />
@@ -2366,7 +2369,10 @@
                             <v n="TypeNodeName">"IO_cntrl"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">
                               <v n="AttrFlags">0UL</v>
-                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" />
+                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" ckt="String" cvt="String">
+                                <v>Editor_TypeMatchVariable</v>
+                                <v>true</v>
+                              </d>
                               <v n="ConvDone">true</v>
                             </o>
                             <v n="TypeNodeId" t="Int16">256</v>
@@ -2415,7 +2421,7 @@
                     </o>
                     <o>
                       <v n="Id">2272881513L</v>
-                      <v n="Value">"MAIN.ExampleMachinePart.PC_Example"</v>
+                      <v n="Value">"MAIN.ExampleMachinePart.PC_ProductInfeed"</v>
                     </o>
                     <o>
                       <v n="Id">1013868361L</v>
@@ -7985,7 +7991,10 @@
                             <v n="TypeNodeName">"I_UnitName"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">
                               <v n="AttrFlags">0UL</v>
-                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" />
+                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" ckt="String" cvt="String">
+                                <v>Editor_TypeMatchVariable</v>
+                                <v>true</v>
+                              </d>
                               <v n="ConvDone">true</v>
                             </o>
                             <v n="TypeNodeId" t="Int16">255</v>
@@ -8016,7 +8025,10 @@
                             <v n="TypeNodeName">"IO_Step"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">
                               <v n="AttrFlags">0UL</v>
-                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" />
+                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" ckt="String" cvt="String">
+                                <v>Editor_TypeMatchVariable</v>
+                                <v>true</v>
+                              </d>
                               <v n="ConvDone">true</v>
                             </o>
                             <v n="TypeNodeId" t="Int16">256</v>
