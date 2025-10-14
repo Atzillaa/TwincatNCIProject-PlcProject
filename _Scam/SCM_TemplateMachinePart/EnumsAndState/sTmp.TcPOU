@@ -34,27 +34,32 @@ END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[SUPER^(I_OrgControl := I_OrgControl);]]></ST>
     </Implementation>
-    <Property Name="P_StateAsInt" Id="{b207d7db-a9c3-4880-a4b0-bc949d5192e8}">
-      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+    <Property Name="P_StateAsInt" Id="{7847cc91-50a8-435d-bb75-0cd18f701b00}">
+      <Declaration><![CDATA[//This property is used by the base block to manipulate eS since it doesn't know the enum type
 PROPERTY P_StateAsInt : INT
 ]]></Declaration>
-      <Get Name="Get" Id="{8220f6fe-2ad6-442b-9e87-276116b368b5}">
+      <Get Name="Get" Id="{a47c9431-82ec-4b33-8be9-1b82950e56b9}">
         <Declaration><![CDATA[]]></Declaration>
         <Implementation>
           <ST><![CDATA[P_StateAsInt := eS;]]></ST>
         </Implementation>
       </Get>
-      <Set Name="Set" Id="{461c86f6-f300-482d-ab66-d3caf7c8ecc7}">
-        <Declaration><![CDATA[]]></Declaration>
+      <Set Name="Set" Id="{84f3b43d-1fee-403c-a013-a4065f6898d5}">
+        <Declaration><![CDATA[VAR
+	pInt:pointer to int;
+END_VAR]]></Declaration>
         <Implementation>
-          <ST><![CDATA[eS := P_StateAsInt;]]></ST>
+          <ST><![CDATA[//I really want to keep attribute strict for the enum definition (to prevent enum mixing which I've seen happen) but with strict you're not allowed to assign an int which must be done here!
+//so let's go evil mode... 
+pInt := ADR(eS);
+pInt^ := P_StateAsInt;]]></ST>
         </Implementation>
       </Set>
     </Property>
-    <Property Name="P_StateAsString" Id="{07566dac-6dfd-42c1-b69b-791f759bfda7}">
-      <Declaration><![CDATA[PROPERTY P_StateAsString : STRING(40)
-]]></Declaration>
-      <Get Name="Get" Id="{d714f82b-c761-40cd-ab8a-be5656cd87cb}">
+    <Property Name="P_StateAsString" Id="{fc4940e9-4d53-4d97-bf3d-33d7e8935507}">
+      <Declaration><![CDATA[//This property is used by the base block to manipulate eS since it doesn't know the enum type
+PROPERTY P_StateAsString : STRING(40)]]></Declaration>
+      <Get Name="Get" Id="{f8f91b1e-78aa-4017-8a49-8330c9006d26}">
         <Declaration><![CDATA[]]></Declaration>
         <Implementation>
           <ST><![CDATA[P_StateAsString := TO_STRING(eS);]]></ST>

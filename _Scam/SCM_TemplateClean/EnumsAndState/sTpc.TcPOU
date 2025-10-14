@@ -35,7 +35,7 @@ END_VAR]]></Declaration>
       <ST><![CDATA[SUPER^(I_OrgControl := I_OrgControl);]]></ST>
     </Implementation>
     <Property Name="P_StateAsInt" Id="{34f311bd-8ce1-4690-916b-e6d075e38430}">
-      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
+      <Declaration><![CDATA[//This property is used by the base block to manipulate eS since it doesn't know the enum type
 PROPERTY P_StateAsInt : INT
 ]]></Declaration>
       <Get Name="Get" Id="{4f9d7e3f-0093-4185-9d1c-2ab204fcf06a}">
@@ -45,16 +45,20 @@ PROPERTY P_StateAsInt : INT
         </Implementation>
       </Get>
       <Set Name="Set" Id="{4d2e2b53-d450-40a5-aa7f-45c2a504f84b}">
-        <Declaration><![CDATA[]]></Declaration>
+        <Declaration><![CDATA[VAR
+	pInt:pointer to int;
+END_VAR]]></Declaration>
         <Implementation>
-          <ST><![CDATA[eS := P_StateAsInt;]]></ST>
+          <ST><![CDATA[//I really want to keep attribute strict for the enum definition (to prevent enum mixing which I've seen happen) but with strict you're not allowed to assign an int which must be done here!
+//so let's go evil mode... 
+pInt := ADR(eS);
+pInt^ := P_StateAsInt;]]></ST>
         </Implementation>
       </Set>
     </Property>
     <Property Name="P_StateAsString" Id="{b70923e2-fa99-45bf-8e0b-37fa0d65ba04}">
-      <Declaration><![CDATA[{attribute 'monitoring' := 'call'}
-PROPERTY P_StateAsString : STRING(40)
-]]></Declaration>
+      <Declaration><![CDATA[//This property is used by the base block to manipulate eS since it doesn't know the enum type
+PROPERTY P_StateAsString : STRING(40)]]></Declaration>
       <Get Name="Get" Id="{d172ae5e-3c18-4e17-aac3-8f83cb08d8b4}">
         <Declaration><![CDATA[]]></Declaration>
         <Implementation>

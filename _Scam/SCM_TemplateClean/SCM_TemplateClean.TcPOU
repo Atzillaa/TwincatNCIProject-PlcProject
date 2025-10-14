@@ -142,15 +142,16 @@ END_VAR]]></Declaration>
       <ST><![CDATA[(*
 	Machinepart not enabled >> note: optional remove setpoint and this code if not needed!
 *)
-	//If this part is not enabled >> reset errors/warnings/outputs
+	//If this part is not enabled >> ...
 	IF (	NOT HMI.SP.MachinePartEnabled)
 	THEN
-		//if reset command >> reset errors / warnings (in case an error was set when the machine was still enabled)
-		IF(	I_Organiser.Reset_K
-			OR I_Organiser.TotalReset_K)
+		//if not disabled yet >> reset outputs + errors + warnings
+		IF(	State.eS <> eTpc.Disabled)
 		THEN
-			//Make sure output of devices are turned off.
+			//Make sure output of devices are turned off by setting state total reset and then running activations once
+			State.M_Step(I_NewStep:= eTpc.Disabled);
 			A_ActivationsInit();
+			A_ActivationsAlways();
 			
 			//reset HMI variables
 			utl_Any_Reset(I_Data:= HMI.ERR);
@@ -159,10 +160,8 @@ END_VAR]]></Declaration>
 			HM_ProgStatus.Prog_Error := FALSE;
 			HM_ProgStatus.Prog_Exception := FALSE;
 		END_IF
-		
-		State.eS:=eTpc.TotalReset_Example;
-		
-		(*bits needed to keep the line running if a part midsection is disabled*)
+	
+		//bits needed to keep the line running if a part midsection is disabled
 		HM_ProgStatus.Prog_Rest := TRUE;
 		Q_STS_Empty := I_STS_SUP_Empty;
 		RETURN;
@@ -172,7 +171,7 @@ END_VAR]]></Declaration>
 	Update HMI variables
 	Check if an error is active >> set Q_ProgStatus.Prog_Errror
 *)
-	HMI.M_Update(	I_OrgControl:= I_Organiser, 	//used for reset manuals/errors commands
+	HMI.M_Update(	I_OrgControl:= I_Organiser, 				//used for reset manuals/errors commands
 					I_HMI_Parent := 0, 							//This is top level, no error propagation
 					I_ERR:= HMI.ERR,							//The update function will check for error changes (signal to the hmi to update errors) + reset errors
 					I_WRN:= HMI.WRN,							//The update function will check for warning changes (signal to the hmi to update errors)
@@ -185,8 +184,8 @@ END_VAR]]></Declaration>
 (*	Exceptions & step-controller*)
 	A_Exceptions();
 
-(*	Step transitions*)
-	//if not in exception >> execute step transitions
+(*	State transitions*)
+	//if not in exception >> execute state transitions
 	IF ( 	NOT HM_ProgStatus.Prog_Exception)
 	THEN 
 		A_StepTransitions();
@@ -258,17 +257,17 @@ HM_ProgStatus.Prog_Rest := FALSE;]]></ST>
 	State dependant activations
 *)
 CASE State.eS OF
-	eTpc.TotalReset_Example:
+	eTpc.TotalReset:
 		//Controls
 		//Internals
 		//Warnings/Errors
 
-	eTpc.Initialise_Example:
+	eTpc.Initialise:
 		//Controls
 		//Internals
 		//Warnings/Errors
 
-	eTpc.Rest_Example:
+	eTpc.Rest:
 		//Controls
 			HM_ProgStatus.Prog_Rest := TRUE;
 		//Internals
@@ -357,7 +356,7 @@ CASE eE OF
 		THEN
 			//Total reset main program
 			State.M_Step(
-				I_NewStep:= eTpc.TotalReset_Example,
+				I_NewStep:= eTpc.TotalReset,
 				I_StepCanBeHeld:= TRUE);
 			
 			//disable multistepping for 1 round
@@ -397,10 +396,10 @@ HM_ProgStatus.Prog_Exception := (eE > U_0);]]></ST>
 
 (*Step activations*)
 CASE State.eS OF
-	eTpc.TotalReset_Example:
+	eTpc.TotalReset:
 	;
 
-	eTpc.Rest_Example:
+	eTpc.Rest:
 		//Example simulate sensor ON immediatly
 			//fbPC_Example.I_SimulateState := eSensorState.Detected;
 		
@@ -435,13 +434,14 @@ THEN
 //Repeat until conditions to step to next state are false OR looped already twice (normally programs don't loop multiple times!)
 REPEAT 
 	CASE State.eS OF
-		eTpc.TotalReset_Example:
+		eTpc.Disabled,
+		eTpc.TotalReset:
 			//if initialise command from the organiser >> start initialisation
 			IF ( I_Organiser.Init_K)
 			THEN
 				//>>
 				State.M_Step(
-					I_NewStep:= eTpc.Initialise_Example,
+					I_NewStep:= eTpc.Initialise,
 					//Optional: argument to log extra info for this step transition
 					I_NewStepLogInfo:= CONCAT('Start command at time:', SYSTEMTIME_TO_STRING(BknGlbl.LocalSystemTime)),
 					//>>@ true & HMI-stepmode is activated, then the next state will be locked until you press the button release step on the HMI (used for debugging / commissioning
@@ -451,22 +451,22 @@ REPEAT
 					I_BlockMultiStep:=TRUE); 
 			END_IF
 		
-		eTpc.Initialise_Example:
+		eTpc.Initialise:
 			IF( FALSE) 
 			THEN
 				//>>
 				State.M_Step(
-					I_NewStep:= eTpc.Rest_Example,
+					I_NewStep:= eTpc.Rest,
 					I_StepCanBeHeld:= TRUE);
 			END_IF
 
-		eTpc.Rest_Example: 
+		eTpc.Rest: 
 			IF( I_Organiser.Auto_K
 				AND FALSE)
 			THEN
 				//>>
 				State.M_Step(
-					I_NewStep:= eTpc.Rest_Example,
+					I_NewStep:= eTpc.Rest,
 					//just an example what you can do (add state info for logging purposes), this argument is optional
 					I_NewStepLogInfo:= Concat('Last cycle time(s):', TO_STRING(TO_REAL(BknGlbl.SystemTimeInTicks - HM_LastTicksStateRest)/10000000)),
 					I_StepCanBeHeld:= FALSE);

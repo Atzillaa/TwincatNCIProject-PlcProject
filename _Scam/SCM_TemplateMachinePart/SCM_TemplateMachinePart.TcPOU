@@ -241,7 +241,7 @@ VAR
 	//VacuumGenerator	>>	Vacuumgenerator with blowoff controlled by IO
 	Vcg_Suckers : cntrl_VacuumGenerator(
 		//fb_init
-		Options:= eVacuumGeneratorConfig.Default) 
+		Options:= eVacuumGeneratorConfig.Default + eVacuumGeneratorConfig.DropVacAtVacErr)
 		//interal vars
 		:=(PS_VacuumOk:=(
 			HMI:=(

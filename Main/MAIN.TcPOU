@@ -28,6 +28,10 @@ END_VAR
 		//Fully functional test scam which uses almost all library blocks >> can be used as example how to do things 
 		ExampleMachinePart: SCM_TemplateMachinePart;
 		
+		//Test if mqtt socketclient disconnects
+		HM_CNT_Disconnects: DINT;
+		HM_RE_CNT_Disconnects:bool;
+		
 		//Banner-Multicolor signal lamp
 		//NOTE: You can use it this way for multiple organisers as well, just keep calling ..M_UpdateOrganiserState(xxx) for each organiser  
 		LP_OrgGroupMachinePart:Cntrl_BannerKxx(
@@ -55,8 +59,42 @@ a_General();
 //It is a simple machine with 1 organiser and 1 scam completely connected up with general
 {IF defined (IsTemplate)}
 	b_MachinePart();
-	
+
+	//run tests on various library blocks	
 	UnitTesting();
+	//test template clean
+	TestScmClean(
+		I_Organiser:= Organiser, 
+		I_K_ES_OK:= General.Q_SN_ES_Zone1_OK, 
+		I_K_ExternalError:= General.Q_SN_ERR_General, 
+		I_STS_SUP_Empty:= TRUE, 
+		Q_STS_Empty=> );
+		
+	//test socketclient
+	IF(	BknLog.MqttLoggingClient.SocketConnection.SocketConnect.bExecute 
+		AND NOT HM_RE_CNT_Disconnects)
+	THEN 
+		HM_CNT_Disconnects := HM_CNT_Disconnects + 1;
+	END_IF
+
+	HM_RE_CNT_Disconnects := BknLog.MqttLoggingClient.SocketConnection.SocketConnect.bExecute;
+
+
+	//Overwrite previous call of the block in action machinepart >> break timer!
+	IF(	(	BknGlbl.LocalSystemTime.wHour = 10
+			AND_THEN BknGlbl.LocalSystemTime.wMinute <= 15)
+		OR	(	BknGlbl.LocalSystemTime.wHour = 12
+				AND_THEN BknGlbl.LocalSystemTime.wMinute >= 30)
+		OR	(	BknGlbl.LocalSystemTime.wHour >= 17))
+	THEN
+		LP_OrgGroupMachinePart.M_Set2ColorAnimation(
+			I_Color1 := eBannerKxx_Color.Yellow,
+			I_Color2 := eBannerKxx_Color.Red,
+			I_Animation:= eBannerKxx_AnimationType.HalfHalfRotate,
+			TRUE); 
+		LP_OrgGroupMachinePart();
+	END_IF
+
 
 	//if do some performance analysis >> .
 	//cx2040 2015-00-00-45
@@ -93,7 +131,13 @@ a_General();
     </Implementation>
     <Action Name="a_General" Id="{ef997c49-6f4c-4175-83bc-febdc880087c}">
       <Implementation>
-        <ST><![CDATA[General(
+        <ST><![CDATA[//General is the place for all in-/outputs not specific belonging to a machinepart like:
+//	-handling of boikonlibrary functionality
+//	-general start/stop/reset buttons + lights
+//	-general airpressure sensor
+//	-safety components: control + errors for doors/lightscreens/pushbuttons
+//	-ethercat diagnostics
+General(
 	//Reset command + general start/stop/reset button lights > add organisers as needed, use OR
 	I_SN_ResetErrors:= Organiser.Reset_K,
 	I_SN_Lp_Pb_StartAll:= Organiser.Q_LP_Start,
@@ -112,13 +156,20 @@ a_General();
 	Q_SN_StopAll=>,
 	Q_SN_ResetAll=> ,
 	Q_SN_TotalResetAll=>
-);]]></ST>
+);
+
+
+//Organiser(s) Banner multicolor indicator light
+//	this is an example on how to use it to show the status of an organiser
+//	1) you can also manually control the lamp with the given M_Set... methods, but then don't call M_UpdateOrganiserState anymore!
+//	2) inside general would be a better place but there you can't access the Organiser instances easily (or you tresspass OOP by doing things like: main.Organiser inside.... > don't do that!)
+LP_OrgGroupMachinePart.M_UpdateOrganiserState(Organiser); //call this method for each organiser belonging to this group
+LP_OrgGroupMachinePart();]]></ST>
       </Implementation>
     </Action>
     <Action Name="b_MachinePart" Id="{51166692-ba41-42d3-9f46-75bf2fc7547e}">
       <Implementation>
-        <ST><![CDATA[{IF defined (IsTemplate)}
-//Note: if the machine consists of several machine parts with their own organiser then for a cleaner structure make a seperate action for each part
+        <ST><![CDATA[//Note: if the machine consists of several machine parts with their own organiser then for a cleaner structure make a seperate action for each part
 //todo think about this
 
 Organiser(
@@ -138,27 +189,6 @@ Organiser(
 	Q_LP_Stop=>, 
 	Q_LP_Reset=>);
 
-(*Example how to use the BannerKxxx multicolorlamp to show the status of organiser(s)
-	Note: you can also manually control the lamp with the given M_Set... methods, but then don't call M_UpdateOrganiserState anymore! *)
-LP_OrgGroupMachinePart.M_UpdateOrganiserState(Organiser); //call this method for each organiser belonging to this group
-LP_OrgGroupMachinePart();
-
-//some shenanigans please ignore but can serve as example how to use the banner as in manual mode
-//desktop test plc break alarm
-IF(	(	BknGlbl.LocalSystemTime.wHour = 10
-		AND_THEN BknGlbl.LocalSystemTime.wMinute <= 15)
-	OR	(	BknGlbl.LocalSystemTime.wHour = 12
-			AND_THEN BknGlbl.LocalSystemTime.wMinute >= 30)
-	OR	(	BknGlbl.LocalSystemTime.wHour >= 17))
-THEN
-	LP_OrgGroupMachinePart.M_Set2ColorAnimation(
-		I_Color1 := eBannerKxx_Color.Yellow,
-		I_Color2 := eBannerKxx_Color.Red,
-		I_Animation:= eBannerKxx_AnimationType.HalfHalfRotate,
-		TRUE); 
-	LP_OrgGroupMachinePart();
-END_IF
-
 ExampleMachinePart( //todo remove true
 	I_K_ES_OK:= General.Q_SN_ES_Zone1_OK, 			//Emergency stop for this zone OK. @ mutliple zones, fbGeneral must be adapted to supply these signals for each zone
 	I_K_ExternalError:= General.Q_SN_ERR_General,	//External error which should put this scam in exception as well
@@ -170,8 +200,7 @@ ExampleMachinePart( //todo remove true
 	I_SP_GeneralShared:= General.P_SP_Shared,		//Connect to where to common setpoints originate / are shared
 	Q_STS_Empty=> , 								//Connect to downstream. The supply is empty and this part is now empty and in energy-save mode
 	Q_SN_SUP_Request=> ,							//Connect to upstream. This program is running and ready to receive products
-);
-{END_IF}]]></ST>
+);]]></ST>
       </Implementation>
     </Action>
   </POU>
