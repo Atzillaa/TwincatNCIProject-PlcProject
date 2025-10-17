@@ -151,6 +151,11 @@ Speed optimization:
 	-declare variables in order of size (first the bytes then the words then ... etc)
 
 
+Communication between 2 plc's via eap
+	https://www.plccoder.com/communicating-between-beckhoff-controllers-via-eap/
+	*alternatively use ADS with BknLibrary.utl_AdsSymbolRead
+
+
 Beckhoff bugs:
 	Actual:
 		visu: textlist for a combobox for a visu in a library

@@ -64,8 +64,6 @@ VAR
 		//Qsf_K_RunSafety /  Qsf_K_ResetSafetyErrors
 		//Isf_STS_SafetyInRun
 		//!Restart safety button must be connected to a safety terminal and should not be done via plc
-		
-		HM_Test:dword;
 END_VAR
 ]]></Declaration>
     <Implementation>

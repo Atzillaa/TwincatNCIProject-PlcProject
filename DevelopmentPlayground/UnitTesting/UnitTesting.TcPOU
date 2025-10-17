@@ -808,7 +808,12 @@ THEN
 	Tmr_Q_Y_PS1_FB.I_SP_TOF := T#500MS; 
 	
 	Tmr_Q_Y_PS2_FB.I_SP_TON := T#550MS; 
-	Tmr_Q_Y_PS2_FB.I_SP_TOF := T#550MS; 
+	Tmr_Q_Y_PS2_FB.I_SP_TOF := T#550MS;
+	
+	//connected to a safe output in the test-bench which pulse very shortly to off >> causes logging mayhem
+	Isf_Y_Air1.P_LoggingGroup := 0;
+	Isf_Y_Air2.P_LoggingGroup := 0;
+	Isf_ES_OK.P_LoggingGroup := 0;
 END_IF
 
 //if not enabled >> abort

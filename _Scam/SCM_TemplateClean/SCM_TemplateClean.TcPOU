@@ -273,8 +273,8 @@ CASE State.eS OF
 		//Internals
 		//Warnings/Errors
 		
-(*
-	S_Example:
+(*  use for copy-pasting
+	eTpc.:
 		//Controls
 		//Internals
 		//Warnings/Errors
@@ -436,42 +436,62 @@ REPEAT
 	CASE State.eS OF
 		eTpc.Disabled,
 		eTpc.TotalReset:
-			//if initialise command from the organiser >> start initialisation
-			IF ( I_Organiser.Init_K)
-			THEN
-				//>>
-				State.M_Step(
-					I_NewStep:= eTpc.Initialise,
-					//Optional: argument to log extra info for this step transition
-					I_NewStepLogInfo:= CONCAT('Start command at time:', SYSTEMTIME_TO_STRING(BknGlbl.LocalSystemTime)),
-					//>>@ true & HMI-stepmode is activated, then the next state will be locked until you press the button release step on the HMI (used for debugging / commissioning
-					//!Do not enable for states in which things are cooking: (heater enabled / motor running / etc) or at least consider carefully potential dangers.
-					I_StepCanBeHeld:= TRUE,
-					//Optional: >> the repeat around this CASE-statement will NOT execute, the next step will take at least 1 cycle == activations for that step are executed 	
-					I_BlockMultiStep:=TRUE); 
-			END_IF
-		
-		eTpc.Initialise:
-			IF( FALSE) 
-			THEN
-				//>>
-				State.M_Step(
-					I_NewStep:= eTpc.Rest,
-					I_StepCanBeHeld:= TRUE);
-			END_IF
+			//if initialise command from the organiser																>>Initialise
+				IF ( I_Organiser.Init_K)
+				THEN
+					//>>
+					State.M_Step(
+						I_NewStep:= eTpc.Initialise,
+						//Optional: argument to log extra info for this step transition
+						I_NewStepLogInfo:= CONCAT('Start command at time:', SYSTEMTIME_TO_STRING(BknGlbl.LocalSystemTime)),
+						//>>@ true & HMI-stepmode is activated, then the next state will be locked until you press the button release step on the HMI (used for debugging / commissioning
+						//!Do not enable for states in which things are cooking: (heater enabled / motor running / etc) or at least consider carefully potential dangers.
+						I_StepCanBeHeld:= TRUE,
+						//Optional: >> the repeat around this CASE-statement will NOT execute, the next step will take at least 1 cycle == activations for that step are executed 	
+						I_BlockMultiStep:=TRUE); 
+				END_IF
 
-		eTpc.Rest: 
-			IF( I_Organiser.Auto_K
-				AND FALSE)
-			THEN
-				//>>
-				State.M_Step(
-					I_NewStep:= eTpc.Rest,
-					//just an example what you can do (add state info for logging purposes), this argument is optional
-					I_NewStepLogInfo:= Concat('Last cycle time(s):', TO_STRING(TO_REAL(BknGlbl.SystemTimeInTicks - HM_LastTicksStateRest)/10000000)),
-					I_StepCanBeHeld:= FALSE);
-				HM_LastTicksStateRest := BknGlbl.SystemTimeInTicks;
-			END_IF
+		eTpc.Initialise:
+			//if components initialised																				>>Rest
+				IF( FALSE) 
+				THEN
+					//>>
+					State.M_Step(
+						I_NewStep:= eTpc.Rest,
+						I_StepCanBeHeld:= TRUE);
+				END_IF
+
+		eTpc.Rest:
+			//if machine started and start condition																>>Rest
+				IF( I_Organiser.Auto_K
+					AND FALSE)
+				THEN
+					//>>
+					State.M_Step(
+						I_NewStep:= eTpc.Rest,
+						//just an example what you can do (add state info for logging purposes), this argument is optional
+						I_NewStepLogInfo:= Concat('Last cycle time(s):', TO_STRING(TO_REAL(BknGlbl.SystemTimeInTicks - HM_LastTicksStateRest)/10000000)),
+						I_StepCanBeHeld:= FALSE);
+					HM_LastTicksStateRest := BknGlbl.SystemTimeInTicks;
+				END_IF
+
+		(*  use for copy-pasting
+				Keep tab-structure > try fold icon on comment lines for step reasons ;)
+			
+			eTpc.:
+				//if [ReasonForStep]																				>>[TargetState]
+					IF()
+					THEN
+						//>>
+						State.M_Step(
+							I_NewStep:= eTpc.,
+							I_StepCanBeHeld:= TRUE);
+				//else if [ReasonForStep]																			>>[TargetState]
+					ELSEIF
+					THEN
+						
+					END_IF
+		*)
 
 	//unkown state, should never happen. Best to not do an autorecovery, just let it hang			
 	ELSE

@@ -18,7 +18,7 @@
     <LibraryReferences>{015cb6ed-99fd-4f18-9128-1eb89efb4ed6}</LibraryReferences>
     <Company>Boikon</Company>
     <Released>false</Released>
-    <ProjectVersion>0.7.0.1109</ProjectVersion>
+    <ProjectVersion>0.7.0.1110</ProjectVersion>
     <CombineIds>false</CombineIds>
     <Title>Boikon Template</Title>
     <CompilerVersion>
@@ -65,25 +65,25 @@
       <SubType>Code</SubType>
       <DependentUpon>VisualizationManager.TcVMO</DependentUpon>
     </Compile>
-    <Compile Include="General\HMI_ERR_General.TcDUT">
+    <Compile Include="General\HMI\HMI_ERR_General.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="General\HMI_MAN_General.TcDUT">
+    <Compile Include="General\HMI\HMI_General.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="General\HMI_SP_General.TcDUT">
+    <Compile Include="General\HMI\HMI_MAN_General.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="General\HMI_STS_General.TcDUT">
+    <Compile Include="General\HMI\HMI_SP_General.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="General\HMI_General.TcPOU">
+    <Compile Include="General\HMI\HMI_SP_GeneralShared.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="General\HMI_WRN_General.TcDUT">
+    <Compile Include="General\HMI\HMI_STS_General.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="General\HMI_SP_GeneralShared.TcDUT">
+    <Compile Include="General\HMI\HMI_WRN_General.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="General\utl_General.TcPOU">
@@ -213,6 +213,7 @@
     <Folder Include="DevelopmentPlayground\UnitTesting" />
     <Folder Include="DevelopmentPlayground\ObjectOrientedExamples" />
     <Folder Include="General" />
+    <Folder Include="General\HMI" />
     <Folder Include="Main" />
     <Folder Include="Version" />
     <Folder Include="_Controls\TemplateSafetyZone" />

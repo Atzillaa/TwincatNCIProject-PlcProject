@@ -7,7 +7,6 @@ STRUCT
 	//prio's: emergency stop items == 100, e-circuit=99, default (nothing specified) = 50
 	//adjust as needed
 	ExampleErrorPreConfiggedPrio:BOOL;					//Error[prio=90] Example error with preconfigured prio (key only used at first creation/adding to the HMI-alarm-list-file)
-	dummy:bool;
 END_STRUCT
 END_TYPE
 ]]></Declaration>

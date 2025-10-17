@@ -13,7 +13,7 @@ VAR
 	//TODO TEMPLATE: here in the example only 1 organiser is used, add + rename as needed
 	Organiser:cntrl_Organiser(						
 		SP_TmrReset := T#1S,
-		SP_TmrResetES := T#3S);							
+		SP_TmrResetES := T#3S);
 END_VAR
 
 //TODO TEMPLATE >> Remove this section, it is for testing the library and template
@@ -28,25 +28,30 @@ END_VAR
 		//Fully functional test scam which uses almost all library blocks >> can be used as example how to do things 
 		ExampleMachinePart: SCM_TemplateMachinePart;
 		
+
+		//just to show it's possible
+		//these variables will now have the same comment (these 2 lines)
+		//*multiline comment still is a kind of broken in the editor, parts will dissapear..
+		MyBool1,MyBool2,MyBool3:BOOL;  
+
 		//Test if mqtt socketclient disconnects
-		HM_CNT_Disconnects: DINT;
-		HM_RE_CNT_Disconnects:bool;
+		HM_CNT_ReConnects: DINT;
+		HM_RE_CNT_ReConnects:bool;
 		
 		//Banner-Multicolor signal lamp
 		//NOTE: You can use it this way for multiple organisers as well, just keep calling ..M_UpdateOrganiserState(xxx) for each organiser  
 		LP_OrgGroupMachinePart:Cntrl_BannerKxx(
 			Intensity:= eBannerKxx_Intensity.Low);
-		
+
+		//Performance test	
 		HM_ProfileBlocks:BOOL;
-		StopWatchGeneral:profiler;
-		StopWatchMachineStuff:profiler;
-		index:INT;
-		HM_TestRuns:INT:=1000;
-		sw1:profiler;
-		sw2:profiler;
-		sw3:profiler;
-		sw4:profiler;
-		LogTest:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
+		StopWatchGeneral,StopWatchMachineStuff:profiler;
+		
+		//string value to int test
+		sValue1,sValue2,sValue3:STRING := '123';
+		sValue4,sValue5:string(1);
+		b0Value,b1Value:BYTE;
+		iValue1,iValue2:INT;
 	END_VAR
 {END_IF}]]></Declaration>
     <Implementation>
@@ -59,9 +64,37 @@ a_General();
 //It is a simple machine with 1 organiser and 1 scam completely connected up with general
 {IF defined (IsTemplate)}
 	b_MachinePart();
+	
+	//multi assignments
+		MyBool1 := MyBool2 := MyBool3;
+	
+	//cast string value to int value
+		iValue1 := TO_INT(sValue1);		//string value as int
+	
+	{analysis -0175} //disables analysis warning SA0175 suspicious operation on string
+	//string character to value without casting
+		b0Value := sValue1[0]; 			//raw value
+		
+	//cast string does not work when using indexing!!!
+		iValue2 := TO_INT(sValue1[0]);	//raw value
+ 
+	//copy 1 character
+		//ERROR can not assign byte to string: 
+			//sValue2 := sValue1[0];
+		//now you will have the asci-code as string...
+			sValue2 := TO_STRING(sValue1[0]);
+		//works but but now you have to deal with string-termination as well
+			sValue3[0] := sValue1[0];
+			sValue3[1] := 0;
+		//using boikon library (little bit overkill if you only need 1 char but better to have easy to read code)
+			utl_Any_CopyWithOffset(sValue4, sValue1, 0); //side note: only copies 1 char  because destination isn't larger)
+		//using beckhoff library
+			sValue5 := MID(sValue1,1,1);
+			
 
 	//run tests on various library blocks	
 	UnitTesting();
+	
 	//test template clean
 	TestScmClean(
 		I_Organiser:= Organiser, 
@@ -72,15 +105,15 @@ a_General();
 		
 	//test socketclient
 	IF(	BknLog.MqttLoggingClient.SocketConnection.SocketConnect.bExecute 
-		AND NOT HM_RE_CNT_Disconnects)
+		AND NOT HM_RE_CNT_ReConnects)
 	THEN 
-		HM_CNT_Disconnects := HM_CNT_Disconnects + 1;
+		HM_CNT_ReConnects := HM_CNT_ReConnects + 1;
 	END_IF
 
-	HM_RE_CNT_Disconnects := BknLog.MqttLoggingClient.SocketConnection.SocketConnect.bExecute;
+	HM_RE_CNT_ReConnects := BknLog.MqttLoggingClient.SocketConnection.SocketConnect.bExecute;
 
 
-	//Overwrite previous call of the block in action machinepart >> break timer!
+	//Mess around with the banner multicolor lamp >> if break-time, overwrite previous (organiser-state) call with a manual set color
 	IF(	(	BknGlbl.LocalSystemTime.wHour = 10
 			AND_THEN BknGlbl.LocalSystemTime.wMinute <= 15)
 		OR	(	BknGlbl.LocalSystemTime.wHour = 12
@@ -111,7 +144,8 @@ a_General();
 			//2025-01-30 V0.7.1002 8us		
 			//2025-04-01 V0.7.1027 8/8us	
 			//2025-06-10 V0.7.1030 8/8us
-			//2025-06-11 V0.7.1030 7/8us    
+			//2025-06-11 V0.7.1030 7/8us
+			//2025-10-15 V0.7.1109 8/8us 	>>added signal column
 		
 		StopWatchMachineStuff(Start:=TRUE);
 		b_MachinePart();
@@ -123,8 +157,9 @@ a_General();
 			//2025-01-30 V0.7.1002 12us 	>>improved HMI vars handling
 			//Above were probably with simulation (then it is faster because statetransitions of the scam isn't executed?)
 			//2025-04-01 V0.7.1027 11/16us	>>with/without simulation modes   >> improved fletcher a bit
-			//2025-06-10 V0.7.1030 13/18us	>>Organiser now passed by interface + logging first 10 errors in the organiser
+			//2025-06-10 V0.7.1030 13/18us	>>Organiser now passed by interface + log first 10 errors by name in the organiser 
 			//2025-06-10 V0.7.1030 11/16us	>>Instead of hashing all values for errors/warnings, only hashing addresses for active errors/warnings
+			//2025-10-15 V0.7.1109 12/16us  >>PLC BSD updated 4026.19, added: banner-SC, pc, fdr-interrol
 		UnitTesting(); //otherwise logErrors will go beserk
 	END_IF
 {END_IF}]]></ST>
