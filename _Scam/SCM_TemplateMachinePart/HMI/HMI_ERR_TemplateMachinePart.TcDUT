@@ -21,6 +21,9 @@ STRUCT
 	
 	//example how to pre-set error priorities for the HMI. Default errors get prio 50, Recommend prio 100 for e-stop buttons etc
 	ExampleAddPrioForHmiError:BOOL;					//Error[prio=100] TemplateMachinePart: we have an error!
+	
+	//test log error by name, very long name, truncation
+	TestStupidLongErrorNameWillItGetLoggedAbcdefghijklmnopqrstuvwzyzAbcdefghijklmnopqrstuvwzyzAbcdefghijklmnopqrstuvwzyzAbcdefghijklmnopqrstuvwzyzAbcdefghijklmnopqrstuvwzyz:BOOL;
 END_STRUCT
 END_TYPE]]></Declaration>
   </DUT>

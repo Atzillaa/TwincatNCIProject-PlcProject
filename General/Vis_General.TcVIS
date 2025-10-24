@@ -5,7 +5,7 @@
       <Data>
         <o xml:space="preserve" t="VisualObject">
           <n n="LastVisuLanguageModelEntry" />
-          <v n="UniqueIdGenerator">"164"</v>
+          <v n="UniqueIdGenerator">"170"</v>
           <o n="VisualElemList" t="VisualElemList">
             <l n="VisualElementList" t="VisualElemCollection" cet="GenericVisualElem">
               <o>
@@ -414,7 +414,7 @@
                     </o>
                     <o>
                       <v n="Id">1647042231L</v>
-                      <v n="Value">"Glbl.SimEnable"</v>
+                      <v n="Value">"&lt;toggle/tap variable&gt;"</v>
                     </o>
                     <o>
                       <v n="Id">2812299069L</v>
@@ -8019,7 +8019,7 @@ Start/Stop/Reset buttons simulate real hw-inputs"</v>
                     </o>
                     <o>
                       <v n="Id">1647042231L</v>
-                      <v n="Value">"MAIN.General.I_Pb_StartAll.I_K_SimulateOn"</v>
+                      <v n="Value">"&lt;toggle/tap variable&gt;"</v>
                     </o>
                     <o>
                       <v n="Id">2812299069L</v>
@@ -8157,15 +8157,11 @@ Start/Stop/Reset buttons simulate real hw-inputs"</v>
                           <v n="Id">1186196937L</v>
                           <v n="Value">"MAIN.General.I_PbNc_StopAll.I_K_SimulateOn"</v>
                         </o>
-                        <o>
-                          <v n="Id">1329445385L</v>
-                          <v n="Value">true</v>
-                        </o>
                       </l>
                     </o>
-                    <v n="SignatureName">"Visu_TapInput"</v>
-                    <v n="Name">"Tap"</v>
-                    <v n="Description">"Configure the tapping of a Boolean variable"</v>
+                    <v n="SignatureName">"Visu_ToggleInput"</v>
+                    <v n="Name">"Toggle"</v>
+                    <v n="Description">"Configure the toggling of a Boolean variable"</v>
                   </o>
                 </a>
                 <l n="Elements" t="ArrayList" />
@@ -8210,7 +8206,7 @@ Start/Stop/Reset buttons simulate real hw-inputs"</v>
                     </o>
                     <o>
                       <v n="Id">1647042231L</v>
-                      <v n="Value">"MAIN.General.I_PbNc_StopAll.I_K_SimulateOn"</v>
+                      <v n="Value">"&lt;toggle/tap variable&gt;"</v>
                     </o>
                     <o>
                       <v n="Id">2812299069L</v>
@@ -8397,7 +8393,7 @@ Start/Stop/Reset buttons simulate real hw-inputs"</v>
                     </o>
                     <o>
                       <v n="Id">1647042231L</v>
-                      <v n="Value">"MAIN.General.I_Pb_ResetAll.I_K_SimulateOn"</v>
+                      <v n="Value">"&lt;toggle/tap variable&gt;"</v>
                     </o>
                     <o>
                       <v n="Id">2812299069L</v>
@@ -9271,10 +9267,13 @@ Start/Stop/Reset buttons simulate real hw-inputs"</v>
               <v n="BgUseColor">-4144960</v>
               <v n="BgUseGradient">false</v>
             </o>
+            <v n="AllElementsHaveDynamicVisibility">false</v>
           </o>
           <o n="GeneratedLMMDescriptions" t="GeneratedLanguageModelEntriesData">
             <o n="GeneratedVisuFbDescription" t="GenericFbDescription">
               <d n="FbMethods" t="CaseInsensitiveHashtable" ckt="String" cvt="Guid">
+                <v>AreAllElementsHidden</v>
+                <v>5ee90fae-98b0-50b6-9c11-eea1c3ee95e2</v>
                 <v>ContainsPoint</v>
                 <v>e33f2245-a6c0-41e5-926d-99cccc7f8718</v>
                 <v>Destruct</v>
@@ -9285,6 +9284,8 @@ Start/Stop/Reset buttons simulate real hw-inputs"</v>
                 <v>00cf68e4-1404-49f1-9e25-2835f4f2fbcb</v>
                 <v>FB_Reinit</v>
                 <v>32ec2f3f-e9ac-4580-9895-d0ebe3824ad4</v>
+                <v>GetCallerNamespace</v>
+                <v>a8c919e9-b18d-5f7e-896c-f7ea60aa0da9</v>
                 <v>GetClientData</v>
                 <v>b2bf24e9-53fb-4bbc-aba0-b45470f662c3</v>
                 <v>GetDialogInterface</v>
@@ -9513,6 +9514,9 @@ END_VAR"</v>
             <v n="DialogIsOpaque">false</v>
             <v n="DialogIsOpaqueIsSet">false</v>
             <v n="UseParentSizeProperties">false</v>
+            <n n="ToolboxCategory" />
+            <n n="ToolboxImageId" />
+            <v n="IsCustomCategory">false</v>
           </o>
         </Data>
         <TypeList>

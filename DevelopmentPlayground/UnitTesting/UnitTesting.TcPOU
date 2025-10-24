@@ -18,6 +18,10 @@ VAR
 	//out of curiousity
 		testVarInfo: __SYSTEM.VAR_INFO := __VARINFO(MAIN.General);
 		testPouInfo: STRING := __POUNAME();
+		
+	//system time
+		systemTime:utl_LoggedString(LoggingGroup:= eLogGroups.Default);
+		systemTimeValid:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
 
 	//Array functions test
 		arrCnt_1: ARRAY[1..ARRSIZE] OF INT;
@@ -169,6 +173,9 @@ HM_ItfOrgFake := HM_OrganiserFake;
 
 //init vars at firstscan
 IF(BknGlbl.FirstScan)THEN A_aFirstScan(); END_IF
+
+//system time checks
+A_aCheckSystemTime();
 
 //Any-reset + Any-find fist high byte
 _M_Any_ArrayInitValues();
@@ -456,6 +463,31 @@ END_VAR
 ]]></ST>
       </Implementation>
     </Method>
+    <Action Name="A_aCheckSystemTime" Id="{9d4cbcb2-28d3-474d-9d6b-9c1b984d11e2}">
+      <Implementation>
+        <ST><![CDATA[//if time became valid, stop logging
+IF(systemTimeValid.B AND bknglbl.LocalSystemTimeValid) THEN RETURN; END_IF
+
+//the system time stays invalid for a few cycles
+systemTime.V := SystemTime_to_string(BknGlbl.LocalSystemTime);
+systemTimeValid.B := bknglbl.LocalSystemTimeValid;
+
+//should be valid if it says so..
+IF(  bknglbl.LocalSystemTimeValid AND_THEN BknGlbl.LocalSystemTime.wYear < 2025)
+THEN
+	utl_SystemMessage(I_Message:= 'BknGlbl.LocalSystemTime not valid (<2025), but it should be');
+	HM_HoustonWeHaveAProblem := TRUE;
+END_IF
+
+//shouldn't take to long to become valid
+IF(NOT BknGlbl.LocalSystemTimeValid AND_THEN BknLog.TimeStamp > 3000)
+THEN
+	utl_SystemMessage(I_Message:= 'BknGlbl.LocalSystemTime takes to long te become valid');
+END_IF
+
+]]></ST>
+      </Implementation>
+    </Action>
     <Action Name="A_aFirstScan" Id="{65fb7e12-f359-0bec-2fa4-8af79ba1b3bd}">
       <Implementation>
         <ST><![CDATA[EnableSafetyTest := TRUE;
