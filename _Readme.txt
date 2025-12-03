@@ -111,6 +111,8 @@ Attributes warnings
 		{attribute 'no_explicit_call' := 'do not call this POU directly, because ...'}
 
 
+	//TODO {attribute 'GlobalType'} >> can this be used for creating types for hw-linking?
+
 //interesting new features of tc3
 TYPE REFERENCE
 	Type "Reference To" versus "Pointer To" 

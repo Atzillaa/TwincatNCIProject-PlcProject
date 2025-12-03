@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="eWsl15_Animation" Id="{2dff9a80-9375-45b6-99c2-69f3b6ad88fa}">
+    <Declaration><![CDATA[//enum of states
+{attribute 'strict'}
+{attribute 'qualified_only'}
+TYPE eWsl15_Animation:
+(
+	Steady		:= 1,
+	Flash		:= 2
+	//and many more 
+)BYTE;
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

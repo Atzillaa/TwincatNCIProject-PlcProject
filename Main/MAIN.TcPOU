@@ -34,10 +34,6 @@ END_VAR
 		//*multiline comment still is a kind of broken in the editor, parts will dissapear..
 		MyBool1,MyBool2,MyBool3:BOOL;  
 
-		//Test if mqtt socketclient disconnects
-		HM_CNT_ReConnects: DINT;
-		HM_RE_CNT_ReConnects:bool;
-		
 		//Banner-Multicolor signal lamp
 		//NOTE: You can use it this way for multiple organisers as well, just keep calling ..M_UpdateOrganiserState(xxx) for each organiser  
 		LP_OrgGroupMachinePart:Cntrl_BannerKxx(
@@ -47,11 +43,19 @@ END_VAR
 		HM_ProfileBlocks:BOOL;
 		StopWatchGeneral,StopWatchMachineStuff:profiler;
 		
+		//casting works with a lot of types, example time
+		sMyUtcTime:string;
+		
 		//string value to int test
 		sValue1,sValue2,sValue3:STRING := '123';
 		sValue4,sValue5:string(1);
 		b0Value,b1Value:BYTE;
 		iValue1,iValue2:INT;
+		
+		Banner:cntrl_BannerWSL15(
+					IOlinkPort:= E_IoLPort.Port1,
+					Intensity:= eWsl15_Intensity.High, 
+					NrOfSegments:= 3);
 	END_VAR
 {END_IF}]]></Declaration>
     <Implementation>
@@ -61,22 +65,43 @@ END_VAR
 a_General();
 
 //TODO template: everything in here is added as an example >> remove or adjust to your needs
-//It is a simple machine with 1 organiser and 1 scam completely connected up with general
+//It is a simple machine with 1 organiser and 1 scam fully functional with simulation and using general
 {IF defined (IsTemplate)}
 	b_MachinePart();
-	
+
+//TODO template: remove all code and instance declarations for code below
+//Unittesting
+	//run tests on various library blocks 
+	//*all blocks using pointers will get added eventually
+	//*the unittests will do bad things to these blocks, if they're programmed well no blue screen will occur	
+		UnitTesting();
+			
+	//test if template clean will build
+		TestScmClean(
+			I_Organiser:= Organiser, 
+			I_K_ES_OK:= General.Q_SN_ES_Zone1_OK, 
+			I_K_ExternalError:= General.Q_SN_ERR_General, 
+			I_STS_SUP_Empty:= TRUE, 
+			Q_STS_Empty=> );
+		
+		//todo move to library
+		Banner();
+
+//Showcasing
 	//multi assignments
 		MyBool1 := MyBool2 := MyBool3;
 	
-	//cast string value to int value
+	//type casting examples
+		//time
+		sMyUtcTime := SYSTEMTIME_TO_STRING(BknGlbl.UtcSystemTime);
+		//cast string value to int value
 		iValue1 := TO_INT(sValue1);		//string value as int
 	
 	{analysis -0175} //disables analysis warning SA0175 suspicious operation on string
-	//string character to value without casting
-		b0Value := sValue1[0]; 			//raw value
-		
-	//cast string does not work when using indexing!!!
-		iValue2 := TO_INT(sValue1[0]);	//raw value
+		//string character to value without casting
+			b0Value := sValue1[0]; 			//raw value
+		//cast string to value. NOTE: does not work when using indexing!!!
+			iValue2 := TO_INT(sValue1[0]);	//raw value
  
 	//copy 1 character
 		//ERROR can not assign byte to string: 
@@ -85,51 +110,13 @@ a_General();
 			sValue2 := TO_STRING(sValue1[0]);
 		//works but but now you have to deal with string-termination as well
 			sValue3[0] := sValue1[0];
-			sValue3[1] := 0;
+			sValue3[1] := 0; //fix terminator
 		//using boikon library (little bit overkill if you only need 1 char but better to have easy to read code)
 			utl_Any_CopyWithOffset(sValue4, sValue1, 0); //side note: only copies 1 char  because destination isn't larger)
 		//using beckhoff library
-			sValue5 := MID(sValue1,1,1);
-			
+			sValue5 := MID(sValue1,1,1); //beckhoff string functions are slow, use more cpu
 
-	//run tests on various library blocks	
-	UnitTesting();
-	
-	//test template clean
-	TestScmClean(
-		I_Organiser:= Organiser, 
-		I_K_ES_OK:= General.Q_SN_ES_Zone1_OK, 
-		I_K_ExternalError:= General.Q_SN_ERR_General, 
-		I_STS_SUP_Empty:= TRUE, 
-		Q_STS_Empty=> );
-		
-	//test socketclient
-	IF(	BknLog.MqttLoggingClient.SocketConnection.SocketConnect.bExecute 
-		AND NOT HM_RE_CNT_ReConnects)
-	THEN 
-		HM_CNT_ReConnects := HM_CNT_ReConnects + 1;
-	END_IF
-
-	HM_RE_CNT_ReConnects := BknLog.MqttLoggingClient.SocketConnection.SocketConnect.bExecute;
-
-
-	//Mess around with the banner multicolor lamp >> if break-time, overwrite previous (organiser-state) call with a manual set color
-	IF(	(	BknGlbl.LocalSystemTime.wHour = 10
-			AND_THEN BknGlbl.LocalSystemTime.wMinute <= 15)
-		OR	(	BknGlbl.LocalSystemTime.wHour = 12
-				AND_THEN BknGlbl.LocalSystemTime.wMinute >= 30)
-		OR	(	BknGlbl.LocalSystemTime.wHour >= 17))
-	THEN
-		LP_OrgGroupMachinePart.M_Set2ColorAnimation(
-			I_Color1 := eBannerKxx_Color.Yellow,
-			I_Color2 := eBannerKxx_Color.Red,
-			I_Animation:= eBannerKxx_AnimationType.HalfHalfRotate,
-			TRUE); 
-		LP_OrgGroupMachinePart();
-	END_IF
-
-
-	//if do some performance analysis >> .
+//Library / Template Performance analysis 
 	//cx2040 2015-00-00-45
 	IF(HM_ProfileBlocks)
 	THEN
@@ -193,13 +180,29 @@ General(
 	Q_SN_TotalResetAll=>
 );
 
-
+//TODO TEMPLATE remove if not needed
 //Organiser(s) Banner multicolor indicator light
 //	this is an example on how to use it to show the status of an organiser
 //	1) you can also manually control the lamp with the given M_Set... methods, but then don't call M_UpdateOrganiserState anymore!
 //	2) inside general would be a better place but there you can't access the Organiser instances easily (or you tresspass OOP by doing things like: main.Organiser inside.... > don't do that!)
 LP_OrgGroupMachinePart.M_UpdateOrganiserState(Organiser); //call this method for each organiser belonging to this group
-LP_OrgGroupMachinePart();]]></ST>
+LP_OrgGroupMachinePart();
+
+//TODO TEMPLATE remove banner break-time
+//Mess around with the banner multicolor lamp >> if break-time, overwrite previous (organiser-state) call with a manual set color
+IF(	(	BknGlbl.LocalSystemTime.wHour = 10
+		AND_THEN BknGlbl.LocalSystemTime.wMinute <= 15)
+	OR	(	BknGlbl.LocalSystemTime.wHour = 12
+			AND_THEN BknGlbl.LocalSystemTime.wMinute >= 30)
+	OR	(	BknGlbl.LocalSystemTime.wHour >= 17))
+THEN
+	LP_OrgGroupMachinePart.M_Set2ColorAnimation(
+		I_Color1 := eWsl15_Color.Yellow,
+		I_Color2 := eWsl15_Color.Red,
+		I_Animation:= eBannerKxx_AnimationType.HalfHalfRotate,
+		TRUE); 
+	LP_OrgGroupMachinePart();
+END_IF]]></ST>
       </Implementation>
     </Action>
     <Action Name="b_MachinePart" Id="{51166692-ba41-42d3-9f46-75bf2fc7547e}">

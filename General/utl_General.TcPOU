@@ -217,6 +217,8 @@ I_Pb_StartAll(
 	//I_K_SimulateOn:= , >>overwritten by visu general 
 	);
 
+//RE > preset sim-on
+I_PbNc_StopAll.I_K_SimulateOn S= Glbl.SimEnable AND NOT I_PbNc_StopAll.I_K_SimulationActive;
 I_PbNc_StopAll(
 	I_K_SimulationActive:= Glbl.SimEnable, 
 	//I_K_SimulateOn:= , >>overwritten by visu general 

@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="eWsl15_Color" Id="{cda4c700-b109-4c73-b09b-294eb20f81d8}">
+    <Declaration><![CDATA[//enum of states
+{attribute 'strict'}
+{attribute 'qualified_only'}
+TYPE eWsl15_Color :
+(
+	Green			:=0,
+	Red				:=1,
+	Orange			:=2,
+	Amber			:=3,
+	Yellow			:=4,
+	LimeGreen		:=5,
+	SpringGreen 	:=6,
+	Cyan			:=7,
+	SkyBlue			:=8,
+	Blue			:=9,
+	Violet			:=10,
+	Magenta			:=11,
+	Rose			:=12,
+	WhiteDay		:=13,
+	Custom1			:=14,
+	Custom2			:=15,
+	WhiteIncandence	:=16,
+	WhiteWarm		:=17,
+	WhiteFluor		:=18,
+	WhiteNeutral	:=19,
+	WhiteCool		:=20
+) BYTE;
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

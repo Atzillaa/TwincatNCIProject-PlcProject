@@ -5,7 +5,7 @@
       <Data>
         <o xml:space="preserve" t="VisualObject">
           <n n="LastVisuLanguageModelEntry" />
-          <v n="UniqueIdGenerator">"170"</v>
+          <v n="UniqueIdGenerator">"173"</v>
           <o n="VisualElemList" t="VisualElemList">
             <l n="VisualElementList" t="VisualElemCollection" cet="GenericVisualElem">
               <o>
@@ -9425,7 +9425,7 @@ Start/Stop/Reset buttons simulate real hw-inputs"</v>
             </o>
             <v n="DialogDut">{ced010b4-a6b2-484b-9097-445b63c95c15}</v>
           </o>
-          <v n="LastUsedIdForIdentifier">406</v>
+          <v n="LastUsedIdForIdentifier">408</v>
           <o n="TextDocument" t="TextDocument">
             <v n="TextBlobForSerialisation">"VAR_IN_OUT
 	IO_General: utl_General;

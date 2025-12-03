@@ -21,6 +21,7 @@ VAR
 		
 	//system time
 		systemTime:utl_LoggedString(LoggingGroup:= eLogGroups.Default);
+		utcTime:utl_LoggedString(LoggingGroup:= eLogGroups.Default);
 		systemTimeValid:utl_LoggedBool(LoggingGroup:= eLogGroups.Default);
 
 	//Array functions test
@@ -472,6 +473,8 @@ IF(systemTimeValid.B AND bknglbl.LocalSystemTimeValid) THEN RETURN; END_IF
 systemTime.V := SystemTime_to_string(BknGlbl.LocalSystemTime);
 systemTimeValid.B := bknglbl.LocalSystemTimeValid;
 
+utcTime.V := SystemTime_To_String(BknGlbl.UtcSystemTime);
+
 //should be valid if it says so..
 IF(  bknglbl.LocalSystemTimeValid AND_THEN BknGlbl.LocalSystemTime.wYear < 2025)
 THEN
@@ -483,7 +486,16 @@ END_IF
 IF(NOT BknGlbl.LocalSystemTimeValid AND_THEN BknLog.TimeStamp > 3000)
 THEN
 	utl_SystemMessage(I_Message:= 'BknGlbl.LocalSystemTime takes to long te become valid');
+	HM_HoustonWeHaveAProblem := TRUE;
 END_IF
+
+//utc time should be ok immediatly
+IF( BknGlbl.UtcSystemTime.wYear < 2025)
+THEN
+	utl_SystemMessage(I_Message:= 'BknGlbl.UtcystemTime is invalid but should always be valid');
+	HM_HoustonWeHaveAProblem := TRUE;
+END_IF
+
 
 ]]></ST>
       </Implementation>

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="eWsl15_Intensity" Id="{ff732bd6-0b5c-4861-a337-fd178a428d94}">
+    <Declaration><![CDATA[//enum of color intensities
+{attribute 'qualified_only'}
+{attribute 'strict'}
+{attribute 'to_string'}
+TYPE eWsl15_Intensity :
+(
+	High		:= 0,
+	Low			:= 1,
+	Medium		:= 2,
+	Off			:= 3
+	//there are more but don't make sense
+)SINT;
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
