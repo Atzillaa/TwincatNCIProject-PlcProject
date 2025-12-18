@@ -137,6 +137,13 @@ CASE eS OF
 								pBuffer:= ADR(HM_RegisterDataFifo),
 								cbBuffer:= SIZEOF(HM_RegisterDataFifo));
 								
+			//
+			// Prepare registers + values that have to be written to the device
+			// -HM_RegisterBuffer[]		> array of registers that need to be written
+			// -fbFifoRegisterBuffer 	> special buffer that can hold mixed datatypes with the values for above registers 
+			//								
+							
+								
 			//Register mode selection
 			HM_RegisterBuffer[HM_RegisterIndex] := REG_MODE;
 			HM_RegisterIndex := HM_RegisterIndex + 1;
