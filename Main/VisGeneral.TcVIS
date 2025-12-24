@@ -5,7 +5,7 @@
       <Data>
         <o xml:space="preserve" t="VisualObject">
           <n n="LastVisuLanguageModelEntry" />
-          <v n="UniqueIdGenerator">"110"</v>
+          <v n="UniqueIdGenerator">"112"</v>
           <o n="VisualElemList" t="VisualElemList">
             <l n="VisualElementList" t="VisualElemCollection" cet="GenericVisualElem">
               <o>
@@ -1643,8 +1643,8 @@
                             <l n="TypeNodeChildren" t="ArrayList" />
                             <o n="TypeNodeType" t="TypeNodeType">
                               <v n="TypeClass" t="TypeClass">Reference</v>
-                              <v n="QualifiedName">"cntrl_SafetyGroup1"</v>
-                              <v n="Name">"cntrl_SafetyGroup1"</v>
+                              <v n="QualifiedName">"cntrl_SafetyController1"</v>
+                              <v n="Name">"cntrl_SafetyController1"</v>
                             </o>
                             <v n="TypeNodeName">"IO_SafetyLogic"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">

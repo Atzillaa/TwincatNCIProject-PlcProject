@@ -726,6 +726,11 @@ Only for boikon engineers"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"148"</v>
+              <v n="TextDefault">"ES Zone2 Ok"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"990"</v>
               <v n="TextDefault">"ES_Air ok"</v>
               <l n="LanguageTexts" t="ArrayList" />

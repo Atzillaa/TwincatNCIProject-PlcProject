@@ -86,7 +86,7 @@ VAR
 	
 	//TODO TEMPLATE 
 		//>> adapt safety template as needed + rename + add as many zones as you need (hint: use 1 general/zone)	
-	SafetyZone1:cntrl_SafetyGroup1; //note: this block extends the basic mandatory functionality. The extension (located in your project) has to be adapted as needed
+	SafetyZone1:cntrl_SafetyController1; //note: this block extends the basic mandatory functionality. The extension (located in your project) has to be adapted as needed
 	
 	//TODO TEMPLATE 
 		//make syncunits for groups of terminals which belongs together (all terminals behind a EK1122)

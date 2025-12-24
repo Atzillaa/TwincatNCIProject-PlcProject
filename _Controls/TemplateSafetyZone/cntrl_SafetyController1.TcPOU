@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
-  <POU Name="cntrl_SafetyGroup1" Id="{0b5d08c4-3f3d-038d-29be-43842dc82558}" SpecialFunc="None">
+  <POU Name="cntrl_SafetyController1" Id="{0b5d08c4-3f3d-038d-29be-43842dc82558}" SpecialFunc="None">
     <Declaration><![CDATA[(*	TODO TEMPLATE SAFETYZONE >> change to your needs
 	This is a template for a safetyzone which is managed by twinsafe
 	It should cover the basic needs, but you will have to adapt this as needed
@@ -16,7 +16,7 @@
 		This must be reset with a dedicated reset es-stop errors button on the HMI >> PbSf_ResetSafetyErrors
 *) 
 
-FUNCTION_BLOCK cntrl_SafetyGroup1 EXTENDS cntrl_SafetyLogic
+FUNCTION_BLOCK cntrl_SafetyController1 EXTENDS cntrl_SafetyLogic
 VAR_INPUT
 	I_HMI_Parent:ItfHMI;								//HMI of the parent block. If this block is in error, it will set the parent P_StsInError property
 	I_OrgControl: ItfOrgControl;						//Organiser control bits
@@ -28,6 +28,7 @@ VAR_OUTPUT
 	//TODO template: add/rename zones as needed
 	Q_K_ES_Zone1_OK:BOOL;								//safety circuit zone 1 ok
 	Q_K_ES_Zone1_TOFOK:BOOL;							//safety circuit zone 1 delayed off ok
+	Q_K_ES_Zone2_OK:BOOL;								//safety circuit zone 2 ok
 	Q_K_ES_AirValveOk:BOOL;								//safety circuit safety valves opened
 END_VAR
 VAR
@@ -38,7 +39,7 @@ VAR
 (*Internals*)
 
 (*Instances*)
-	HMI:HMI_SafetyGroup1;								//All HMI related variables
+	HMI:HMI_SafetyController1;								//All HMI related variables
 	
 	//TODO TEMPLATE
 		//Add/remove safety devices (pushbuttons/lightscreen/etc) here and make sure to call them
@@ -53,12 +54,19 @@ VAR
 	//no errors
 	Isf_STS_AirActivated: cntrl_Input;					//Status safety airvalves open	>> link to safety airvalves block via intermediate alias dig output
 	//with errors
+	Isf_STS_GroupHwRun: cntrl_InputHmiStsErr;			//Status safety group in run	>> link to safety group running signal
+	Isf_STS_GroupZone1Run: cntrl_InputHmiStsErr;		//Status safety group in run	>> link to safety group running signal
+	Isf_STS_GroupZone2Run: cntrl_InputHmiStsErr;		//Status safety group in run	>> link to safety group running signal
+	//altough this is not a separate zone, for error detection, the run status is needed
+	Isf_STS_GroupZones1_2Run: cntrl_InputHmiStsErr;		//Status safety group in run	>> link to safety group running signal
+	
 	Isf_STS_ES_Zone1_OK: cntrl_InputHmiStsErr;			//Status safety logic			>> link to safety logic "zone 1 es ok" via intermediate alias dig output
 	Isf_STS_ES_Zone1_TOFOK: cntrl_InputHmiSts;			//Status safety logic			>> link to safety logic "zone 1 es ok" via intermediate alias dig output
+	Isf_STS_ES_Zone2_OK: cntrl_InputHmiStsErr;			//Status safety logic			>> link to safety logic "zone 1 es ok" via intermediate alias dig output
 
 	//TODO TEMPLATE >> this is needed if you have the boikon safety valves in the safetygroup. This will prevent activating safeair if there is no air supply (otherwise it would cause a safe-air-edm error)
 	Qsf_K_EnableSafeAir AT%Q*:BOOL;						//Status airpressure is ok
-	
+
 	
 	//in the base block these inputs are already defined since they are always used:
 		//Qsf_K_RunSafety /  Qsf_K_ResetSafetyErrors
@@ -69,7 +77,8 @@ END_VAR
     <Implementation>
       <ST><![CDATA[//call baseblock functionality, handles:  resetting / starting / error detection of the safety program
 SUPER^._M_StepConditions(
-		I_CrcKey:= 16#1A93DE8F,			//TODO TEMPLATE: request the correct key from the safety officer, otherwise you will get a safety project is not verified warning >> required by the NEN-NORMS 
+		I_CrcKey:= 16#1A93DE8F,			//TODO TEMPLATE: request the correct key from the safety officer, otherwise you will get a safety project is not verified warning >> required by the NEN-NORMS
+		I_GroupsInRun:= Isf_STS_GroupHwRun.Q AND Isf_STS_GroupZone1Run.Q AND Isf_STS_GroupZone2Run.Q AND Isf_STS_GroupZones1_2Run.Q, //TODO TEMPLATE: adapt to nr of groups
 		IO_HMI_WRN:= HMI.WRN,		
 		IO_HMI_ERR:= HMI.ERR,
 		IO_HMI_STS:= HMI.STS);	
@@ -90,17 +99,52 @@ _A_HMI();
 		I_K_SimulationActive:= I_K_SimulationActive,
 		I_K_SimulateOn:= Isf_STS_ES_Zone1_OK.Q);
 
-//signals with error detection
+//zones RUN
+	Isf_STS_GroupHwRun(
+		I_OrgControl := I_OrgControl,
+		I_HMI_Parent := HMI,
+		I_K_SetError := NOT Isf_STS_GroupHwRun.Q,
+		I_K_SimulationActive:= I_K_SimulationActive,
+		I_K_SimulateOn:= Qsf_K_RunSafety.P_State);	
+		
+	Isf_STS_GroupZone1Run(
+		I_OrgControl := I_OrgControl,
+		I_HMI_Parent := HMI,
+		I_K_SetError := NOT Isf_STS_GroupZone1Run.Q,
+		I_K_SimulationActive:= I_K_SimulationActive,
+		I_K_SimulateOn:= Qsf_K_RunSafety.P_State);
+
+	Isf_STS_GroupZone2Run(
+		I_OrgControl := I_OrgControl,
+		I_HMI_Parent := HMI,
+		I_K_SetError := NOT Isf_STS_GroupZone2Run.Q,
+		I_K_SimulationActive:= I_K_SimulationActive,
+		I_K_SimulateOn:= Qsf_K_RunSafety.P_State);	
+	
+	Isf_STS_GroupZones1_2Run(
+		I_OrgControl := I_OrgControl,
+		I_HMI_Parent := HMI,
+		I_K_SetError := NOT Isf_STS_GroupZones1_2Run.Q,
+		I_K_SimulationActive:= I_K_SimulationActive,
+		I_K_SimulateOn:= Qsf_K_RunSafety.P_State);
+		
+//zones OK
 	Isf_STS_ES_Zone1_TOFOK(
 		I_HMI_Parent := HMI,
 		I_K_SimulationActive:= I_K_SimulationActive,
 		I_K_SimulateOn:= I_K_SimulationActive);
 
-//signals with error detection
 	Isf_STS_ES_Zone1_OK(
 		I_OrgControl := I_OrgControl,
 		I_HMI_Parent := HMI,
 		I_K_SetError := NOT Isf_STS_ES_Zone1_OK.Q,
+		I_K_SimulationActive:= I_K_SimulationActive,
+		I_K_SimulateOn:= I_K_SimulationActive);
+	
+	Isf_STS_ES_Zone2_OK(
+		I_OrgControl := I_OrgControl,
+		I_HMI_Parent := HMI,
+		I_K_SetError := NOT Isf_STS_ES_Zone2_OK.Q,
 		I_K_SimulationActive:= I_K_SimulationActive,
 		I_K_SimulateOn:= I_K_SimulationActive);
 		
@@ -133,8 +177,9 @@ _A_HMI();
 		I_K_SimulationActive:= I_K_SimulationActive, 
 		I_K_SimulateOn:= Isf_STS_ES_Zone1_OK.Q); //simulating not ok if es-circuit is not ok >> change as needed
 
-//block outputs
+//outputs
 	Q_K_ES_Zone1_OK := Isf_STS_ES_Zone1_OK.Q;
+	Q_K_ES_Zone2_OK := Isf_STS_ES_Zone2_OK.Q;
 	Q_K_ES_Zone1_TOFOK := Isf_STS_ES_Zone1_TOFOK.Q;
 	Q_K_ES_AirValveOk := Isf_STS_AirActivated.Q;]]></ST>
     </Implementation>
