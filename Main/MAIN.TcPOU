@@ -217,9 +217,6 @@ Organiser(
 	//Total reset command for this organiser and connected scams
 	//note: scams that communicate with each other via interlocking should have the same total reset command otherwise deadlocks will occur!
 	I_SN_TotalReset:= General.Q_SN_TotalResetAll,
-	//Connected scams are in reset >> combined AND	
-	//Automatic stop request >> Can be used by a door program which has a request to open doors but first wants to stop the organiser >> does NOT cause: force stop / error "stop button is stuck"
-	I_SN_RequestStopAuto:= FALSE,			
 	I_PB_Start:= General.Q_SN_StartAll,
 	I_PB_Stop:= General.Q_SN_StopAll,
 	I_PB_Reset:= General.Q_SN_ResetAll, 
