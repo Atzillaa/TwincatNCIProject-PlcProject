@@ -4,22 +4,24 @@
     <Declaration><![CDATA[(*Basic MAIN with an example organiser and scam*)
 {info '_Welcome to the Boikon Twincat 3 Template'}
 {info '__Please read the _Readme.txt for more info'}
-{warning 'upload boot project at online change is disabled in project settings, RE-ENABLE!!!!'}
+{warning 'TODO Template: upload boot project at online change is disabled in project settings, RE-ENABLE!!!!'}
 PROGRAM MAIN
 VAR
-	//General >> holds all stuff not belonging to a specific machine part (generic lamps / doors /etc)
+	//General collection of system wide IO and control blocks
 	General: Utl_General;
 
 	//TODO TEMPLATE: here in the example only 1 organiser is used, add + rename as needed
 	Organiser:cntrl_Organiser(						
 		SP_TmrReset := T#1S,
 		SP_TmrResetES := T#3S);
+	
+	//TODO TEMPLATE: Instances of the machinparst
 END_VAR
 
 //TODO TEMPLATE >> Remove this section, it is for testing the library and template
-//*Also remove the define from here: project/properties/compile/compiler defines/IsTemplate
+//Also remove the define from here: project/properties/compile/compiler defines/IsTemplate
 {IF defined (IsTemplate)}
-	{warning 'Template testing is enabled >> Remove the define and clean all "TODO TEMPLATE" locations'}
+	{warning 'TODO Template: testing is enabled >> Remove the define and clean all "TODO TEMPLATE" locations'}
 	VAR
 		{attribute 'analysis' := '-33'}
 		//Scam-template >> use tool supplied in the folder, to make a copy for your own scam implementation 
@@ -49,13 +51,9 @@ END_VAR
 		//string value to int test
 		sValue1,sValue2,sValue3:STRING := '123';
 		sValue4,sValue5:string(1);
-		b0Value,b1Value:BYTE;
+		b0Value:BYTE;
 		iValue1,iValue2:INT;
-		
-		Banner:cntrl_BannerWSL15(
-					IOlinkPort:= E_IoLPort.Port1,
-					Intensity:= eWsl15_Intensity.High, 
-					NrOfSegments:= 3);
+
 	END_VAR
 {END_IF}]]></Declaration>
     <Implementation>
@@ -84,9 +82,6 @@ a_General();
 			I_STS_SUP_Empty:= TRUE, 
 			Q_STS_Empty=> );
 		
-		//todo move to library
-		Banner();
-
 //Showcasing
 	//multi assignments
 		MyBool1 := MyBool2 := MyBool3;
@@ -124,7 +119,7 @@ a_General();
 		a_General();
 		StopWatchGeneral(Start:=FALSE);
 		{warning disable C0139}	StopWatchGeneral.DATA.AverageExecTime;
-			//								>>sim no errors / no sim errors 	
+			//								>>no sim with errors / sim no errors 	
 			//2024-08-27 V0.7.1002 24us
 			//2024-08-29 V0.7.1002 7us		>>(not hashing all setpoints each cycle but 10 bytes/plc cycle)
 			//2024-09-03 V0.7.1002 7us		
@@ -132,7 +127,9 @@ a_General();
 			//2025-04-01 V0.7.1027 8/8us	
 			//2025-06-10 V0.7.1030 8/8us
 			//2025-06-11 V0.7.1030 7/8us
-			//2025-10-15 V0.7.1109 8/8us 	>>added signal column
+			//2025-10-15 V0.7.1109 8/8us 	>>added signal column'
+			//2026-02-26 V0.7.1113 9/10us   >>utl_loggedchannel.M_Update( now type any but that's not the cause) + safety standard changed extra zone's is this causing increase?
+			
 		
 		StopWatchMachineStuff(Start:=TRUE);
 		b_MachinePart();
@@ -147,6 +144,8 @@ a_General();
 			//2025-06-10 V0.7.1030 13/18us	>>Organiser now passed by interface + log first 10 errors by name in the organiser 
 			//2025-06-10 V0.7.1030 11/16us	>>Instead of hashing all values for errors/warnings, only hashing addresses for active errors/warnings
 			//2025-10-15 V0.7.1109 12/16us  >>PLC BSD updated 4026.19, added: banner-SC, pc, fdr-interrol
+			//2026-02-26 V0.7.1113 13/18us  >>increase because of extra stuff?
+
 		UnitTesting(); //otherwise logErrors will go beserk
 	END_IF
 {END_IF}]]></ST>

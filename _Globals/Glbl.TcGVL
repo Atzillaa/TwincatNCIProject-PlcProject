@@ -10,7 +10,7 @@ VAR_GLOBAL
 //	-include checkbounds in build
 //  -add some variable to this global struct >> now this will get rebuild with the variables needed for checkbounds
 {IF defined (pou: CHECKBOUNDS)}
-	{warning 'CHECKBOUNDS is active, this causes increased processor load. Exclude block from build when possible'}
+	{warning 'TODO Template: CHECKBOUNDS is active, this causes increased processor load. Exclude block from build when possible'}
 {END_IF}
 	OutOfBounds:BOOL:=FALSE;						//Should always be false otherwise a bounds problem >> function CHECKBOUNDS must be implemented in the project, check the beckhoff help !only for testing purposes!
 	OutOfBoundsIndex:DINT := 0;						//Index trying to address which was out of bounds

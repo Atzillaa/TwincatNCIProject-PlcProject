@@ -93,8 +93,7 @@ VAR
 		//make an instance per syncunit here and hw-link to the wc-state of the syncunit group 
 	I_WcState_MCC: cntrl_SyncUnitMonitor;			//SyncUnitGroup for main cabinet 
 	I_WcState_RIO1: cntrl_SyncUnitMonitor;			//SyncUnitGroup for RIO1
-	I_WcState_RIO1Servo1: cntrl_SyncUnitMonitor;	//SyncUnitGroup for servo group in RIO1
-	I_WcState_SafetyZone1: cntrl_SyncUnitMonitor;	//SyncUnitGroup for safety zone1
+	I_WcState_SafetyZones: cntrl_SyncUnitMonitor;	//SyncUnitGroup for safety
 	
 
 	I_PS_AirpressureOk: cntrl_InputHmiStsErr;		//Pressure switch airpressure ok 
@@ -206,7 +205,7 @@ SafetyZone1(
 	I_HMI_Parent:= HMI,
 	I_K_SimulationActive:= 	Glbl.SimEnable
 							AND NOT UnitTesting.EnableSafetyTest,		//TODO TEMPLATE >> remove this line (for unittesting I've a "real" safety setup on the testboard that manipulates safety card inputs with plc output)
-	I_K_Enable:= I_WcState_SafetyZone1.Q_STS_SyncUnitDataOk, 			//NOTE: connecting enable like this has the advantage that safety is started and ErrAcked at startup of ethercat
+	I_K_Enable:= I_WcState_SafetyZones.Q_STS_SyncUnitDataOk, 			//NOTE: connecting enable like this has the advantage that safety is started and ErrAcked at startup of ethercat
 																		//Disadvantage is that it will auto reset errors at restart of ethercat (you might find this an advantage...)
 	I_OrgControl:= OrganiserGeneral,
 	I_STS_AirPressure_OK := I_PS_AirpressureOk.Q);
@@ -246,13 +245,7 @@ I_WcState_RIO1(
 	I_K_SimulationActive:= Glbl.SimEnable, 
 	I_K_SimulateDataValid:= TRUE);
 				
-I_WcState_RIO1Servo1(
-	I_HMI_Parent:= HMI,
-	I_OrgControl:= OrganiserGeneral,
-	I_K_SimulationActive:= Glbl.SimEnable, 
-	I_K_SimulateDataValid:= TRUE);
-
-I_WcState_SafetyZone1(
+I_WcState_SafetyZones(
 	I_HMI_Parent:= HMI,
 	I_OrgControl:= OrganiserGeneral,
 	I_K_SimulationActive:= Glbl.SimEnable, 

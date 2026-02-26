@@ -98,10 +98,10 @@ Attributes warnings
 		{info 'shows this text as info during compiling'}
 		{warning 'shows this text as warning during compiling'}
 		{error 'shows this text as error during compiling'}
-		{attribute 'qualified_only'}			//forces the user to add the DUT name in front of the variables (needed if for example 2 enum structs have the same keys)
+		{attribute 'qualified_only'}				//forces the user to add the DUT name in front of the variables (needed if for example 2 enum structs have the same keys)
 		{attribute 'displaymode':='bin'}		// or 'dec' or 'hex' forces said display mode of the variable during monitoring
 		{attribute 'global_init_slot':= 'x'}	//cdetermines which blocks get initialised first. Globals have a adefault value of 49990 and POU's 50000
-		{attribute 'hide'}						//hides block in a library from a project
+		{attribute 'hide'}							//hides block in a library from a project
 		{attribute 'hide_all_locals'}			//hides local variables for online view
  
 	//Properties

@@ -14,6 +14,7 @@ VAR
 		HM_ItfOrgFake:ItfOrgControl;
 		tmpUint:UINT;
 		tmpInt1:INT;
+		tmpString:STRING;
 
 	//out of curiousity
 		testVarInfo: __SYSTEM.VAR_INFO := __VARINFO(MAIN.General);
@@ -120,6 +121,7 @@ VAR
 		SW_BeckhoffConcat: Profiler;
 		SW_BeckhoffConcatDuo: Profiler;
 
+
 	//Logged channel tests		
 		LoggedChannelsState:INT;
 		LoggedChannelCnt:UINT;
@@ -139,6 +141,8 @@ VAR
 			TrigAtInterval:= 300,
 			TrigAtDeviation:= 10.5);
 		LoggedString: utl_LoggedString(
+			LoggingGroup:= eLogGroups.Default);
+		LoggedStringSafe: utl_LoggedStringSafe(
 			LoggingGroup:= eLogGroups.Default);
 		HM_InfoStrings: ARRAY[0..BknlogCnstInternal.MaxIndexLogStrings] OF STRING;
 		LoggedStrings: utl_LoggedStrings( 
@@ -223,7 +227,10 @@ A_LoggedChannels();
 A_cntrl_BannerKxx();
 
 //Servo tests
-A_cntrl_Servo();]]></ST>
+A_cntrl_Servo();
+
+//string escape test (json)
+M_utl_StringEscape();]]></ST>
     </Implementation>
     <Method Name="_M_Any_ArrayInitValues" Id="{d7a71b1a-10c1-0248-0992-5b4320aee6aa}">
       <Declaration><![CDATA[METHOD PRIVATE _M_Any_ArrayInitValues]]></Declaration>
@@ -1268,6 +1275,7 @@ LS_Positive(	I_K_SimulationActive:= FALSE,
 CASE LoggedChannelsState OF
 	//initialise
 	0:
+		LoggedStringSafe.V := 'The current string only contains valid characters';
 		LoggedChannelStateInfo.V := '0: State 0 init set default values for channels';
 		IF(BknLog.MqttLoggingClient.HMI.STS.Connected) //hmi is nou ook internal aargh
 		THEN
@@ -1310,6 +1318,16 @@ CASE LoggedChannelsState OF
 
 	//force log all channels once		
 	1:
+		tmpString := 'Now we are bad boys sending(quote/linefeed/backspace/134/137/153) >>';
+		tmpUint := TO_UINT(len(tmpString));
+		tmpString[tmpUint] := CHAR_QUOTE;
+		tmpString[tmpUint+1] := CHAR_LF;
+		tmpString[tmpUint+2] := CHAR_BSLASH;
+		tmpString[tmpUint+3] := 134;
+		tmpString[tmpUint+4] := 137;
+		tmpString[tmpUint+5] := 153;
+		tmpString[tmpUint+6] := 0;
+		LoggedStringSafe.V := tmpString;
 		LoggedChannelStateInfo.V := '1: Force log was set at step transition >> all channels should log same value';
 		LoggedChannelCnt := LoggedChannelCnt + 1;
 		
@@ -1515,6 +1533,7 @@ SW_LoggedChannelBenc(START:= FALSE, RESET:= TRUE);
 SW_LoggedChannelBenc.DATA.AverageExecTime;
 //266 us	 V0.7.1026 / 2025-02-19
 //163 us     same day, utl_LoggedChannel.M_SendToLogBuffer switched from utl_StringConcatSingle to utl_CopyAnyWithOffset
+//+/-160 us  V0.7.1113 / 2026-02-26   wildly fluctuating (connected to broker) mostly this > poperty.set now converts to string, so M_SendToLogBuffer( arg now of type any_string instead of string(default))  
 END_IF
 
 
@@ -1822,5 +1841,95 @@ END_IF
 ]]></ST>
       </Implementation>
     </Action>
+    <Method Name="M_utl_StringEscape" Id="{5ab07f3e-4d98-4ddb-8622-0a8ec1698ad6}">
+      <Declaration><![CDATA[METHOD M_utl_StringEscape
+VAR_INPUT
+END_VAR
+
+VAR
+	HM_Index:UINT;
+	
+	HM_TestInput: STRING(255);
+	HM_B1:BYTE;
+	HM_TestOutputPart:STRING(7);
+	HM_B2:BYTE;
+	HM_TestOutputFull: STRING(500);
+	HM_B3:BYTE; 
+	
+	HM_Debug: ARRAY[0..500] OF BYTE;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF(NOT BknGlbl.FirstScan) THEN RETURN; END_IF
+	
+//prep input string (values: '0' and then 1-255 
+FOR HM_Index := 0 TO SIZEOF(HM_TestInput)-1 BY 1
+DO
+	HM_TestInput[HM_Index] := TO_BYTE(HM_Index);
+END_FOR
+//lets not end the string that quickly ;)
+HM_testInput[0] := CHAR_0;
+
+//prefill output buffers with chars '8' and '9'
+	MEMSET(destAddr:=ADR(HM_TestOutputPart), fillByte:=CHAR_8, n:=SIZEOF(HM_TestOutputPart)-1);
+	HM_TestOutputPart[SIZEOF(HM_TestOutputPart)-1] := 0;
+	MEMSET(destAddr:=ADR(HM_TestOutputFull), fillByte:=CHAR_9, n:=SIZEOF(HM_TestOutputFull)-1);
+	HM_TestOutputFull[SIZEOF(HM_TestOutputFull)-1] := 0;
+	MEMSET(destAddr:=ADR(HM_Debug), fillByte:=CHAR_7, n:=SIZEOF(HM_Debug));
+
+//TEST with output buffer is too small
+	utl_StringEscapeText(I_Input:=HM_TestInput, IO_Output:=HM_TestOutputPart);
+	//if bad things happened >> ..
+	IF(	HM_B1 <> 0 
+		OR HM_B2 <> 0
+		//test copied first character of the input which was the char '0'
+		OR HM_TestOutputPart[0] <> F_ToAsc('0')
+		//the next char from the input is not a char but asci code: 16h01 . This should be escaped to: '\u0001'
+		OR HM_TestOutputPart[1] <> F_ToAsc('\')
+		OR HM_TestOutputPart[2] <> F_ToAsc('u')
+		OR HM_TestOutputPart[3] <> F_ToAsc('0')
+		OR HM_TestOutputPart[4] <> F_ToAsc('0')
+		OR HM_TestOutputPart[5] <> F_ToAsc('0')
+		OR HM_TestOutputPart[6] <> F_ToAsc('1')
+		//since the next input byte also has to be escaped (16h02), this doesn't fit anymore, the function should have stopped and made this a terminator
+		OR HM_TestOutputPart[7] <> 0)
+	THEN
+		HM_HoustonWeHaveAProblem := TRUE;
+		utl_SystemMessage(I_Message:='unittest utl_StringEscape, failed partial test');
+	END_IF
+	//for manual easier inspection
+	utl_Any_CopyWithOffset(I_Destination:= HM_Debug, I_Source:= HM_TestOutputFull, I_Offset:= 0);
+
+
+
+//TEST with buffer that's big enough
+	utl_StringEscapeText(I_Input:=HM_TestInput, IO_Output:=HM_TestOutputFull);
+	utl_Any_CopyWithOffset(I_Destination:= HM_Debug, I_Source:= HM_TestOutputFull, I_Offset:= 0);
+	
+	//if bad things happened >> ..
+	IF(	HM_B2 <> 0 
+		OR HM_B3 <> 0
+		//test copied first character of the input which was the char '0'
+		OR HM_TestOutputFull[0] <> F_ToAsc('0')
+		//the next char from the input is not a char but asci code: 16h01 . This should be escaped to: '\u0001'
+		OR HM_TestOutputFull[1] <> F_ToAsc('\')
+		OR HM_TestOutputFull[2] <> F_ToAsc('u')
+		OR HM_TestOutputFull[3] <> F_ToAsc('0')
+		OR HM_TestOutputFull[4] <> F_ToAsc('0')
+		OR HM_TestOutputFull[5] <> F_ToAsc('0')
+		OR HM_TestOutputFull[6] <> F_ToAsc('1')
+		//since it should have exited before entering invalid range again, all should be filled, the last happens to be '{' = 123
+		OR HM_TestOutputFull[264] <> 123
+		OR HM_TestOutputFull[265] <> 0)
+	THEN
+		HM_HoustonWeHaveAProblem := TRUE;
+		utl_SystemMessage(I_Message:='unittest utl_StringEscape, failed partial test');
+	END_IF
+
+
+
+
+]]></ST>
+      </Implementation>
+    </Method>
   </POU>
 </TcPlcObject>
