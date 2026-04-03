@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="HMI_RbtFanucUnloading" Id="{9062afc3-2308-4d4b-ad8c-a6b4a8f6f97d}" SpecialFunc="None">
+    <Declaration><![CDATA[(*	HMI variables
+
+	This block holds all HMI variables and handles communication with the HMI
+	
+	2024-02 HP
+		-initial
+*)
+
+{attribute 'no_explicit_call' := 'do not call this POU directly'}
+FUNCTION_BLOCK HMI_RbtFanucUnloading EXTENDS HMI_BaseBlock
+//HMI variables that can be written to by the plc and HMI 
+VAR_INPUT
+	//Do not change these names, the HMI is hardcoded to use these exact names
+	MAN:HMI_MAN_RbtFanucUnloading;			//HMI manuals
+	STS:HMI_STS_RbtFanucUnloading;			//HMI statusses
+	WRN:HMI_WRN_RbtFanucUnloading;			//HMI warnings
+	ERR:HMI_ERR_RbtFanucUnloading;			//HMI errors
+END_VAR
+
+//Hmi variables that can only be written to by the HMI and read by the plc
+VAR_OUTPUT PERSISTENT
+	//Do not change these names, the HMI is hardcoded to use these exact names
+	SP:HMI_SP_RbtFanucUnloading;			//HMI setpoints
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//this block should not be called]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

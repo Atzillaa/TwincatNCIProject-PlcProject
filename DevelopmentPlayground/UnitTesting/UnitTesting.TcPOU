@@ -15,6 +15,14 @@ VAR
 		tmpUint:UINT;
 		tmpInt1:INT;
 		tmpString:STRING;
+		tmpByte0:BYTE;
+		tmpByte1:BYTE;
+		tmpWord:WORD;
+		tmpDword:DWORD;
+		tmpLword0:LWORD;
+		tmpLword1:LWORD;
+		tmpLword2:LWORD;
+		
 
 	//out of curiousity
 		testVarInfo: __SYSTEM.VAR_INFO := __VARINFO(MAIN.General);
@@ -32,7 +40,7 @@ VAR
 		arrStr5: ARRAY[0..10] OF STRING(5);
 		arrStr10: ARRAY[0..2] OF STRING(10);
 		arrResetElementMonkyTestDone:BOOL;
-
+		
 	//timer test
 		fbUtl_TimeElapsedInitDone:BOOL;
 		fbUtl_TimeElapsed:utl_TimeElapsed;
@@ -142,7 +150,7 @@ VAR
 			TrigAtDeviation:= 10.5);
 		LoggedString: utl_LoggedString(
 			LoggingGroup:= eLogGroups.Default);
-		LoggedStringSafe: utl_LoggedStringSafe(
+		LoggedStringSafe: utl_LoggedStringEscaped(
 			LoggingGroup:= eLogGroups.Default);
 		HM_InfoStrings: ARRAY[0..BknlogCnstInternal.MaxIndexLogStrings] OF STRING;
 		LoggedStrings: utl_LoggedStrings( 
@@ -196,6 +204,7 @@ A_Any_ArrayResetElements();
 	
 //Any offset copy test
 A_Any_CopyWIthOffset();
+A_Any_CopyWithOffsets();
 
 //Cntrl_Sensor test
 A_cntrl_Sensor();
@@ -431,8 +440,8 @@ END_VAR
 		FOR Cnt:=0 TO Str_BenchNrLoops BY 1
 		DO
 			Offset := 0;
-			Offset := utl_Any_CopyWithOffset(MyString,SourceString1,Offset);
-			Offset := utl_Any_CopyWithOffset(MyString,SourceString2,Offset);
+			Offset := utl_Any_CopyWithOffset(MyString,I_Source:=SourceString1,I_WriteOffset:=Offset);
+			Offset := utl_Any_CopyWithOffset(MyString,I_Source:=SourceString2,I_WriteOffset:=Offset);
 		END_FOR
 		SW_Utl_Any_CopyOffsetSingle(START:=FALSE);
 		SW_Utl_Any_CopyOffsetSingle.DATA.AverageExecTime;
@@ -442,9 +451,9 @@ END_VAR
 		FOR Cnt:=0 TO Str_BenchNrLoops BY 1
 		DO
 			Offset := 0;
-			Offset := utl_Any_CopyWithOffset(MyString,SourceString1,Offset);
-			Offset := utl_Any_CopyWithOffset(MyString,SourceString2,Offset);
-			Offset := utl_Any_CopyWithOffset(MyString,SourceString3,Offset);
+			Offset := utl_Any_CopyWithOffset(MyString,I_Source:=SourceString1,I_WriteOffset:=Offset);
+			Offset := utl_Any_CopyWithOffset(MyString,I_Source:=SourceString2,I_WriteOffset:=Offset);
+			Offset := utl_Any_CopyWithOffset(MyString,I_Source:=SourceString3,I_WriteOffset:=Offset);
 		END_FOR
 		SW_Utl_Any_CopyOffsetDuo(START:=FALSE);
 		SW_Utl_Any_CopyOffsetDuo.DATA.AverageExecTime;
@@ -485,21 +494,21 @@ utcTime.V := SystemTime_To_String(BknGlbl.UtcSystemTime);
 //should be valid if it says so..
 IF(  bknglbl.LocalSystemTimeValid AND_THEN BknGlbl.LocalSystemTime.wYear < 2025)
 THEN
-	utl_SystemMessage(I_Message:= 'BknGlbl.LocalSystemTime not valid (<2025), but it should be');
+	utl_SystemMessage(I_Message:= 'Unittesting: BknGlbl.LocalSystemTime not valid (<2025), but it should be');
 	HM_HoustonWeHaveAProblem := TRUE;
 END_IF
 
 //shouldn't take to long to become valid
 IF(NOT BknGlbl.LocalSystemTimeValid AND_THEN BknLog.TimeStamp > 3000)
 THEN
-	utl_SystemMessage(I_Message:= 'BknGlbl.LocalSystemTime takes to long te become valid');
+	utl_SystemMessage(I_Message:= 'Unittesting: BknGlbl.LocalSystemTime takes to long to become valid');
 	HM_HoustonWeHaveAProblem := TRUE;
 END_IF
 
 //utc time should be ok immediatly
 IF( BknGlbl.UtcSystemTime.wYear < 2025)
 THEN
-	utl_SystemMessage(I_Message:= 'BknGlbl.UtcystemTime is invalid but should always be valid');
+	utl_SystemMessage(I_Message:= 'Unittesting: BknGlbl.UtcystemTime is invalid but should always be valid');
 	HM_HoustonWeHaveAProblem := TRUE;
 END_IF
 
@@ -700,7 +709,7 @@ END_IF
 	tmpInt1:= TO_INT(utl_Any_CopyWithOffset(
 						I_Destination:= arrStr5[1], 
 						I_Source:= arrStr10, 
-						I_Offset:= 1));
+						I_WriteOffset:= 1));
 		
 	//result should be: '90123' , left and right elements should be untouched
 	IF(	arrStr5[0] <> '99999'
@@ -719,7 +728,7 @@ END_IF
 	tmpInt1:= TO_INT(utl_Any_CopyWithOffset(
 						I_Destination:= arrStr5[1], 
 						I_Source:= arrStr10, 
-						I_Offset:= 1));
+						I_WriteOffset:= 1));
 	
 	//result should be: '601' , left and right elements should be untouched
 	IF(	arrStr5[0] <> '99999'
@@ -740,7 +749,7 @@ END_IF
 	tmpInt1:= TO_INT(utl_Any_CopyWithOffset(
 						I_Destination:= arrCnt_2[2], 
 						I_Source:= arrCnt_1, 
-						I_Offset:= 1));
+						I_WriteOffset:= 1));
 	
 	//result should be: value shifted 1 byte to the left, left and right elements should be untouched
 	IF(	arrCnt_2[1] <> 1
@@ -751,6 +760,254 @@ END_IF
 		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffset failed unittest 2');
 		HM_HoustonWeHaveAProblem := TRUE;
 	END_IF
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Any_CopyWithOffsets" Id="{dffbd0c6-c4e9-4e8b-a7fc-e7fefb118503}">
+      <Implementation>
+        <ST><![CDATA[//Init test variables
+	arrStr5[0]:='Hello';
+	arrStr5[1]:='World';
+	
+	arrStr10[0] := 'aaaaaaaaaa';
+	arrStr10[1] := 'bbbbbbbbbb';
+	arrStr10[2] := 'cccccccccc';
+
+
+//Test : pink flow create 'Hello World' in target string	
+	tmpInt1:=0;
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+						I_Destination:= arrStr10[1], 
+						I_Source:= arrStr5[0]));   //default values for write/read offset = 0
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+						I_Destination:= arrStr10[1], 
+						I_Source:= arrStr5[1],
+						I_WriteOffset:=TO_UDINT(tmpInt1)));						
+						
+		
+	//result should be: '90123' , left and right elements should be untouched
+	IF(	
+		//area around destination untouched
+		arrStr10[0] <> 'aaaaaaaaaa'
+		OR arrStr10[2] <> 'cccccccccc'
+		//destination is expected value
+		OR arrStr10[1] <> 'HelloWorld'
+		//source untouched
+		OR arrStr5[0] <> 'Hello'
+		OR arrStr5[1] <> 'World'
+		//return value should be destination location terminator
+		OR tmpInt1 <> 10)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unit test pink flow');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+//Test: invalid source offset > copy nothing, return supplied write offset
+	arrStr10[1] := 'bbbbbbbbbb';
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+					I_Destination:= arrStr10[1], 
+					I_Source:= arrStr5[0],
+					I_ReadOffset:= 10,
+					I_WriteOffset:=1));
+	
+	IF(
+		//area around destination untouched
+		arrStr10[0] <> 'aaaaaaaaaa'
+		OR arrStr10[2] <> 'cccccccccc'
+		//destination is expected value
+		OR arrStr10[1] <> 'bbbbbbbbbb'
+		//source untouched
+		OR arrStr5[0] <> 'Hello'
+		OR arrStr5[1] <> 'World'
+		//return value should be writeoffset
+		OR tmpInt1 <> 1)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest invalid source offset');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+//Test: invalid destination offset > copy nothing, return supplied write offset
+	arrStr10[1] := 'bbbbbbbbbb';
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+					I_Destination:= arrStr10[1], 
+					I_Source:= arrStr5[0],
+					I_ReadOffset:= 0,
+					I_WriteOffset:=20));
+	
+	IF(
+		//area around destination untouched
+		arrStr10[0] <> 'aaaaaaaaaa'
+		OR arrStr10[2] <> 'cccccccccc'
+		//destination is expected value
+		OR arrStr10[1] <> 'bbbbbbbbbb'
+		//source untouched
+		OR arrStr5[0] <> 'Hello'
+		OR arrStr5[1] <> 'World'
+		//return value should be writeoffset
+		OR tmpInt1 <> 20)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest invalid destination offset');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF	
+
+//Test: copy with source offset
+	arrStr10[1] := 'bbbbbbbbbb';
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+					I_Destination:= arrStr10[1], 
+					I_Source:= arrStr5[0],
+					I_ReadOffset:= 1,
+					I_WriteOffset:=0));
+	
+	IF(
+		//area around destination untouched
+		arrStr10[0] <> 'aaaaaaaaaa'
+		OR arrStr10[2] <> 'cccccccccc'
+		//destination is expected value
+		OR arrStr10[1] <> 'ello'
+		//source untouched
+		OR arrStr5[0] <> 'Hello'
+		OR arrStr5[1] <> 'World'
+		//return value should be location terminator
+		OR tmpInt1 <> 4)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest copy with source offset');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+//Test: copy with source offset == terminator == nothing to copy
+	arrStr10[1] := 'bbbbbbbbbb';
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+					I_Destination:= arrStr10[1], 
+					I_Source:= arrStr5[0],
+					I_ReadOffset:= 5,
+					I_WriteOffset:=0));
+	
+	IF(
+		//area around destination untouched
+		arrStr10[0] <> 'aaaaaaaaaa'
+		OR arrStr10[2] <> 'cccccccccc'
+		//destination is expected value
+		OR arrStr10[1] <> 'bbbbbbbbbb'
+		//source untouched
+		OR arrStr5[0] <> 'Hello'
+		OR arrStr5[1] <> 'World'
+		//return value should be writeoffset
+		OR tmpInt1 <> 0)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest copy with source offset == terminator');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+
+
+//Test: copy with read and destination offset
+	arrStr10[1] := 'bbbbbbbbbb';
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+					I_Destination:= arrStr10[1], 
+					I_Source:= arrStr5[0],
+					I_ReadOffset:= 1,
+					I_WriteOffset:=2));
+	
+	IF(
+		//area around destination untouched
+		arrStr10[0] <> 'aaaaaaaaaa'
+		OR arrStr10[2] <> 'cccccccccc'
+		//destination is expected value
+		OR arrStr10[1] <> 'bbello'
+		//source untouched
+		OR arrStr5[0] <> 'Hello'
+		OR arrStr5[1] <> 'World'
+		//return value should be destination location terminator
+		OR tmpInt1 <> 6)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest copy with read and destination offset');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+//Test: copy with read and destination offset
+	arrStr10[1] := 'bbbbbbbbbb';
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+					I_Destination:= arrStr10[1], 
+					I_Source:= arrStr5[0],
+					I_ReadOffset:= 1,
+					I_WriteOffset:=2));
+	
+	IF(
+		//area around destination untouched
+		arrStr10[0] <> 'aaaaaaaaaa'
+		OR arrStr10[2] <> 'cccccccccc'
+		//destination is expected value
+		OR arrStr10[1] <> 'bbello'
+		//source untouched
+		OR arrStr5[0] <> 'Hello'
+		OR arrStr5[1] <> 'World'
+		//return value should be destination location terminator
+		OR tmpInt1 <> 6)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest copy with read and destination offset');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+//Test: copy with truncation
+	arrStr10[1] := 'bbbbbbbbbb';
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+					I_Destination:= arrStr10[1], 
+					I_Source:= arrStr5[0],
+					I_ReadOffset:= 0,
+					I_WriteOffset:=7));
+	
+	IF(
+		//area around destination untouched
+		arrStr10[0] <> 'aaaaaaaaaa'
+		OR arrStr10[2] <> 'cccccccccc'
+		//destination is expected value
+		OR arrStr10[1] <> 'bbbbbbbHel'
+		//source untouched
+		OR arrStr5[0] <> 'Hello'
+		OR arrStr5[1] <> 'World'
+		//return value should be destination location terminator
+		OR tmpInt1 <> 10)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest copy with truncation');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+
+//
+//TODO not type string tests  >> use tmpLword etc
+//
+tmpByte0 := 2#01010101;
+tmpByte1 := 2#10101010;
+tmpLword0 := 0;
+tmpLword1 := 0;
+tmpLword2 := 0;
+
+//test lsb input shifted 1
+tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+					I_Destination:= tmpLword0, 
+					I_Source:= tmpByte0,
+					I_ReadOffset:= 1,
+					I_WriteOffset:=0));
+//todo if not good
+
+					
+//test msb input shifted 2
+tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+					I_Destination:= tmpLword0, 
+					I_Source:= tmpByte1,
+					I_ReadOffset:= 2,
+					I_WriteOffset:=8));
+//todo if not good
+
+//test overflow
+tmpByte0:=0;
+tmpLword0:=16#F0F0F0F0;
+tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+					I_Destination:= tmpByte0, 
+					I_Source:= tmpLword0,
+					I_ReadOffset:= 0,
+					I_WriteOffset:=0));
+//todo if not good
 
 ]]></ST>
       </Implementation>
@@ -1853,10 +2110,10 @@ VAR
 	HM_B1:BYTE;
 	HM_TestOutputPart:STRING(7);
 	HM_B2:BYTE;
-	HM_TestOutputFull: STRING(500);
+	HM_TestOutputFull: STRING(2000);
 	HM_B3:BYTE; 
 	
-	HM_Debug: ARRAY[0..500] OF BYTE;
+	HM_Debug: ARRAY[0..2010] OF BYTE;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[IF(NOT BknGlbl.FirstScan) THEN RETURN; END_IF
@@ -1870,11 +2127,11 @@ END_FOR
 HM_testInput[0] := CHAR_0;
 
 //prefill output buffers with chars '8' and '9'
-	MEMSET(destAddr:=ADR(HM_TestOutputPart), fillByte:=CHAR_8, n:=SIZEOF(HM_TestOutputPart)-1);
+	MEMSET(destAddr:=ADR(HM_TestOutputPart), fillByte:=CHAR_0, n:=SIZEOF(HM_TestOutputPart)-1);
 	HM_TestOutputPart[SIZEOF(HM_TestOutputPart)-1] := 0;
-	MEMSET(destAddr:=ADR(HM_TestOutputFull), fillByte:=CHAR_9, n:=SIZEOF(HM_TestOutputFull)-1);
+	MEMSET(destAddr:=ADR(HM_TestOutputFull), fillByte:=CHAR_0, n:=SIZEOF(HM_TestOutputFull)-1);
 	HM_TestOutputFull[SIZEOF(HM_TestOutputFull)-1] := 0;
-	MEMSET(destAddr:=ADR(HM_Debug), fillByte:=CHAR_7, n:=SIZEOF(HM_Debug));
+	MEMSET(destAddr:=ADR(HM_Debug), fillByte:=255, n:=SIZEOF(HM_Debug));
 
 //TEST with output buffer is too small
 	utl_StringEscapeText(I_Input:=HM_TestInput, IO_Output:=HM_TestOutputPart);
@@ -1896,14 +2153,11 @@ HM_testInput[0] := CHAR_0;
 		HM_HoustonWeHaveAProblem := TRUE;
 		utl_SystemMessage(I_Message:='unittest utl_StringEscape, failed partial test');
 	END_IF
-	//for manual easier inspection
-	utl_Any_CopyWithOffset(I_Destination:= HM_Debug, I_Source:= HM_TestOutputFull, I_Offset:= 0);
-
-
 
 //TEST with buffer that's big enough
 	utl_StringEscapeText(I_Input:=HM_TestInput, IO_Output:=HM_TestOutputFull);
-	utl_Any_CopyWithOffset(I_Destination:= HM_Debug, I_Source:= HM_TestOutputFull, I_Offset:= 0);
+	//for debugging. NOTE: twincat will add an "$" for some characters in online view! So if you copy the above string value you'll get some extra $ chars and you can't compare 1-1 (remove extra $ first)
+	utl_Any_CopyWithOffset(I_Destination:= HM_Debug, I_Source:= HM_TestOutputFull, I_WriteOffset:= 0); 
 	
 	//if bad things happened >> ..
 	IF(	HM_B2 <> 0 
@@ -1917,12 +2171,23 @@ HM_testInput[0] := CHAR_0;
 		OR HM_TestOutputFull[4] <> F_ToAsc('0')
 		OR HM_TestOutputFull[5] <> F_ToAsc('0')
 		OR HM_TestOutputFull[6] <> F_ToAsc('1')
-		//since it should have exited before entering invalid range again, all should be filled, the last happens to be '{' = 123
-		OR HM_TestOutputFull[264] <> 123
-		OR HM_TestOutputFull[265] <> 0)
+		//space=32: start of non-escaping characters
+		OR HM_TestOutputFull[171] <> CHAR_SP
+		//quote=34 escaped with extra slash
+		OR HM_TestOutputFull[173] <> CHAR_BSLASH
+		OR HM_TestOutputFull[174] <> CHAR_QUOTE
+		//z=122 almost the last non escaped char
+		OR HM_TestOutputFull[263] <> F_ToAsc('z')
+		//last value put in the string (255) should have been escaped
+		OR HM_TestOutputFull[1036] <> F_ToAsc('\')
+		OR HM_TestOutputFull[1037] <> F_ToAsc('u')
+		OR HM_TestOutputFull[1038] <> F_ToAsc('0')
+		OR HM_TestOutputFull[1039] <> F_ToAsc('0')
+		OR HM_TestOutputFull[1040] <> F_ToAsc('F')
+		OR HM_TestOutputFull[1041] <> F_ToAsc('F'))
 	THEN
 		HM_HoustonWeHaveAProblem := TRUE;
-		utl_SystemMessage(I_Message:='unittest utl_StringEscape, failed partial test');
+		utl_SystemMessage(I_Message:='unittest utl_StringEscape, failed full test');
 	END_IF
 
 

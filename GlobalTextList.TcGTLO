@@ -400,6 +400,21 @@ a"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"4469"</v>
+              <v n="TextDefault">"Confirm Dumped"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3258"</v>
+              <v n="TextDefault">"Confirm Empty"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"49"</v>
+              <v n="TextDefault">"Confirm Payload"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"369"</v>
               <v n="TextDefault">"Cpu load: %2.1f"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -481,6 +496,11 @@ Only for boikon engineers"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"2589"</v>
+              <v n="TextDefault">"Debug block inputs REMOVE ME"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"728"</v>
               <v n="TextDefault">"Debug I_K_Auto_ExtSpmode"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -513,6 +533,11 @@ Only for boikon engineers"</v>
             <o>
               <v n="TextID">"424"</v>
               <v n="TextDefault">"Diag: %i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3729"</v>
+              <v n="TextDefault">"Disable Block"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -918,6 +943,16 @@ HMI Buttons"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"1167"</v>
+              <v n="TextDefault">"Init left"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"459"</v>
+              <v n="TextDefault">"Init Right"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"114"</v>
               <v n="TextDefault">"Inputs"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -935,6 +970,11 @@ HMI Buttons"</v>
             <o>
               <v n="TextID">"1227"</v>
               <v n="TextDefault">"ip:%s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3514"</v>
+              <v n="TextDefault">"I_K_SelectProg"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1275,6 +1315,16 @@ as needed"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"4498"</v>
+              <v n="TextDefault">"Nr: %i "</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"605"</v>
+              <v n="TextDefault">"NrPicks: %i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"985"</v>
               <v n="TextDefault">"Number of changes detected in HMI_Errors  (if count increases, then the HMI will update errors)"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -1347,6 +1397,11 @@ as needed"</v>
             <o>
               <v n="TextID">"2407"</v>
               <v n="TextDefault">"Part result"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"91"</v>
+              <v n="TextDefault">"PayloadNr: %i"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1475,6 +1530,11 @@ as needed"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"2622"</v>
+              <v n="TextDefault">"RBT: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"1766"</v>
               <v n="TextDefault">"Rcv Msg: %s"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -1581,6 +1641,11 @@ General.Q_SN_TotalReset
             <o>
               <v n="TextID">"270"</v>
               <v n="TextDefault">"Rev"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1608"</v>
+              <v n="TextDefault">"Robot signals (normally auto controlled)"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>

@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="RbtFanucUnloading_DO" Id="{7a7c1e24-c638-47c5-a8aa-44593f2d423e}">
+    <Declaration><![CDATA[{attribute 'analysis' := '-33'}
+TYPE RbtFanucUnloading_DO :
+STRUCT
+	//bits 0-15
+	SN_InitLeftOk:BIT;		//DO+00 command init/start left side
+	SN_InitRightOk:BIT;		//DO+01 command init/start left side
+	SN_CylIn:BIT;			//DO+02 command cylinder is in
+	SN_CylOut:BIT;			//DO+03 command cylinder is out
+	SN_CrateEmpty:BIT;		//DO+04 command crate is empty
+	SN_RequestDump:BIT;		//DO+05 command crate is dumped
+    bit06:BIT;
+    bit07:BIT;
+    bit08:BIT;
+	STS_Error:BIT;			//DO+09 status in error
+    STS_Latched1:BIT;		//DO+10
+    STS_Latched2:BIT;		//DO+11
+    bit12:BIT;
+    bit13:BIT;
+    bit14:BIT;
+    bit15:BIT;
+	K_DropBasket_OK:BIT;	//Response from robot drop basket ok
+    bit17:BIT;
+    bit18:BIT;
+    bit19:BIT;
+    bit20:BIT;
+    bit21:BIT;
+    bit22:BIT;
+    bit23:BIT;
+    bit24:BIT;
+    bit25:BIT;
+    bit26:BIT;
+    bit27:BIT;
+    bit28:BIT;
+    bit29:BIT;
+    bit30:BIT;
+    bit31:BIT;
+END_STRUCT
+END_TYPE
+
+
+(*
+bit00:BIT;
+    bit01:BIT;
+    bit02:BIT;
+    bit03:BIT;
+    bit04:BIT;
+    bit05:BIT;
+    bit06:BIT;
+    bit07:BIT;
+    bit08:BIT;
+    bit09:BIT;
+    bit10:BIT;
+    bit11:BIT;
+    bit12:BIT;
+    bit13:BIT;
+    bit14:BIT;
+    bit15:BIT;
+    bit16:BIT;
+    bit17:BIT;
+    bit18:BIT;
+    bit19:BIT;
+    bit20:BIT;
+    bit21:BIT;
+    bit22:BIT;
+    bit23:BIT;
+    bit24:BIT;
+    bit25:BIT;
+    bit26:BIT;
+    bit27:BIT;
+    bit28:BIT;
+    bit29:BIT;
+    bit30:BIT;
+    bit31:BIT;
+*)
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

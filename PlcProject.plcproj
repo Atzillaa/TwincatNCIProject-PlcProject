@@ -7,9 +7,9 @@
     <SubObjectsSortedByName>True</SubObjectsSortedByName>
     <DownloadApplicationInfo>true</DownloadApplicationInfo>
     <WriteProductVersion>false</WriteProductVersion>
-    <GenerateTpy>true</GenerateTpy>
+    <GenerateTpy>false</GenerateTpy>
     <Name>PlcProject</Name>
-    <ProgramVersion>3.1.4026.20</ProgramVersion>
+    <ProgramVersion>3.1.4026.22</ProgramVersion>
     <Application>{d02a166d-96bb-44a6-96c7-fd0e94bc6829}</Application>
     <TypeSystem>{24d5d8c0-f52b-4135-85ce-1c040b1cd87d}</TypeSystem>
     <Implicit_Task_Info>{a083444f-8377-42e2-b625-bfc07cc1b483}</Implicit_Task_Info>
@@ -18,7 +18,7 @@
     <LibraryReferences>{015cb6ed-99fd-4f18-9128-1eb89efb4ed6}</LibraryReferences>
     <Company>Boikon</Company>
     <Released>false</Released>
-    <ProjectVersion>0.7.0.1110</ProjectVersion>
+    <ProjectVersion>0.7.0.1113</ProjectVersion>
     <CombineIds>false</CombineIds>
     <Title>Boikon Template</Title>
     <CompilerVersion>
@@ -29,6 +29,8 @@
     <DeviceLogFilter>LOG_INFO, LOG_ERROR</DeviceLogFilter>
     <AutoUpdateVisuProfile>true</AutoUpdateVisuProfile>
     <AutoUpdateUmlProfile>true</AutoUpdateUmlProfile>
+    <VirtualLibrary>false</VirtualLibrary>
+    <WriteDefaultValuesToTmc>false</WriteDefaultValuesToTmc>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CHECKBOUNDS.TcPOU">
@@ -119,26 +121,78 @@
     <Compile Include="VisualizationManager.TcVMO">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Controls\TemplateSafetyZone\cntrl_SafetyController1.TcPOU">
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\cntrl_RbtFanucUnloadingRobot.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Controls\TemplateSafetyZone\HMI_ERR_SafetyController1.TcDUT">
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\HMI\HMI_ERR_RbtFanucUnloading.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Controls\TemplateSafetyZone\HMI_SafetyController1.TcPOU">
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\HMI\HMI_MAN_RbtFanucUnloading.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Controls\TemplateSafetyZone\HMI_STS_SafetyController1.TcDUT">
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\HMI\HMI_RbtFanucUnloading.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Controls\TemplateSafetyZone\HMI_WRN_SafetyController1.TcDUT">
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\HMI\HMI_SP_RbtFanucUnloading.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="_Controls\TemplateSafetyZone\Vis_SafetyZone1.TcVIS">
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\HMI\HMI_STS_RbtFanucUnloading.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\HMI\HMI_WRN_RbtFanucUnloading.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\LinkedIO\RbtFanucUnloading_DataIn.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\LinkedIO\RbtFanucUnloading_DataOut.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\LinkedIO\Helpers\RbtFanucUnloading_Array8Uint.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\LinkedIO\Helpers\RbtFanucUnloading_DataIn_Grouped.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\LinkedIO\Helpers\RbtFanucUnloadingt_DataOut_Grouped.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\LinkedIO\Helpers\RbtFanucUnloading_DI.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\LinkedIO\Helpers\RbtFanucUnloading_DO.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\LinkedIO\Helpers\RbtFanucUnloading_GI.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\LinkedIO\Helpers\RbtFanucUnloading_GO.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_RbtFanuc\LinkedIO\Vis_RbtFanucUnloading.TcVIS">
       <SubType>Code</SubType>
       <DependentUpon>VisualizationManager.TcVMO</DependentUpon>
     </Compile>
-    <Compile Include="_Controls\utl_SignalColumn.TcPOU">
+    <Compile Include="_Control_Templates\cntrl_SafetyController\cntrl_SafetyController1.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_SafetyController\HMI_ERR_SafetyController1.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_SafetyController\HMI_SafetyController1.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_SafetyController\HMI_STS_SafetyController1.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_SafetyController\HMI_WRN_SafetyController1.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Control_Templates\cntrl_SafetyController\Vis_SafetyZone1.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>VisualizationManager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="_Control_Templates\utl_SignalColumn.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="_Globals\eLogGroupsProject.TcDUT">
@@ -216,13 +270,17 @@
     <Folder Include="General\HMI" />
     <Folder Include="Main" />
     <Folder Include="Version" />
-    <Folder Include="_Controls\TemplateSafetyZone" />
+    <Folder Include="_Control_Templates\cntrl_RbtFanuc" />
+    <Folder Include="_Control_Templates\cntrl_RbtFanuc\LinkedIO" />
+    <Folder Include="_Control_Templates\cntrl_RbtFanuc\LinkedIO\Helpers" />
+    <Folder Include="_Control_Templates\cntrl_RbtFanuc\HMI" />
+    <Folder Include="_Control_Templates\cntrl_SafetyController" />
     <Folder Include="_Scam\SCM_TemplateClean\EnumsAndState" />
     <Folder Include="_Scam\SCM_TemplateClean\HMI" />
     <Folder Include="_Scam\SCM_TemplateMachinePart\HMI" />
     <Folder Include="_Scam\SCM_TemplateMachinePart\EnumsAndState" />
     <Folder Include="_Utils" />
-    <Folder Include="_Controls" />
+    <Folder Include="_Control_Templates" />
     <Folder Include="_Globals" />
     <Folder Include="_Scam" />
     <Folder Include="_Scam\SCM_TemplateClean" />
@@ -235,7 +293,7 @@
     <Content Include="Version\_Readme.txt">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="_ReadmeBreakingChanges.txt">
+    <Content Include="_UpgradeFrom0.6.8.txt">
       <SubType>Content</SubType>
     </Content>
     <Content Include="_Scam\CreateNewScmUsingTemplate.ps1">
@@ -244,7 +302,7 @@
     <Content Include="_Utils\_Readme.txt">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="_Controls\_Readme.txt">
+    <Content Include="_Control_Templates\_Readme.txt">
       <SubType>Content</SubType>
     </Content>
     <Content Include="_Scam\Readme.txt">
@@ -344,8 +402,8 @@
   <ProjectExtensions>
     <PlcProjectOptions>
       <XmlArchive>
-        <Data>
-          <o xml:space="preserve" t="OptionKey">
+  <Data>
+    <o xml:space="preserve" t="OptionKey">
       <v n="Name">"&lt;ProjectRoot&gt;"</v>
       <d n="SubKeys" t="Hashtable" ckt="String" cvt="OptionKey">
         <v>{192FAD59-8248-4824-A8DE-9177C94C195A}</v>
@@ -368,7 +426,7 @@
             <v>GlobalVisuImageFilePath</v>
             <v>"%APPLICATIONPATH%\;%APPLICATIONPATH%\"</v>
             <v>ImplicitChecksForVisualizationPOUs</v>
-            <v>true</v>
+            <v>false</v>
             <v>UnicodeStrings</v>
             <v>false</v>
           </d>
@@ -454,7 +512,10 @@
               <d n="Values" t="Hashtable" />
             </o>
           </d>
-          <d n="Values" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
+            <v>PerformStaticAnalyse</v>
+            <v>True</v>
+          </d>
         </o>
         <v>{40450F57-0AA3-4216-96F3-5444ECB29763}</v>
         <o>
@@ -523,16 +584,16 @@
       </d>
       <d n="Values" t="Hashtable" />
     </o>
-        </Data>
-        <TypeList>
-          <Type n="Boolean">System.Boolean</Type>
-          <Type n="Hashtable">System.Collections.Hashtable</Type>
-          <Type n="Int32">System.Int32</Type>
-          <Type n="NewestVersionConstraintToSave">{af9bafe2-ba31-4b15-a2b9-48a0f2cd09fb}</Type>
-          <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
-          <Type n="String">System.String</Type>
-        </TypeList>
-      </XmlArchive>
+  </Data>
+  <TypeList>
+    <Type n="Boolean">System.Boolean</Type>
+    <Type n="Hashtable">System.Collections.Hashtable</Type>
+    <Type n="Int32">System.Int32</Type>
+    <Type n="NewestVersionConstraintToSave">{af9bafe2-ba31-4b15-a2b9-48a0f2cd09fb}</Type>
+    <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
+    <Type n="String">System.String</Type>
+  </TypeList>
+</XmlArchive>
     </PlcProjectOptions>
   </ProjectExtensions>
 </Project>

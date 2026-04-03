@@ -27,7 +27,6 @@
 FUNCTION_BLOCK utl_General;
 VAR_INPUT
 	I_SN_ResetErrors:BOOL;						//Signal reset general errors
-	
 	I_SN_Lp_Pb_StartAll:BOOL;					//Signal activate lamp pushbutton >> if only 1 organiser, connect directly to specific organiser output, in case of multiple organisers make it sensible yourself
 	I_SN_Lp_Pb_StopAll:BOOL;					//Signal activate lamp pushbutton >> if only 1 organiser, connect directly to specific organiser output, in case of multiple organisers make it sensible yourself
 	I_SN_Lp_Pb_ResetAll:BOOL;					//Signal activate lamp pushbutton >> if only 1 organiser, connect directly to specific organiser output, in case of multiple organisers make it sensible yourself

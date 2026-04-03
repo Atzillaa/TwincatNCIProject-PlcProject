@@ -1,0 +1,246 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="cntrl_RbtFanucUnloadingRobot" Id="{3bec5480-5ca5-419b-890e-159c13f45c47}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK cntrl_RbtFanucUnloadingRobot EXTENDS cntrl_RbtFanuc
+VAR_INPUT
+	I_K_ProgramSelect:BOOL;		//Command select given program nr using the PNS-select-method
+	I_K_DropBasket:BOOL;		//Command to drop basket
+	I_SP_ProgramNr: BYTE;		//program nr to select
+END_VAR
+VAR_OUTPUT
+	Q_K_ProgramSelect_OK:BOOL;	//Command select given progran nr succeeded
+	Q_K_DropBasket_OK:BOOL;		//Command executed
+END_VAR
+
+VAR
+	(*Configuration*)	
+
+	(*Logged variables*)
+	RbtError: utl_LoggedUInt(LoggingGroup:= eLogGroups.Cntrl_states, TrigAtInterval:= 0, TrigAtDeviation:= 0);
+	RbtState: utl_LoggedUInt(LoggingGroup:= eLogGroups.Cntrl_states, TrigAtInterval:= 0, TrigAtDeviation:= 0);
+	
+	(*Internals*)
+	TmrPayloadConfirm:TON;
+	
+	(*Instances*)
+	HMI:HMI_RbtFanucUnloading;										//All HMI related variables
+	PX_Left_X:cntrl_Sensor(Options:= eSensorConfig.InputNo );
+	PX_Right_X:cntrl_Sensor(Options:= eSensorConfig.InputNO );
+	PC_Left_Z:cntrl_Sensor(Options:= eSensorConfig.InputNO );
+	PC_Right_Z:cntrl_Sensor(Options:= eSensorConfig.InputNO );
+
+	Cyl_CrateSupportLeft:cntrl_Valve(Options:= eValveConfig.Default + eValveConfig.HoldState);
+	Cyl_CrateSupportRight:cntrl_Valve(Options:= eValveConfig.Default + eValveConfig.HoldState);
+	Cyl_Stopper:cntrl_Valve(Options:= eValveConfig.None + eValveConfig.HoldState);
+
+	(*Inputs / Outputs*)
+	DataIn: RbtFanucUnloading_DataIn;
+	DataOut: RbtFanucUnloading_DataOut;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//call baseblock > handles base functionality like resettings / starting / selecting program
+//note: the baseblock doesn't know about your custom HMI bits, but since the custom HMI bits are extended, you can supply them and the compiler will pass only the base bits
+SUPER^.M_SuperCall(
+	IO_StatusWord:= DataIn.Vars._UO,
+	IO_ControlWord:= DataOut.Vars._UI,
+	I_HMI:=HMI,
+	IO_HMI_WRN:= HMI.WRN, 
+	IO_HMI_ERR:= HMI.ERR, 
+	IO_HMI_STS:= HMI.STS);
+	
+//Update HMI variables
+_A_HMI();
+
+//Simulation
+IF(I_K_SimulationActive) THEN _Simulation(); END_IF
+
+//Activations output etc
+_A_Activations();]]></ST>
+    </Implementation>
+    <Action Name="_A_Activations" Id="{03f79d2c-2ee0-4df2-9f78-8dc8e6a2df13}">
+      <Implementation>
+        <ST><![CDATA[
+//logging
+RbtError.V := DataIn.Vars._GO.ErrorNr;
+RbtState.V := DataIn.Vars._GO.State;
+
+//implementation example of how to select a program. 
+//* you can also use the method from the baseblock directly in your parentblock step conditions and remove these inputs
+IF( I_K_ProgramSelect
+	//in the totalreset method also a program is selected, give that priority. This situation should not happen because above command should be low @total_reset but i'm a monkey
+	AND_THEN eS <> eRbtFanuc.TotalReset)
+THEN
+	Q_K_ProgramSelect_OK := M_PNS_SelectProgram(I_SP_ProgramNr);
+ELSE
+	Q_K_ProgramSelect_OK:=FALSE;
+END_IF
+
+//auto confirm ready to drop (normally linked to scam, here testing real robot which is now talking to itself)
+DataOut.Vars._DI.SN_RequestDumpOk := DataIn.Vars._DO.SN_RequestDump;
+DataOut.Vars._DI.SN_InitLeft R= DataIn.Vars._DO.SN_InitLeftOk;
+DataOut.Vars._DI.SN_InitRight R= DataIn.Vars._DO.SN_InitRightOk;
+
+//Example command from scam/response linking
+DataOut.Vars._DI.K_DropBasket := I_K_DropBasket;
+Q_K_DropBasket_OK := DataIn.Vars._DO.K_DropBasket_OK;
+
+Cyl_CrateSupportLeft(
+	I_HMI_Parent:= 0, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	I_ES_OK:= TRUE, 
+	I_K_DisableErrorDetection:= TRUE, 
+	I_K_AutoIn:= DataIn.Vars._DO.SN_CylIn, 
+	I_K_AutoOut:= DataIn.Vars._DO.SN_CylOut, 
+	Q_STS_In=> , 
+	Q_STS_Out=> );
+//NOTE: this is a slave cilinder of left, don't link outputs
+Cyl_CrateSupportRight(
+	I_HMI_Parent:= 0, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	I_ES_OK:= TRUE, 
+	I_K_DisableErrorDetection:= TRUE, 
+	I_K_AutoIn:= Cyl_CrateSupportLeft.I_K_AutoIn, 
+	I_K_AutoOut:= Cyl_CrateSupportLeft.I_K_AutoOut, 
+	Q_STS_In=> , 
+	Q_STS_Out=> );
+//for now a slave as well to support left cylinder
+Cyl_Stopper(
+	I_HMI_Parent:= 0, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	I_ES_OK:= TRUE, 
+	I_K_DisableErrorDetection:= TRUE, 
+	I_K_AutoIn:= Cyl_CrateSupportLeft.I_K_AutoIn, 
+	I_K_AutoOut:= Cyl_CrateSupportLeft.I_K_AutoOut, 
+	Q_STS_In=> , 
+	Q_STS_Out=> );
+
+//Cylinder communication to robot >> if command in/out and status cylinder matches then respons command OK
+DataOut.Vars._DI.SN_CylInOk := 	DataIn.Vars._DO.SN_CylIn
+									AND Cyl_CrateSupportLeft.Q_STS_In
+									AND Cyl_CrateSupportRight.Q_STS_In
+									AND Cyl_Stopper.Q_STS_In;
+DataOut.Vars._DI.SN_CylOutOk := 	DataIn.Vars._DO.SN_CylOut
+									AND Cyl_CrateSupportLeft.Q_STS_Out
+									AND Cyl_CrateSupportRight.Q_STS_Out; 
+
+
+PC_Left_Z(
+	I_HMI_Parent:= 0, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	I_SimulateState:= , 
+	I_ErrNotState:= , 
+	Q_DetectedDirect=> , 
+	Q_DetectedDebounced=> DataOut.Vars._DI.PC_Left_Z , 
+	Q_DetectedDebounced_RE=> , 
+	Q_DetectedDebounced_FE=> );
+	
+PC_Right_Z(
+	I_HMI_Parent:= 0, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	I_SimulateState:= , 
+	I_ErrNotState:= , 
+	Q_DetectedDirect=> , 
+	Q_DetectedDebounced=> DataOut.Vars._DI.PC_Right_Z , 
+	Q_DetectedDebounced_RE=> , 
+	Q_DetectedDebounced_FE=> );
+	
+PX_Left_X(
+	I_HMI_Parent:= 0, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	I_SimulateState:= , 
+	I_ErrNotState:= , 
+	Q_DetectedDirect=> , 
+	Q_DetectedDebounced=> DataOut.Vars._DI.PX_Left_X , 
+	Q_DetectedDebounced_RE=> , 
+	Q_DetectedDebounced_FE=> );
+	
+PX_Right_X(
+	I_HMI_Parent:= 0, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= Glbl.SimEnable, 
+	I_SimulateState:= , 
+	I_ErrNotState:= , 
+	Q_DetectedDirect=> , 
+	Q_DetectedDebounced=> DataOut.Vars._DI.PX_Right_X , 
+	Q_DetectedDebounced_RE=> , 
+	Q_DetectedDebounced_FE=> );]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="_A_HMI" Id="{d21434ce-8726-4457-840e-4abe3909c88a}">
+      <Implementation>
+        <ST><![CDATA[//Update HMI variables (check error status + reset, check warnings)
+HMI.M_Update(	I_OrgControl:= I_OrgControl,
+				I_HMI_Parent:= I_HMI_Parent,
+				I_ERR:= HMI.ERR,
+				I_WRN:= HMI.WRN,
+				I_MAN:= HMI.MAN);
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="_Simulation" Id="{8d711a34-18b6-4192-b39d-fd2bdfb29737}">
+      <Implementation>
+        <ST><![CDATA[//NOTE: The baseblock already resets all bits in the statusword before setting simulated bits.
+//>>not doing anything (yet) with those bits here
+
+//I_K_ProgSelect should already be simulated by the baseblock since that is default functionality
+//Only custom functionality needs to be simulated here
+
+DataIn.Vars._DO.K_DropBasket_OK := I_K_DropBasket;]]></ST>
+      </Implementation>
+    </Action>
+    <Method Name="M_TotalResetProcedure" Id="{c43ea640-f0cc-4e8e-a74f-35c2b6f3451a}">
+      <Declaration><![CDATA[(*	Actions to be done @ Total_Reset 
+	The baseblock will call this method until it returns true in state Total_Reset
+	
+	*if nothing special needs to be done, just return true
+*)
+METHOD PUBLIC M_TotalResetProcedure : BOOL]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//The coloborative robot needs a signal to confirm the payload before it does anything after a power cycle. 
+//You can connect it (DCS-config) to an input like is done here
+TmrPayloadConfirm(IN:= TRUE, PT:= T#1.5S);
+DataOut.Vars._DI.SN_PayloadConfirm := TRUE;
+
+//if done > reset vars, signal baseblock total_reset done by returning true so it can continue
+IF(	TmrPayloadConfirm.Q
+	//select program PNS0001 on the controller (method returns true at success)
+	AND M_PNS_SelectProgram(PNS_Nr:=1))
+THEN
+	//reset timer + signal 
+	TmrPayloadConfirm(IN:= FALSE);
+	DataOut.Vars._DI.SN_PayloadConfirm := FALSE;
+	//signal base totale reset = done
+	M_TotalResetProcedure := TRUE;
+//else not done, keep baseblock in total reset state
+ELSE
+	M_TotalResetProcedure := FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_ControlWord" Id="{7f4e5687-0ca8-4f67-96e8-e6f19920cf26}">
+      <Declaration><![CDATA[PROPERTY PROTECTED P_ControlWord : REFERENCE TO RbtFanuc_ControlWord]]></Declaration>
+      <Get Name="Get" Id="{9eb48e93-0c61-4baa-9804-ea43c9c87e65}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_ControlWord ref= DataOut.Vars._UI;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_StatusWord" Id="{c578ef5e-99dd-4265-9d82-b0242bf060dd}">
+      <Declaration><![CDATA[PROPERTY PROTECTED P_StatusWord : REFERENCE TO RbtFanuc_StatusWord]]></Declaration>
+      <Get Name="Get" Id="{be720fec-749b-4671-b7c5-16bde11c2949}">
+        <Declaration><![CDATA[]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_StatusWord ref= DataIn.Vars._UO;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+  </POU>
+</TcPlcObject>

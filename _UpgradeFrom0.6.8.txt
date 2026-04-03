@@ -23,7 +23,7 @@ utl_General
 Structure of the HMI bits changed
 	-in <V0.7 all HMI bits were centralised in big structs in main: main.HMI_Errors / etc 
 	Now each object (controls + scams) centralises the HMI bits in HMI:ObjectVariant:HMI_BaseBlock per object.
-	Although this is a function_block, it is mostly used as struct and it shouldn't be called
+	   >HMI_BaseBlock holds the library functionality, and should be used as a base for your custom HMI-class
 
 	The HMI is now smart enough to go through all variables and filter only the HMI variables (*.HMI.ERR/WRN/SP/STS/MAN*.)  => previously it filtered for MAIN.HMI_*
 	*NOTE: yes this break OOP a little much, because the HMI will read/write local object variables!
@@ -62,7 +62,7 @@ Scam/Organiser structure changed
 							OR HMI.P_STS_InError;
 					I_Organiser.M_UpdateProgStatus(HM_ProgStatus);
 				*the call of the organiser method will determine prog-rest/auto/execption for all scams belonging to this organiser.
-			
+
 		-Usage of all organiser mode statusses is now: I_Organiser.Auto_K / etc  (it looks almost the same as original but is different under the surface >> now accessing these variables directly in the organiser)
 		-All library controls now need this input as I_OrgControl
 

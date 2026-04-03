@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="RbtFanucUnloading_DataIn_Grouped" Id="{942eaebd-b251-46ca-b1ae-1fa862bc395d}">
+    <Declaration><![CDATA[{attribute 'pack_mode' := '1'} //no gaps! (compiler tries to allign with base types)
+TYPE RbtFanucUnloading_DataIn_Grouped :
+STRUCT
+	_UO:RbtFanuc_StatusWord; 			//24bits	>>start pt=1
+	_DO:RbtFanucUnloading_DO;			//32 bits	>>start pt=25
+	_GO:RbtFanucUnloading_GO;			//16 bits	>>start pt=57
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

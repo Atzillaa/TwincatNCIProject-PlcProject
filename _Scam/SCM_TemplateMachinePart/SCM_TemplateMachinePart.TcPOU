@@ -209,7 +209,7 @@ VAR
 		UnitsToOutputFactor:= 1);
 
 	//Servo			>> Beckhoff servo drive
-	Srv_Example:Cntrl_Servo(
+	Srv_Example:cntrl_Servo(
 		TMR_PowerSave:=T#30S,			//time before entering powersave mode 0=disabled (if no command is given then power down after this time @ any command is reset timer) !It takes some time to awake the servo
 		EnableSoftLimits:=FALSE,		//enable software limits (with button manual disable hw-limits, the parameter in the nc-task is set to 0, we need to know if it should be reenabled afterwards
 		InputNrHomingSensor:=0,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
@@ -237,6 +237,9 @@ VAR
 			TMR_DelayPowerSave:= T#1M , 
 			SPD_MaxJog:= 50, 
 			SPD_MaxMove:= 150);
+	
+	//Robot			>>customized library robot block
+	Rbt_Unloading: cntrl_RbtFanucUnloadingRobot();
 			
 	//VacuumGenerator	>>	Vacuumgenerator with blowoff controlled by IO
 	Vcg_Suckers : cntrl_VacuumGenerator(
@@ -480,7 +483,7 @@ END_VAR]]></Declaration>
 	
 	Gantry_Example(
 		I_HMI_Parent:= HMI,
-		I_K_SimulationActive:= Glbl.Sim_MyMachinePart, 
+		I_K_SimulationActive:= Glbl.Sim_MyMachinePart,
 		I_ES_OK:= I_K_ES_OK, 
 		I_OrgControl:= I_Organiser,
 		//I_Auto_K_Homing:= , 
@@ -488,6 +491,15 @@ END_VAR]]></Declaration>
 		//I_Auto_POS_MoveToPos:= , 
 		//I_Auto_SPD_MoveToPos:= 
 	);
+	
+	Rbt_Unloading(
+		I_HMI_Parent:= HMI, 
+		I_OrgControl:= I_Organiser, 
+		I_K_SimulationActive:= Glbl.Sim_MyMachinePart, 
+		I_ES_OK:= I_K_ES_OK, 
+		I_K_ProgramSelect:= , 
+		I_SP_ProgramNr:= , 
+		Q_K_ProgramSelect_OK=> );
 	
 	Cam_OmronSmartCam(
 		I_HMI_Parent:= HMI,
@@ -507,7 +519,7 @@ END_VAR]]></Declaration>
 			utl_Any_CopyWithOffset(
 				I_Destination:= HMI.STS.OmronSmartCamLastResult, 
 				I_Source:= HM_CamReceivedData, 
-				I_Offset:= 0);
+				I_WriteOffset:= 0);
 		END_IF
 		
 	Cam_OmronFh(
@@ -584,6 +596,7 @@ Cam_OmronSmartCam.I_K_AutoCal := FALSE;
 Cam_OmronSmartCam.I_K_LoadJob := FALSE;
 Cam_OmronSmartCam.I_K_QuickFocus := FALSE;
 Cam_OmronSmartCam.I_K_Trigger := FALSE;
+Rbt_Unloading.I_K_DropBasket := FALSE;
 
 
 Tmr_Empty.IN := FALSE;
@@ -663,6 +676,7 @@ CASE State.eS OF
 		
 	eTMP.SrvPosStartInterl:
 		Cyl_Example.I_K_AutoIn:= TRUE;
+		Rbt_Unloading.I_K_DropBasket := true;
 		
 		(*Warnings/Errors*)
 			PC_ProductInfeed.I_ErrNotState:= eSensorState.UnDetected; 
@@ -1013,9 +1027,10 @@ REPEAT
 
 		eTMP.SrvPosStart:
 			//if servo's reached commanded position
-			//>>SrvStartInterl
 			IF( Srv_Example.Q_K_PosAbsoluteOk
-				AND Srv_Interrol.Q_STS_TargetReached)
+				AND Srv_Interrol.Q_STS_TargetReached
+				//interl. make sure not still high from previous action
+				AND NOT Rbt_Unloading.Q_K_DropBasket_OK)
 			THEN
 				//>>
 				State.M_Step(
@@ -1024,9 +1039,10 @@ REPEAT
 			END_IF
 		
 		eTMP.SrvPosStartInterl:
-			//if interlockings with servo/supply done
+			//if robot done and interlockings with servo/supply done
 			//>>SrvPosEnd
-			IF( 	NOT PC_ProductInfeed.Q_DetectedDebounced			//let's also check the sensor dropped again >> make sure to trigger error detection in activations
+			IF( 	Rbt_Unloading.Q_K_DropBasket_OK
+					AND NOT PC_ProductInfeed.Q_DetectedDebounced			//let's also check the sensor dropped again >> make sure to trigger error detection in activations
 					AND NOT I_SN_SUP_Request_OK					//product was handled, check if supply acknowledges
 					//interl. next step a command is given so we need to interlock here
 					AND NOT Srv_Example.Q_K_PosAbsoluteOk

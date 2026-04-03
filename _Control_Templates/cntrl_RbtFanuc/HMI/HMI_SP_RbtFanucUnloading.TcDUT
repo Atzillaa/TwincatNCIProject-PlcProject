@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="HMI_SP_RbtFanucUnloading" Id="{09215229-e5cc-49e6-84a6-457a63b4f70a}">
+    <Declaration><![CDATA[TYPE HMI_SP_RbtFanucUnloading EXTENDS HMI_SP_RbtFanuc:
+STRUCT
+	;//add custom on top of library block here
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>
