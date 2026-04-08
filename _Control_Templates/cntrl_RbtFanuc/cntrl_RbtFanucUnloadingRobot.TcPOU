@@ -24,14 +24,13 @@ VAR
 	
 	(*Instances*)
 	HMI:HMI_RbtFanucUnloading;										//All HMI related variables
-	PX_Left_X:cntrl_Sensor(Options:= eSensorConfig.InputNo );
-	PX_Right_X:cntrl_Sensor(Options:= eSensorConfig.InputNO );
-	PC_Left_Z:cntrl_Sensor(Options:= eSensorConfig.InputNO );
-	PC_Right_Z:cntrl_Sensor(Options:= eSensorConfig.InputNO );
+	PX_BasketLeft_X:cntrl_Sensor(Options:= eSensorConfig.InputNo );
+	PX_BasketRight_X:cntrl_Sensor(Options:= eSensorConfig.InputNO );
+	PC_ScanningLeft_Z:cntrl_Sensor(Options:= eSensorConfig.InputNO );
+	PC_ScanningRight_Z:cntrl_Sensor(Options:= eSensorConfig.InputNO );
 
-	Cyl_CrateSupportLeft:cntrl_Valve(Options:= eValveConfig.Default + eValveConfig.HoldState);
-	Cyl_CrateSupportRight:cntrl_Valve(Options:= eValveConfig.Default + eValveConfig.HoldState);
-	Cyl_Stopper:cntrl_Valve(Options:= eValveConfig.None + eValveConfig.HoldState);
+	Cyl_Gripper:cntrl_Valve(Options:= eValveConfig.Default + eValveConfig.HoldState);
+	Cyl_Hook:cntrl_Valve(Options:= eValveConfig.None + eValveConfig.HoldState);
 
 	(*Inputs / Outputs*)
 	DataIn: RbtFanucUnloading_DataIn;
@@ -41,9 +40,9 @@ END_VAR]]></Declaration>
       <ST><![CDATA[//call baseblock > handles base functionality like resettings / starting / selecting program
 //note: the baseblock doesn't know about your custom HMI bits, but since the custom HMI bits are extended, you can supply them and the compiler will pass only the base bits
 SUPER^.M_SuperCall(
+	IHMI:= HMI,
 	IO_StatusWord:= DataIn.Vars._UO,
 	IO_ControlWord:= DataOut.Vars._UI,
-	I_HMI:=HMI,
 	IO_HMI_WRN:= HMI.WRN, 
 	IO_HMI_ERR:= HMI.ERR, 
 	IO_HMI_STS:= HMI.STS);
@@ -84,7 +83,7 @@ DataOut.Vars._DI.SN_InitRight R= DataIn.Vars._DO.SN_InitRightOk;
 DataOut.Vars._DI.K_DropBasket := I_K_DropBasket;
 Q_K_DropBasket_OK := DataIn.Vars._DO.K_DropBasket_OK;
 
-Cyl_CrateSupportLeft(
+Cyl_Gripper(
 	I_HMI_Parent:= 0, 
 	I_OrgControl:= I_OrgControl, 
 	I_K_SimulationActive:= Glbl.SimEnable, 
@@ -94,40 +93,29 @@ Cyl_CrateSupportLeft(
 	I_K_AutoOut:= DataIn.Vars._DO.SN_CylOut, 
 	Q_STS_In=> , 
 	Q_STS_Out=> );
-//NOTE: this is a slave cilinder of left, don't link outputs
-Cyl_CrateSupportRight(
-	I_HMI_Parent:= 0, 
-	I_OrgControl:= I_OrgControl, 
-	I_K_SimulationActive:= Glbl.SimEnable, 
-	I_ES_OK:= TRUE, 
-	I_K_DisableErrorDetection:= TRUE, 
-	I_K_AutoIn:= Cyl_CrateSupportLeft.I_K_AutoIn, 
-	I_K_AutoOut:= Cyl_CrateSupportLeft.I_K_AutoOut, 
-	Q_STS_In=> , 
-	Q_STS_Out=> );
+
 //for now a slave as well to support left cylinder
-Cyl_Stopper(
+Cyl_Hook(
 	I_HMI_Parent:= 0, 
 	I_OrgControl:= I_OrgControl, 
 	I_K_SimulationActive:= Glbl.SimEnable, 
 	I_ES_OK:= TRUE, 
 	I_K_DisableErrorDetection:= TRUE, 
-	I_K_AutoIn:= Cyl_CrateSupportLeft.I_K_AutoIn, 
-	I_K_AutoOut:= Cyl_CrateSupportLeft.I_K_AutoOut, 
+	I_K_AutoIn:= Cyl_Gripper.I_K_AutoIn, 
+	I_K_AutoOut:= Cyl_Gripper.I_K_AutoOut, 
 	Q_STS_In=> , 
 	Q_STS_Out=> );
 
 //Cylinder communication to robot >> if command in/out and status cylinder matches then respons command OK
 DataOut.Vars._DI.SN_CylInOk := 	DataIn.Vars._DO.SN_CylIn
-									AND Cyl_CrateSupportLeft.Q_STS_In
-									AND Cyl_CrateSupportRight.Q_STS_In
-									AND Cyl_Stopper.Q_STS_In;
-DataOut.Vars._DI.SN_CylOutOk := 	DataIn.Vars._DO.SN_CylOut
-									AND Cyl_CrateSupportLeft.Q_STS_Out
-									AND Cyl_CrateSupportRight.Q_STS_Out; 
+								AND Cyl_Gripper.Q_STS_In
+								AND Cyl_Hook.Q_STS_In;
+								
+DataOut.Vars._DI.SN_CylOutOk := DataIn.Vars._DO.SN_CylOut
+								AND Cyl_Gripper.Q_STS_Out; 
 
 
-PC_Left_Z(
+PC_ScanningLeft_Z(
 	I_HMI_Parent:= 0, 
 	I_OrgControl:= I_OrgControl, 
 	I_K_SimulationActive:= Glbl.SimEnable, 
@@ -138,7 +126,7 @@ PC_Left_Z(
 	Q_DetectedDebounced_RE=> , 
 	Q_DetectedDebounced_FE=> );
 	
-PC_Right_Z(
+PC_ScanningRight_Z(
 	I_HMI_Parent:= 0, 
 	I_OrgControl:= I_OrgControl, 
 	I_K_SimulationActive:= Glbl.SimEnable, 
@@ -149,7 +137,7 @@ PC_Right_Z(
 	Q_DetectedDebounced_RE=> , 
 	Q_DetectedDebounced_FE=> );
 	
-PX_Left_X(
+PX_BasketLeft_X(
 	I_HMI_Parent:= 0, 
 	I_OrgControl:= I_OrgControl, 
 	I_K_SimulationActive:= Glbl.SimEnable, 
@@ -160,7 +148,7 @@ PX_Left_X(
 	Q_DetectedDebounced_RE=> , 
 	Q_DetectedDebounced_FE=> );
 	
-PX_Right_X(
+PX_BasketRight_X(
 	I_HMI_Parent:= 0, 
 	I_OrgControl:= I_OrgControl, 
 	I_K_SimulationActive:= Glbl.SimEnable, 

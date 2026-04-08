@@ -5,7 +5,7 @@
       <Data>
         <o xml:space="preserve" t="VisualObject">
           <n n="LastVisuLanguageModelEntry" />
-          <v n="UniqueIdGenerator">"112"</v>
+          <v n="UniqueIdGenerator">"114"</v>
           <o n="VisualElemList" t="VisualElemList">
             <l n="VisualElementList" t="VisualElemCollection" cet="GenericVisualElem">
               <o>
@@ -8301,7 +8301,7 @@
                                 <l n="TypeNodeChildren" t="ArrayList" cet="BasicTypeNode">
                                   <o>
                                     <v n="Flags">1L</v>
-                                    <n n="BasicTypeNodeValue" />
+                                    <v n="BasicTypeNodeValue">"'Unloading'"</v>
                                     <v n="BasicTypeNodeAcceptsExpression">true</v>
                                     <n n="BasicTypeNodeFastAccess" />
                                     <a n="BasicTypeNodeEnumValues" et="String" />
@@ -8335,7 +8335,7 @@
                                   </o>
                                   <o>
                                     <v n="Flags">2L</v>
-                                    <n n="BasicTypeNodeValue" />
+                                    <v n="BasicTypeNodeValue">"MAIN.ExampleMachinePart.Rbt_Unloading"</v>
                                     <v n="BasicTypeNodeAcceptsExpression">true</v>
                                     <n n="BasicTypeNodeFastAccess" />
                                     <a n="BasicTypeNodeEnumValues" et="String" />

@@ -1495,6 +1495,11 @@ as needed"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"2680"</v>
+              <v n="TextDefault">"Project dependant statusses"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"32"</v>
               <v n="TextDefault">"Project log groups"</v>
               <l n="LanguageTexts" t="ArrayList" />
