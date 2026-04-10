@@ -3,6 +3,7 @@
   <POU Name="cntrl_RbtFanucUnloadingRobot" Id="{3bec5480-5ca5-419b-890e-159c13f45c47}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK cntrl_RbtFanucUnloadingRobot EXTENDS cntrl_RbtFanuc
 VAR_INPUT
+	I_HMI_Parent:ItfHMI;		//HMI of the parent block. If this block is in error, it will set the parent P_StsInError property
 	I_K_ProgramSelect:BOOL;		//Command select given program nr using the PNS-select-method
 	I_K_DropBasket:BOOL;		//Command to drop basket
 	I_SP_ProgramNr: BYTE;		//program nr to select

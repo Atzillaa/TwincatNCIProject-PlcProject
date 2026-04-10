@@ -119,8 +119,8 @@ IF(	(	BknGlbl.LocalSystemTime.wHour = 10
 	OR	(	BknGlbl.LocalSystemTime.wHour >= 17))
 THEN
 	LP_OrgGroupMachinePart.M_Set2ColorAnimation(
-		I_Color1 := eWsl15_Color.Yellow,
-		I_Color2 := eWsl15_Color.Red,
+		I_Color1 := eBannerKxx_Color.Yellow,
+		I_Color2 := eBannerKxx_Color.Red,
 		I_Animation:= eBannerKxx_AnimationType.HalfHalfRotate,
 		TRUE); 
 	LP_OrgGroupMachinePart();

@@ -5,7 +5,7 @@
       <Data>
         <o xml:space="preserve" t="VisualObject">
           <n n="LastVisuLanguageModelEntry" />
-          <v n="UniqueIdGenerator">"113"</v>
+          <v n="UniqueIdGenerator">"114"</v>
           <o n="VisualElemList" t="VisualElemList">
             <l n="VisualElementList" t="VisualElemCollection" cet="GenericVisualElem">
               <o>
@@ -2718,7 +2718,10 @@
                             <v n="TypeNodeName">"IO_Cntrl"</v>
                             <o n="TypeNodeAttributes" t="TypeNodeAttributes2">
                               <v n="AttrFlags">0UL</v>
-                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" />
+                              <d n="TypeNodeAttributesData" t="CaseInsensitiveHashtable" ckt="String" cvt="String">
+                                <v>Editor_TypeMatchVariable</v>
+                                <v>true</v>
+                              </d>
                               <v n="ConvDone">true</v>
                             </o>
                             <v n="TypeNodeId" t="Int16">255</v>

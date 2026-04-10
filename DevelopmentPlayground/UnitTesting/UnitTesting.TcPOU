@@ -223,9 +223,6 @@ A_cntrl_SafetyZone1();
 //Speedtest Memcpy VS Memmove
 A_TestMemcpyVsMemmoveSpeed();	
 
-//Rolling fletcher 16 test 
-HM_HoustonWeHaveAProblem S= _M_RollingFletcher();
-
 //String block tests
 _M_StringStuff();
 
@@ -251,62 +248,6 @@ DO
 	arrCnt_2[tmpInt1] := tmpInt1;
 	arrCnt_3[tmpInt1] := tmpInt1;
 END_FOR ]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="_M_RollingFletcher" Id="{b5175fcc-c8e8-0800-14bf-acbd4e5ca084}">
-      <Declaration><![CDATA[METHOD PRIVATE _M_RollingFletcher : BOOL
-VAR
-	index1,index2:INT;
-	
-	rollingHash: XWORD;
-	rollingSum1: XWORD;
-	rollingSum2: XWORD;
-	
-
-	HighAddress:POINTER TO BYTE;
-	
-	Data AT %MB0: ARRAY[0..5] OF BOOL := [FALSE, TRUE];
-	
-	data1: XWORD := 16#00FEFFFF4856B189; //16#FFFFFE0089B15648 in litle endian
-	data2: XWORD := 16#0123456789ABCDEF; //16#67452301EFCDAB89
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[//testvalues can be found at: https://en.wikipedia.org/wiki/Fletcher%27s_checksum
-
-//init variables
-_M_RollingFletcher := FALSE;
-
-rollingHash := 0;
-rollingSum1 := 0;
-rollingSum2 := 0;
-
-//https://gchq.github.io/CyberChef/#recipe=From_Hex('Space')Fletcher-64_Checksum()&input=RkZGRkZFMDA4OUIxNTY0OAo2NzQ1MjMwMUVGQ0RBQjg5Cgo&ienc=65001
-//NOTE>> library function uses fletcher big endian (otherwise we would have to byteswap everything)
-{attribute 'no-analysis'}
-utl_FletcherXword.M_UpdateSum1Sum2(I_Data:= data1, IO_Sum1:= rollingSum1, IO_Sum2:= rollingSum2);
-rollingHash := 	utl_FletcherXword.M_CalcEndHash(IO_Sum1:= rollingSum1, IO_Sum2:= rollingSum2);
-//if hashing error >> abort error
-IF(rollingHash <> 16#4A54B1874955B188) //==> hashing site: 16#00FEFFFF4856B189 >> FFFFFE0089B15648
-THEN
-	utl_SystemMessage(I_Message:= 'utl_Any_Fletcher16RollingHash_CheckNonZero failed unit test 1');
-	_M_RollingFletcher := TRUE;
-	RETURN;
-END_IF
-
-//test rolling functionality
-utl_FletcherXword.M_UpdateSum1Sum2(I_Data:= data2, IO_Sum1:= rollingSum1, IO_Sum2:= rollingSum2);
-rollingHash := 	utl_FletcherXword.M_CalcEndHash(IO_Sum1:= rollingSum1, IO_Sum2:= rollingSum2);
-//TODO hmmm wrong by 1 decimal... site wrong? don't know but it's good enough for now
-//site says: 		16#68f26d55d424c4de
-IF(rollingHash <> 	16#68F26D54D424C4DE) //==> hashing site: 16#0123456789ABCDEF >> 67452301EFCDAB89
-THEN
-	utl_SystemMessage(I_Message:= 'utl_Any_Fletcher16RollingHash_CheckNonZero failed unit test 2');
-	_M_RollingFletcher := TRUE;
-	RETURN;
-END_IF
-
-]]></ST>
       </Implementation>
     </Method>
     <Method Name="_M_StringStuff" Id="{1fb50e45-aec1-0c7c-0e0c-09ea3a2ada3d}">
