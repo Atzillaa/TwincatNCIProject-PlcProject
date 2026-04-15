@@ -72,8 +72,43 @@ Important notes to take into considiration:
 ***General twincat 3 know how***
 ********************************
 Value decalarations
+	VAR_TEMP: in PRG/FB > values are forgotten
+	VAR_INST : in FB.method > value is not forgotten when method is done
+	VAR_STAT: in FB > variable is shared in all instances (so all instances access the same memory)
+	VAR CONSTANT > variables can't be changed in code anymore
+
 	9_123_567	>> underscores are ignored so this is: 9123567
 	16#FFFF		>>hexadecimal notation
+
+	VAR a,b,c,d,e : int; END_VAR  >>declare multiple variables of the same type in one go
+
+	Array-Initialisation examples:
+		-single dimension
+			aIntArray:		ARRAY[0..4] OF INT := [0,1];
+			aIntArray:		ARRAY[0..4] OF INT := [0,1,2,3,4];
+			aIntArray:		ARRAY[0..9] OF INT := [5(0), 1, 2, 3(-1)];
+
+		-multi dimension
+			aIntArray:	ARRAY[0..2, 0..1] OF INT := [ 2(0), 2(1), 2(2) ];
+			aIntArray:	ARRAY[0..2] OF ARRAY[0..1] OF INT := [ [0,1], [2,3], [4,5] ];
+
+		-usage of constants
+			X:	INT := 3;
+			Y:	INT := 2;
+			aIntArray:	ARRAY[1..X, 1..Y] OF INT						:= [ (X*Y)(1) ];
+			aIntArray:	ARRAY[1..X] OF ARRAY[1..Y] OF INT 	:= [ (X)( [ (Y)(1) ] )];	
+			aIntArray:	ARRAY[1..(2*X)] OF INT 							:= [ (X-Y)(1), X(1), Y(1) ];
+
+		-structs
+			aStruct:		ARRAY [0..5] OF ST_Struct := 	[ 
+								4((xBool := TRUE)),							//note: 4 times the struct so you get double brackets:  4(())
+								(xBool := TRUE, lrReal := 5.0)	];
+		-functionblocks
+			aFb_Test: 		ARRAY [0..1] OF FB_Test := [ 
+								2((p_Prop := 5, iVar := 2, iIn := 6, iOut := 9))	];
+
+		-functionblocks with fb_init, also initialising properties:
+			aFb_Test:		ARRAY [0..1] OF FB_Test(-1) := [ 2((p_Prop := 10)) ];
 
 
 protection levels:

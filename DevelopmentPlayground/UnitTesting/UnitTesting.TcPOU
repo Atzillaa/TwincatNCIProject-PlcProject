@@ -9,6 +9,7 @@ END_VAR
 
 VAR
 	//internals
+		HM_DebugContiniously:BOOL;
 		HM_HoustonWeHaveAProblem:BOOL;
 		HM_OrganiserFake:cntrl_OrganiserFake;
 		HM_ItfOrgFake:ItfOrgControl;
@@ -113,21 +114,20 @@ VAR
 		logUtlTimeElapsed100ms:utl_LoggedDint(LoggingGroup:= eLogGroups.Default, TrigAtInterval:= 0, TrigAtDeviation:= 1);
 	
 	//memcopy vs memove test
-		arrMcpyTest: ARRAY[0..10] OF INT;
-		
 		TimeMemCpyNrLoops:INT;
 		TimeMemcpy: PROFILER;
 		TimeMemove: PROFILER;
 	
 	//string testing
-		HM_StrBenchStart:BOOL;
 		Str_BenchNrLoops:INT;
-		SW_Utl_String_SingleConcat: Profiler;
-		SW_Utl_StringDuoConct: Profiler;
-		SW_Utl_Any_CopyOffsetSingle:Profiler;
-		SW_Utl_Any_CopyOffsetDuo:Profiler;
-		SW_BeckhoffConcat: Profiler;
-		SW_BeckhoffConcatDuo: Profiler;
+		Bench_utl_String_SingleConcat: Profiler;
+		Bench_utl_StringDuoConcat: Profiler;
+		Bench_utl_Any_CopyWithOffset_Single:Profiler;
+		Bench_Utl_Any_CopyWithOffset_Duo:Profiler;
+		Bench_ConcatSingle: Profiler;
+		Bench_ConcatDuo: Profiler;
+		Bench_Utl_Any_CopyWithOffsets_Duo:Profiler;
+		Bench_Utl_Any_DataBuilder_Duo:Profiler;
 
 
 	//Logged channel tests		
@@ -223,9 +223,6 @@ A_cntrl_SafetyZone1();
 //Speedtest Memcpy VS Memmove
 A_TestMemcpyVsMemmoveSpeed();	
 
-//String block tests
-_M_StringStuff();
-
 //Logging
 A_LoggedChannels();
 
@@ -235,10 +232,16 @@ A_cntrl_BannerKxx();
 //Servo tests
 A_cntrl_Servo();
 
+//String block tests
+_M_StringStuff();
+
 //string escape test (json)
-M_utl_StringEscape();]]></ST>
+HM_HoustonWeHaveAProblem S= _M_utl_StringEscape();
+
+//Databuilder
+HM_HoustonWeHaveAProblem S= _M_utl_Any_DataBuilder();]]></ST>
     </Implementation>
-    <Method Name="_M_Any_ArrayInitValues" Id="{d7a71b1a-10c1-0248-0992-5b4320aee6aa}">
+    <Method Name="_M_Any_ArrayInitValues" Id="{a9715287-3a57-45d9-a889-8a7b1937e53c}">
       <Declaration><![CDATA[METHOD PRIVATE _M_Any_ArrayInitValues]]></Declaration>
       <Implementation>
         <ST><![CDATA[//prep arrays
@@ -251,7 +254,7 @@ END_FOR ]]></ST>
       </Implementation>
     </Method>
     <Method Name="_M_StringStuff" Id="{1fb50e45-aec1-0c7c-0e0c-09ea3a2ada3d}">
-      <Declaration><![CDATA[METHOD PRIVATE _M_StringStuff
+      <Declaration><![CDATA[METHOD PRIVATE _M_StringStuff :BOOL;
 VAR 
 	TstStr1 AT %MB1:ARRAY[0..82] OF BYTE;
 	ResultString AT %MB1:STRING(80);
@@ -263,6 +266,8 @@ VAR
 	Cnt:INT;
 	MyString:STRING;
 	Offset:UDINT;
+	
+	DataBuilder:utl_Any_DataBuilder;
 END_VAR
 ]]></Declaration>
       <Implementation>
@@ -282,7 +287,8 @@ END_VAR
 	//if string incorrect >> bad news
 	IF(ResultString <> '123') THEN 
 		utl_SystemMessage(I_Message:= 'utl_StringFixTermination failed test 1');
-		HM_HoustonWeHaveAProblem := TRUE;
+		_M_StringStuff := TRUE;
+		RETURN;
 	END_IF
 	
 	ResultString := '12345'; //restore values
@@ -295,7 +301,8 @@ END_VAR
 		OR TstStr1[SIZEOF(ResultString)] <> 99)  //the test array is chosen 1 larger >> this byte should be untouched
 	THEN
 		utl_SystemMessage(I_Message:= 'utl_StringFixTermination failed test 2');
-		HM_HoustonWeHaveAProblem := TRUE;
+		_M_StringStuff := TRUE;
+		RETURN;
 	END_IF
  
  //Single concat
@@ -314,7 +321,8 @@ END_VAR
 		OR TstStr1[6] <> 99)
 	THEN
 		utl_SystemMessage(I_Message:= 'utl_StringSingleConcat failed test 1');
-		HM_HoustonWeHaveAProblem := TRUE;
+		_M_StringStuff := TRUE;
+		RETURN;
 	END_IF
 
 	//given to large strings >> concat as much as possible
@@ -326,69 +334,64 @@ END_VAR
 		OR TstStr1[SIZEOF(ResultString)] <> 99) //[81] should be untouched
 	THEN
 		utl_SystemMessage(I_Message:= 'utl_StringSingleConcat failed test 3');
-		HM_HoustonWeHaveAProblem := TRUE;
+		_M_StringStuff := TRUE;
+		RETURN;
 	END_IF
 
 
 
 (*BenchMarking**)
-	IF(HM_StrBenchStart)
+	IF(Str_BenchNrLoops > 0)
 	THEN
 		//
 		//beckhoff concat
 		//
-		SW_BeckhoffConcat(START:= TRUE, RESET:= TRUE);
+		Bench_ConcatSingle(START:= TRUE, RESET:= TRUE);
 		FOR Cnt := 0 TO Str_BenchNrLoops BY 1
 		DO
 			ResultString := concat(SourceString1,SourceString2); //fastest way of doing it with concat
 		END_FOR
-		SW_BeckhoffConcat(START:= FALSE, RESET:= FALSE);
-		SW_BeckhoffConcat.DATA.AverageExecTime;
+		Bench_ConcatSingle(START:= FALSE, RESET:= FALSE);
 		
 		//beckhoff concat, LEN is slow, maybe that's used internally?
-		SW_BeckhoffConcatDuo(START:= TRUE, RESET:= TRUE);
+		Bench_ConcatDuo(START:= TRUE, RESET:= TRUE);
 		FOR Cnt := 0 TO Str_BenchNrLoops BY 1
 		DO
 			ResultString := concat(SourceString1,SourceString2);
 			ResultString := concat(ResultString,SourceString3);
 		END_FOR
-		SW_BeckhoffConcatDuo(START:= FALSE, RESET:= FALSE);
-		SW_BeckhoffConcatDuo.DATA.AverageExecTime;
-
+		Bench_ConcatDuo(START:= FALSE, RESET:= FALSE);
 
 		//single concat
-		SW_Utl_String_SingleConcat(START:= TRUE, RESET:= TRUE);
+		Bench_utl_String_SingleConcat(START:= TRUE, RESET:= TRUE);
 		FOR Cnt := 0 TO Str_BenchNrLoops BY 1
 		DO
 			ResultString := SourceString1;
 			utl_StringSingleConcat(ResultString, SourceString2);
 		END_FOR
-		SW_Utl_String_SingleConcat(START:= FALSE, RESET:= FALSE);
-		SW_Utl_String_SingleConcat.DATA.AverageExecTime;
+		Bench_utl_String_SingleConcat(START:= FALSE, RESET:= FALSE);
 	
 		//duo concat
-		SW_Utl_StringDuoConct(START:= TRUE, RESET:= TRUE);
+		Bench_utl_StringDuoConcat(START:= TRUE, RESET:= TRUE);
 		FOR Cnt := 0 TO Str_BenchNrLoops BY 1
 		DO
 			ResultString := SourceString1;
 			utl_StringDuoConcat(ResultString, SourceString2, SourceString3);
 		END_FOR
-		SW_Utl_StringDuoConct(START:= FALSE, RESET:= FALSE); 
-		SW_Utl_StringDuoConct.DATA.AverageExecTime;
+		Bench_utl_StringDuoConcat(START:= FALSE, RESET:= FALSE); 
 
-		//utl_any_CopyWithOffset
-		SW_Utl_Any_CopyOffsetSingle(START:=TRUE);
+		//utl_any_CopyWithOffset SINGLE
+		Bench_utl_Any_CopyWithOffset_Single(START:=TRUE);
 		FOR Cnt:=0 TO Str_BenchNrLoops BY 1
 		DO
 			Offset := 0;
 			Offset := utl_Any_CopyWithOffset(MyString,I_Source:=SourceString1,I_WriteOffset:=Offset);
 			Offset := utl_Any_CopyWithOffset(MyString,I_Source:=SourceString2,I_WriteOffset:=Offset);
 		END_FOR
-		SW_Utl_Any_CopyOffsetSingle(START:=FALSE);
-		SW_Utl_Any_CopyOffsetSingle.DATA.AverageExecTime;
+		Bench_utl_Any_CopyWithOffset_Single(START:=FALSE);
 		
-		//utl_any_CopyWithOffset
-		SW_Utl_Any_CopyOffsetDuo(START:=TRUE);
+		//utl_any_CopyWithOffset MULTI
+		Bench_Utl_Any_CopyWithOffset_Duo(START:=TRUE);
 		FOR Cnt:=0 TO Str_BenchNrLoops BY 1
 		DO
 			Offset := 0;
@@ -396,26 +399,251 @@ END_VAR
 			Offset := utl_Any_CopyWithOffset(MyString,I_Source:=SourceString2,I_WriteOffset:=Offset);
 			Offset := utl_Any_CopyWithOffset(MyString,I_Source:=SourceString3,I_WriteOffset:=Offset);
 		END_FOR
-		SW_Utl_Any_CopyOffsetDuo(START:=FALSE);
-		SW_Utl_Any_CopyOffsetDuo.DATA.AverageExecTime;
+		Bench_Utl_Any_CopyWithOffset_Duo(START:=FALSE);
 
-	
+		//utl_any_CopyWithOffset!S! MULTI
+		Bench_Utl_Any_CopyWithOffsets_Duo(START:=TRUE);
+		FOR Cnt:=0 TO Str_BenchNrLoops BY 1
+		DO
+			Offset := 0; 
+			Offset := utl_Any_CopyWithOffsets(I_Destination:=MyString, I_Source:=SourceString1, I_WriteOffset:=Offset);
+			Offset := utl_Any_CopyWithOffsets(I_Destination:=MyString, I_Source:=SourceString2, I_WriteOffset:=Offset);
+			Offset := utl_Any_CopyWithOffsets(I_Destination:=MyString, I_Source:=SourceString3, I_WriteOffset:=Offset);
+		END_FOR
+		Bench_Utl_Any_CopyWithOffsets_Duo(START:=FALSE);
 
-		
+		//utl_any_DataBuilder MULTI
+		Bench_Utl_Any_DataBuilder_Duo(START:=TRUE);
+		//DataBuilder.M_SetTarget(MyString,0);
+		FOR Cnt:=0 TO Str_BenchNrLoops BY 1
+		DO
+			//DataBuilder.M_WithData(SourceString1).M_WithData(SourceString2).M_WithData(SourceString3);
+			DataBuilder.M_SetTarget(MyString,0).M_WithData(SourceString1).M_WithData(SourceString2).M_WithData(SourceString3); 
+		END_FOR
+		Bench_Utl_Any_DataBuilder_Duo(START:=FALSE);
 
 		//string = string 1 + string2
-		SW_Utl_Any_CopyOffsetSingle.DATA.AverageExecTime;	//11 	@ 2024-10
-		SW_Utl_String_SingleConcat.DATA.AverageExecTime;	//23	@ 2024-10 / 100 loopies
-		SW_BeckhoffConcat.DATA.AverageExecTime;			//39 	@ 2024-10
+		Bench_utl_Any_CopyWithOffset_Single.DATA.AverageExecTime;		//11 	@ 2024-10
+		Bench_utl_String_SingleConcat.DATA.AverageExecTime;				//23	@ 2024-10 / 100 loopies
+		Bench_ConcatSingle.DATA.AverageExecTime;						//39 	@ 2024-10
 		
 		//string = string1 + string2 + string3
-		SW_Utl_Any_CopyOffsetDuo.DATA.AverageExecTime;	//16 	@ 2024-10
-		SW_Utl_StringDuoConct.DATA.AverageExecTime;		//33 	@ 2024-10
-		SW_BeckhoffConcatDuo.DATA.AverageExecTime;		//82	@ 2024-10
-		
-		//testdata: str1=huisje, str2=boompje, str3=beestje
+		//testdata: str1=huisje, str2=boompje, str3=beestje, 100 loops
+		//16 @2024-10	16 @2026-04		
+		Bench_Utl_Any_CopyWithOffset_Duo.DATA.AverageExecTime;			
+		//				18 @2026-04
+		Bench_Utl_Any_CopyWithOffsets_Duo.DATA.AverageExecTime;
+		//33 @2024-10	38 @2026-04			
+		Bench_utl_StringDuoConcat.DATA.AverageExecTime;
+		//				47 @2026-04
+		Bench_Utl_Any_DataBuilder_Duo.DATA.AverageExecTime;
+		//82@ 2024-10	82 @2026-04
+		Bench_ConcatDuo.DATA.AverageExecTime;
 
 	END_IF
+
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_M_utl_Any_DataBuilder" Id="{ee4f455d-150b-4fd3-a2cb-b154f14da8e9}">
+      <Declaration><![CDATA[METHOD PRIVATE _M_utl_Any_DataBuilder : BOOL;
+VAR_INPUT
+END_VAR
+
+VAR CONSTANT 
+	CNST_ArrSize: INT := 45;	
+END_VAR
+
+VAR
+	HM_Test1:BYTE;
+	HM_DstString: STRING(60);
+	HM_Test2:BYTE;
+	HM_SrcString: STRING := 'the quick fox jumps over the lazy dog';
+	
+	HM_ShouldBeString: STRING(60);
+	HM_ShouldBeLength:DINT;
+
+
+	HM_SrcDta: ARRAY[0..CNST_ArrSize] OF BYTE := [(CNST_ArrSize+1)(255)];
+	HM_DstData:  ARRAY[0..CNST_ArrSize] OF BYTE := [(CNST_ArrSize+1)(16#AB)];
+	HM_WrkString: STRING;
+	
+	utlDataBuilder: utl_Any_DataBuilder;
+
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_M_utl_Any_DataBuilder := FALSE;
+
+
+
+//if not firstscan > done, else do tests once
+IF(NOT BknGlbl.FirstScan and not HM_DebugContiniously) THEN RETURN;END_IF
+
+//init variables
+	HM_Test1 := HM_Test2 := 16#AA;
+
+//Test normal concat with strings that fit while destination had already something (offset applied)
+	HM_DstString := '123';
+	utlDataBuilder
+		.M_SetTarget(HM_DstString, TO_UDINT(LEN(HM_DstString)))
+		.M_WithData(HM_SrcString)
+		.M_WithStringLiteral(' Literal string');
+		
+	//should be results
+	HM_ShouldBeString := concat('123',concat(HM_SrcString, ' Literal string')); //old ugly way
+	HM_ShouldBeLength := Len(HM_ShouldBeString);
+		
+	//if result wrong
+	IF(	HM_Test1 <> 16#AA 
+		OR HM_Test2 <> 16#AA
+		OR HM_DstString <> HM_ShouldBeString 
+		OR HM_ShouldBeLength <> TO_DINT(utlDataBuilder.P_Offset))
+	THEN
+		utl_SystemMessage(I_Message:='unittest utl_Any_DataBuilder, failed test string+literalstring');
+		_M_utl_Any_DataBuilder := TRUE;
+		RETURN;
+	END_IF
+
+//Test overflow concat
+	utlDataBuilder
+		.M_SetTarget(HM_DstString)
+		.M_WithData(HM_SrcString)
+		.M_WithData(HM_SrcString);
+		
+	//should be results
+	HM_ShouldBeString := concat(HM_SrcString, HM_SrcString);
+	HM_ShouldBeLength := Len(HM_ShouldBeString);
+
+	//if result wrong
+	IF(	HM_Test1 <> 16#AA 
+		OR HM_Test2 <> 16#AA
+		OR HM_DstString <> HM_ShouldBeString 
+		OR HM_ShouldBeLength <> TO_DINT(utlDataBuilder.P_Offset))
+	THEN
+		utl_SystemMessage(I_Message:='unittest utl_Any_DataBuilder, failed test string overflow');
+		_M_utl_Any_DataBuilder := TRUE;
+		RETURN;
+	END_IF
+	
+//Test with binary data as destination (non string type)
+	utlDataBuilder.M_SetTarget(HM_DstData, 10).M_WithData(HM_SrcDta);
+	//if result wrong
+	IF(	HM_Test1 <> 16#AA 
+		OR HM_Test2 <> 16#AA
+		OR HM_DstData[9] <> 16#AB //first 10 should have been skipped
+ 		OR HM_DstData[10] <> 255
+		OR HM_DstData[CNST_ArrSize] <> 255
+		OR SIZEOF(HM_DstData) <> TO_DINT(utlDataBuilder.P_Offset)) //should have copied as much as fits
+	THEN
+		utl_SystemMessage(I_Message:='unittest utl_Any_DataBuilder, failed test binary destination');
+		_M_utl_Any_DataBuilder := TRUE;
+		RETURN;
+	END_IF
+	
+	
+	
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_M_utl_StringEscape" Id="{5ab07f3e-4d98-4ddb-8622-0a8ec1698ad6}">
+      <Declaration><![CDATA[METHOD PRIVATE _M_utl_StringEscape : BOOL;
+VAR_INPUT
+END_VAR
+
+VAR
+	HM_Index:UINT;
+	
+	HM_TestInput: STRING(255);
+	HM_B1:BYTE;
+	HM_TestOutputPart:STRING(7);
+	HM_B2:BYTE;
+	HM_TestOutputFull: STRING(2000);
+	HM_B3:BYTE; 
+	
+	HM_Debug: ARRAY[0..2010] OF BYTE;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_M_utl_StringEscape := FALSE;
+
+IF(NOT BknGlbl.FirstScan AND NOT HM_DebugContiniously) THEN RETURN; END_IF
+	
+//prep input string (values: '0' and then 1-255 
+FOR HM_Index := 0 TO SIZEOF(HM_TestInput)-1 BY 1
+DO
+	HM_TestInput[HM_Index] := TO_BYTE(HM_Index);
+END_FOR
+//lets not end the string that quickly ;)
+HM_testInput[0] := CHAR_0;
+
+//prefill output buffers with chars '8' and '9'
+	MEMSET(destAddr:=ADR(HM_TestOutputPart), fillByte:=CHAR_0, n:=SIZEOF(HM_TestOutputPart)-1);
+	HM_TestOutputPart[SIZEOF(HM_TestOutputPart)-1] := 0;
+	MEMSET(destAddr:=ADR(HM_TestOutputFull), fillByte:=CHAR_0, n:=SIZEOF(HM_TestOutputFull)-1);
+	HM_TestOutputFull[SIZEOF(HM_TestOutputFull)-1] := 0;
+	MEMSET(destAddr:=ADR(HM_Debug), fillByte:=255, n:=SIZEOF(HM_Debug));
+
+//TEST with output buffer is too small
+	utl_StringEscapeText(I_Input:=HM_TestInput, IO_Output:=HM_TestOutputPart);
+	//if bad things happened >> ..
+	IF(	HM_B1 <> 0 
+		OR HM_B2 <> 0
+		//test copied first character of the input which was the char '0'
+		OR HM_TestOutputPart[0] <> F_ToAsc('0')
+		//the next char from the input is not a char but asci code: 16h01 . This should be escaped to: '\u0001'
+		OR HM_TestOutputPart[1] <> F_ToAsc('\')
+		OR HM_TestOutputPart[2] <> F_ToAsc('u')
+		OR HM_TestOutputPart[3] <> F_ToAsc('0')
+		OR HM_TestOutputPart[4] <> F_ToAsc('0')
+		OR HM_TestOutputPart[5] <> F_ToAsc('0')
+		OR HM_TestOutputPart[6] <> F_ToAsc('1')
+		//since the next input byte also has to be escaped (16h02), this doesn't fit anymore, the function should have stopped and made this a terminator
+		OR HM_TestOutputPart[7] <> 0)
+	THEN
+		utl_SystemMessage(I_Message:='unittest utl_StringEscape, failed partial test');
+		_M_utl_StringEscape := TRUE;
+		RETURN;
+	END_IF
+
+//TEST with buffer that's big enough
+	utl_StringEscapeText(I_Input:=HM_TestInput, IO_Output:=HM_TestOutputFull);
+	//for debugging. NOTE: twincat will add an "$" for some characters in online view! So if you copy the above string value you'll get some extra $ chars and you can't compare 1-1 (remove extra $ first)
+	utl_Any_CopyWithOffset(I_Destination:= HM_Debug, I_Source:= HM_TestOutputFull, I_WriteOffset:= 0); 
+	
+	//if bad things happened >> ..
+	IF(	HM_B2 <> 0 
+		OR HM_B3 <> 0
+		//test copied first character of the input which was the char '0'
+		OR HM_TestOutputFull[0] <> F_ToAsc('0')
+		//the next char from the input is not a char but asci code: 16h01 . This should be escaped to: '\u0001'
+		OR HM_TestOutputFull[1] <> F_ToAsc('\')
+		OR HM_TestOutputFull[2] <> F_ToAsc('u')
+		OR HM_TestOutputFull[3] <> F_ToAsc('0')
+		OR HM_TestOutputFull[4] <> F_ToAsc('0')
+		OR HM_TestOutputFull[5] <> F_ToAsc('0')
+		OR HM_TestOutputFull[6] <> F_ToAsc('1')
+		//space=32: start of non-escaping characters
+		OR HM_TestOutputFull[171] <> CHAR_SP
+		//quote=34 escaped with extra slash
+		OR HM_TestOutputFull[173] <> CHAR_BSLASH
+		OR HM_TestOutputFull[174] <> CHAR_QUOTE
+		//z=122 almost the last non escaped char
+		OR HM_TestOutputFull[263] <> F_ToAsc('z')
+		//last value put in the string (255) should have been escaped
+		OR HM_TestOutputFull[1036] <> F_ToAsc('\')
+		OR HM_TestOutputFull[1037] <> F_ToAsc('u')
+		OR HM_TestOutputFull[1038] <> F_ToAsc('0')
+		OR HM_TestOutputFull[1039] <> F_ToAsc('0')
+		OR HM_TestOutputFull[1040] <> F_ToAsc('F')
+		OR HM_TestOutputFull[1041] <> F_ToAsc('F'))
+	THEN
+		utl_SystemMessage(I_Message:='unittest utl_StringEscape, failed full test');
+		_M_utl_StringEscape := TRUE;
+		RETURN;
+	END_IF
+
+
 
 
 ]]></ST>
@@ -1745,49 +1973,27 @@ END_IF
 IF(TimeMemCpyNrLoops=0) THEN RETURN; END_IF
 
 //@30000 loops , isolated core 3
-//freeBSD 2097Mhz
-//	memcpy 1574
-//	memmove 1403 >> strange should be slower?!
 
-
-//fill array [0]-[10] with numbers 0-10
-FOR tmpInt1:=0 TO 10 BY 1 DO
-	arrMcpyTest[tmpInt1] := tmpInt1;
-END_FOR
+//2026-04 658
+TimeMemCpy.DATA.AverageExecTime;
+//2026-04 687 
+TimeMemove.DATA.AverageExecTime;
 
 TimeMemcpy(START:= TRUE, RESET:= TRUE);
-//test memcpy
 FOR tmpInt1 := 1 TO TimeMemCpyNrLoops BY 1 DO
-	//move elements [0]-[9] to [1]-[10]
 	MEMCPY(
-		srcAddr:=ADR(arrMcpyTest),
-		destAddr:= ADR(arrMCpyTest)+2,
-		n:=20 ); //elements [0] to [9] = 10*2 bytes
-		
-	//move elements [1]-[10] to [0]-[9]
-	MEMCPY(
-		srcAddr:=ADR(arrMcpyTest)+2,
-		destAddr:= ADR(arrMCpyTest),
-		n:=20 ); //elements [0] to [9] = 10*2 bytes
+		srcAddr:=ADR(tmpString),
+		destAddr:= ADR(tmpString),
+		n:=SIZEOF(tmpString)); 
 END_FOR
 TimeMemcpy(START:= FALSE, RESET:= FALSE);
 
-
-
 TimeMemove(START:= TRUE, RESET:= TRUE);
-//test memove
 FOR tmpInt1 := 1 TO TimeMemCpyNrLoops BY 1 DO
-	//move elements [0]-[9] to [1]-[10]
 	MEMMOVE(
-		srcAddr:=ADR(arrMcpyTest),
-		destAddr:= ADR(arrMCpyTest)+2,
-		n:=20 ); //elements [0] to [9] = 10*2 bytes
-		
-	//move elements [1]-[10] to [0]-[9]
-	MEMMOVE(
-		srcAddr:=ADR(arrMcpyTest)+2,
-		destAddr:= ADR(arrMCpyTest),
-		n:=20 ); //elements [0] to [9] = 10*2 bytes
+		srcAddr:=ADR(tmpString),
+		destAddr:= ADR(tmpString),
+		n:=SIZEOF(tmpString)); 
 END_FOR
 TimeMemove(START:= FALSE, RESET:= FALSE);
 ]]></ST>
@@ -2039,103 +2245,5 @@ END_IF
 ]]></ST>
       </Implementation>
     </Action>
-    <Method Name="M_utl_StringEscape" Id="{5ab07f3e-4d98-4ddb-8622-0a8ec1698ad6}">
-      <Declaration><![CDATA[METHOD M_utl_StringEscape
-VAR_INPUT
-END_VAR
-
-VAR
-	HM_Index:UINT;
-	
-	HM_TestInput: STRING(255);
-	HM_B1:BYTE;
-	HM_TestOutputPart:STRING(7);
-	HM_B2:BYTE;
-	HM_TestOutputFull: STRING(2000);
-	HM_B3:BYTE; 
-	
-	HM_Debug: ARRAY[0..2010] OF BYTE;
-END_VAR]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[IF(NOT BknGlbl.FirstScan) THEN RETURN; END_IF
-	
-//prep input string (values: '0' and then 1-255 
-FOR HM_Index := 0 TO SIZEOF(HM_TestInput)-1 BY 1
-DO
-	HM_TestInput[HM_Index] := TO_BYTE(HM_Index);
-END_FOR
-//lets not end the string that quickly ;)
-HM_testInput[0] := CHAR_0;
-
-//prefill output buffers with chars '8' and '9'
-	MEMSET(destAddr:=ADR(HM_TestOutputPart), fillByte:=CHAR_0, n:=SIZEOF(HM_TestOutputPart)-1);
-	HM_TestOutputPart[SIZEOF(HM_TestOutputPart)-1] := 0;
-	MEMSET(destAddr:=ADR(HM_TestOutputFull), fillByte:=CHAR_0, n:=SIZEOF(HM_TestOutputFull)-1);
-	HM_TestOutputFull[SIZEOF(HM_TestOutputFull)-1] := 0;
-	MEMSET(destAddr:=ADR(HM_Debug), fillByte:=255, n:=SIZEOF(HM_Debug));
-
-//TEST with output buffer is too small
-	utl_StringEscapeText(I_Input:=HM_TestInput, IO_Output:=HM_TestOutputPart);
-	//if bad things happened >> ..
-	IF(	HM_B1 <> 0 
-		OR HM_B2 <> 0
-		//test copied first character of the input which was the char '0'
-		OR HM_TestOutputPart[0] <> F_ToAsc('0')
-		//the next char from the input is not a char but asci code: 16h01 . This should be escaped to: '\u0001'
-		OR HM_TestOutputPart[1] <> F_ToAsc('\')
-		OR HM_TestOutputPart[2] <> F_ToAsc('u')
-		OR HM_TestOutputPart[3] <> F_ToAsc('0')
-		OR HM_TestOutputPart[4] <> F_ToAsc('0')
-		OR HM_TestOutputPart[5] <> F_ToAsc('0')
-		OR HM_TestOutputPart[6] <> F_ToAsc('1')
-		//since the next input byte also has to be escaped (16h02), this doesn't fit anymore, the function should have stopped and made this a terminator
-		OR HM_TestOutputPart[7] <> 0)
-	THEN
-		HM_HoustonWeHaveAProblem := TRUE;
-		utl_SystemMessage(I_Message:='unittest utl_StringEscape, failed partial test');
-	END_IF
-
-//TEST with buffer that's big enough
-	utl_StringEscapeText(I_Input:=HM_TestInput, IO_Output:=HM_TestOutputFull);
-	//for debugging. NOTE: twincat will add an "$" for some characters in online view! So if you copy the above string value you'll get some extra $ chars and you can't compare 1-1 (remove extra $ first)
-	utl_Any_CopyWithOffset(I_Destination:= HM_Debug, I_Source:= HM_TestOutputFull, I_WriteOffset:= 0); 
-	
-	//if bad things happened >> ..
-	IF(	HM_B2 <> 0 
-		OR HM_B3 <> 0
-		//test copied first character of the input which was the char '0'
-		OR HM_TestOutputFull[0] <> F_ToAsc('0')
-		//the next char from the input is not a char but asci code: 16h01 . This should be escaped to: '\u0001'
-		OR HM_TestOutputFull[1] <> F_ToAsc('\')
-		OR HM_TestOutputFull[2] <> F_ToAsc('u')
-		OR HM_TestOutputFull[3] <> F_ToAsc('0')
-		OR HM_TestOutputFull[4] <> F_ToAsc('0')
-		OR HM_TestOutputFull[5] <> F_ToAsc('0')
-		OR HM_TestOutputFull[6] <> F_ToAsc('1')
-		//space=32: start of non-escaping characters
-		OR HM_TestOutputFull[171] <> CHAR_SP
-		//quote=34 escaped with extra slash
-		OR HM_TestOutputFull[173] <> CHAR_BSLASH
-		OR HM_TestOutputFull[174] <> CHAR_QUOTE
-		//z=122 almost the last non escaped char
-		OR HM_TestOutputFull[263] <> F_ToAsc('z')
-		//last value put in the string (255) should have been escaped
-		OR HM_TestOutputFull[1036] <> F_ToAsc('\')
-		OR HM_TestOutputFull[1037] <> F_ToAsc('u')
-		OR HM_TestOutputFull[1038] <> F_ToAsc('0')
-		OR HM_TestOutputFull[1039] <> F_ToAsc('0')
-		OR HM_TestOutputFull[1040] <> F_ToAsc('F')
-		OR HM_TestOutputFull[1041] <> F_ToAsc('F'))
-	THEN
-		HM_HoustonWeHaveAProblem := TRUE;
-		utl_SystemMessage(I_Message:='unittest utl_StringEscape, failed full test');
-	END_IF
-
-
-
-
-]]></ST>
-      </Implementation>
-    </Method>
   </POU>
 </TcPlcObject>

@@ -47,11 +47,15 @@ END_VAR
 		//casting works with a lot of types, example time
 		sMyUtcTime:string;
 		
+		//myBuilder
+		DataBuilder:utl_Any_DataBuilder;
+		
 		//string value to int test
 		sValue1,sValue2,sValue3:STRING := '123';
 		sValue4,sValue5:string(1);
 		b0Value:BYTE;
 		iValue1,iValue2:INT;
+		
 		
 		//random tests
 		dbglreal:LREAL;
@@ -204,6 +208,7 @@ ExampleMachinePart( //todo remove true
 		utl_Any_CopyWithOffset(I_Source:=sValue1, I_Destination:= sValue4, I_WriteOffset:= 0); //side note: only copies 1 char  because destination isn't larger)
 	//using beckhoff library
 		sValue5 := MID(sValue1,1,1); //beckhoff string functions are slow, use more cpu
+
 
 //Library / Template Performance analysis 
 	//cx2040 2015-00-00-45
