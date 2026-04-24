@@ -175,8 +175,6 @@ VAR
 	//Servo (from examplemachinepart) Testing
 		//hw-limit
 		LS_Positive:cntrl_Output;
-		
-
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -239,7 +237,10 @@ _M_StringStuff();
 HM_HoustonWeHaveAProblem S= _M_utl_StringEscape();
 
 //Databuilder
-HM_HoustonWeHaveAProblem S= _M_utl_Any_DataBuilder();]]></ST>
+HM_HoustonWeHaveAProblem S= _M_utl_Any_DataBuilder();
+
+//StepBuffer
+HM_HoustonWeHaveAProblem S= _M_StepBufferAverage();]]></ST>
     </Implementation>
     <Method Name="_M_Any_ArrayInitValues" Id="{a9715287-3a57-45d9-a889-8a7b1937e53c}">
       <Declaration><![CDATA[METHOD PRIVATE _M_Any_ArrayInitValues]]></Declaration>
@@ -251,6 +252,62 @@ DO
 	arrCnt_2[tmpInt1] := tmpInt1;
 	arrCnt_3[tmpInt1] := tmpInt1;
 END_FOR ]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_M_StepBufferAverage" Id="{98a9fffa-7fef-4879-aebc-7b1b70c18f3c}">
+      <Declaration><![CDATA[METHOD PRIVATE _M_StepBufferAverage : BOOL
+VAR
+	HM_BufferValues: ARRAY[0..2] OF XY_Point;
+	{attribute 'analysis' := '-167'} //temp instance
+	StepBuffer:utl_StepBufferAverage;
+	Index:INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//if not firstscan > done, else do tests once
+IF(NOT BknGlbl.FirstScan and not HM_DebugContiniously) THEN RETURN;END_IF
+
+//prefill with numbers 0,1,2,..
+FOR Index:=0 TO TO_INT(UPPER_BOUND(HM_BufferValues,1)) BY 1 DO
+	StepBuffer(I_CFG_StepSize:= 1, I_Step:= Index, I_Value:= Index + 10, IO_Buffer:= HM_BufferValues);
+END_FOR
+
+//if total average incorrect
+IF(	StepBuffer.M_GetAverageSkipLast(0) <> 33/3
+	OR StepBuffer.M_GetAverageTakeLast(100) <> 33/3
+	OR StepBuffer.M_GetAverageFromTo(-10,10) <> 33/3)
+THEN
+	utl_SystemMessage(I_Message:= 'utl_StepBufferAverage failed test Total');
+	_M_StepBufferAverage := TRUE;
+	RETURN;
+END_IF 
+
+//partial average incorrect
+IF(	StepBuffer.M_GetAverageSkipLast(1) <> (21.0/2)    //Interesting note: 21/2 = 10..... (seen as integers)
+	OR StepBuffer.M_GetAverageSkipLast(2) <> (10.0/1))
+THEN
+	utl_SystemMessage(I_Message:= 'utl_StepBufferAverage failed test Partial skip last');
+	_M_StepBufferAverage := TRUE;
+	RETURN;
+END_IF 
+
+//partial average incorrect
+IF(	StepBuffer.M_GetAverageTakeLast(1) <> 12.0/1
+	OR StepBuffer.M_GetAverageTakeLast(2) <> (11.0+12.0)/2)
+THEN
+	utl_SystemMessage(I_Message:= 'utl_StepBufferAverage failed test Partial take last');
+	_M_StepBufferAverage := TRUE;
+	RETURN;
+END_IF 
+
+//partial average incorrect
+IF(	StepBuffer.M_GetAverageFromTo(1,1) <> 11)
+THEN
+	utl_SystemMessage(I_Message:= 'utl_StepBufferAverage failed test Partial from to');
+	_M_StepBufferAverage := TRUE;
+	RETURN;
+END_IF 
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="_M_StringStuff" Id="{1fb50e45-aec1-0c7c-0e0c-09ea3a2ada3d}">
@@ -267,11 +324,15 @@ VAR
 	MyString:STRING;
 	Offset:UDINT;
 	
+	{attribute 'analysis' := '-167'} //temp instance
 	DataBuilder:utl_Any_DataBuilder;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[{warning disable C0139}
+        <ST><![CDATA[{warning disable C0139}	//line with only a variable (no assignments/reads)
+
+//if not firstscan > done, else do tests once
+IF(NOT BknGlbl.FirstScan and not HM_DebugContiniously) THEN RETURN;END_IF
 
 //Fix terminator
 	//prefill control array
@@ -447,7 +508,8 @@ END_VAR
       </Implementation>
     </Method>
     <Method Name="_M_utl_Any_DataBuilder" Id="{ee4f455d-150b-4fd3-a2cb-b154f14da8e9}">
-      <Declaration><![CDATA[METHOD PRIVATE _M_utl_Any_DataBuilder : BOOL;
+      <Declaration><![CDATA[
+METHOD PRIVATE _M_utl_Any_DataBuilder : BOOL;
 VAR_INPUT
 END_VAR
 
@@ -467,16 +529,14 @@ VAR
 
 	HM_SrcDta: ARRAY[0..CNST_ArrSize] OF BYTE := [(CNST_ArrSize+1)(255)];
 	HM_DstData:  ARRAY[0..CNST_ArrSize] OF BYTE := [(CNST_ArrSize+1)(16#AB)];
-	HM_WrkString: STRING;
-	
+	{attribute 'analysis' := '-167'} //temp instance
 	utlDataBuilder: utl_Any_DataBuilder;
-
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[_M_utl_Any_DataBuilder := FALSE;
+        <ST><![CDATA[{warning disable C0139}	//line with only a variable (no assignments/reads)
 
-
+_M_utl_Any_DataBuilder := FALSE;
 
 //if not firstscan > done, else do tests once
 IF(NOT BknGlbl.FirstScan and not HM_DebugContiniously) THEN RETURN;END_IF
@@ -565,7 +625,9 @@ VAR
 	HM_Debug: ARRAY[0..2010] OF BYTE;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[_M_utl_StringEscape := FALSE;
+        <ST><![CDATA[{warning disable C0139}	//line with only a variable (no assignments/reads)
+
+_M_utl_StringEscape := FALSE;
 
 IF(NOT BknGlbl.FirstScan AND NOT HM_DebugContiniously) THEN RETURN; END_IF
 	
@@ -1969,7 +2031,9 @@ END_IF
     </Action>
     <Action Name="A_TestMemcpyVsMemmoveSpeed" Id="{8763836e-bd30-0246-26d1-93e37ba2cd0c}">
       <Implementation>
-        <ST><![CDATA[//if disabled >> abort
+        <ST><![CDATA[{warning disable C0139}	//line with only a variable (no assignments/reads)
+
+//if disabled >> abort
 IF(TimeMemCpyNrLoops=0) THEN RETURN; END_IF
 
 //@30000 loops , isolated core 3

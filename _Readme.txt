@@ -129,11 +129,15 @@ Attributes warnings
 
 	Rule SA0004 cannot be disabled by a pragma or an attribute
 
-	there are several ways to suppress warnings >> it's a mess! 	
-		{analysis -0175}								>>disables analysis warning SA0175 suspicious operation on string
+	there are several ways to suppress warnings >> it's a mess! 
+		Static analysis light:
+			SA0167: {attribute 'analysis' := '-167'}	//instance declared in stack memory
+			SA0175: {analysis -0175}					//suspicious operation on string
+			SA0033: {attribute 'analysis' := '-33'}		//unused variable    doesn't work: {analysis -33} 
+
 		{attribute 'suppress_wrn_C0410'}		>>oh nooo... the number in the warning is c5410 but this is how you disable it????
 		{attribute 'no-analysis'}					>>exclude object from analysis
-		{attribute 'analysis' := '-33'}				>>deactivate errors: unused variable '-27' = name already used
+		
 		{warning disable/restore xxxx}
 			C0125>> ... is assigned to more than one enumeration
 			C0139>> code has no effect

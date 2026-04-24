@@ -21,8 +21,8 @@ END_VAR
 //Also remove the define from here: project/properties/compile/compiler defines/IsTemplate
 {IF defined (IsTemplate)}
 	{warning 'TODO Template: testing is enabled >> Remove the define and clean all "TODO TEMPLATE" locations'}
+	{attribute 'analysis' := '-33'}
 	VAR
-		{attribute 'analysis' := '-33'}
 		//Scam-template >> use tool supplied in the folder, to make a copy for your own scam implementation 
 		OrganiserFake: cntrl_OrganiserFake;
 		TestScmClean: SCM_TemplateClean;
@@ -46,10 +46,7 @@ END_VAR
 		
 		//casting works with a lot of types, example time
 		sMyUtcTime:string;
-		
-		//myBuilder
-		DataBuilder:utl_Any_DataBuilder;
-		
+
 		//string value to int test
 		sValue1,sValue2,sValue3:STRING := '123';
 		sValue4,sValue5:string(1);
@@ -57,10 +54,11 @@ END_VAR
 		iValue1,iValue2:INT;
 		
 		
+		
 		//random tests
 		dbglreal:LREAL;
 		dbgbool1,dbgbool2,dbgbool3:BOOL;
-	
+		Scanner:utl_LayerScan;
 	END_VAR
 {END_IF}]]></Declaration>
     <Implementation>
@@ -270,8 +268,18 @@ ExampleMachinePart( //todo remove true
 		dbgbool2:=NOT dbgbool2;
 		utl_WriteProtectedlReal( IN:= main.ExampleMachinePart.srv_example.hmi.sts.MAN_SPD_ABSMODVEL, dbglreal);
 	END_IF
-	
 
+	Scanner(
+		I_K_SearchLayerHeight:= , 
+		I_K_SearchLastSegment:= , 
+		I_CFG_SegmentHeight:= , 
+		I_POS_Axis:= , 
+		Q_STS_LayerStartData=> , 
+		Q_STS_LayerEndData=> , 
+		Q_STS_LastSegmentStartData=> , 
+		Q_STS_LastSegmentEndData=> );
+		
+	
 	]]></ST>
       </Implementation>
     </Action>

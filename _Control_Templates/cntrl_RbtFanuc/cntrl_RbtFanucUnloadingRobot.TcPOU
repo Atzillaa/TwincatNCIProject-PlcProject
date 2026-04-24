@@ -34,16 +34,16 @@ VAR
 	Cyl_Hook:cntrl_Valve(Options:= eValveConfig.None + eValveConfig.HoldState);
 
 	(*Inputs / Outputs*)
-	DataIn: RbtFanucUnloading_DataIn;
-	DataOut: RbtFanucUnloading_DataOut;
+	I_DataIn: RbtFanucUnloading_DataIn;
+	Q_DataOut: RbtFanucUnloading_DataOut;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[//call baseblock > handles base functionality like resettings / starting / selecting program
 //note: the baseblock doesn't know about your custom HMI bits, but since the custom HMI bits are extended, you can supply them and the compiler will pass only the base bits
 SUPER^.M_SuperCall(
 	IHMI:= HMI,
-	IO_StatusWord:= DataIn.Vars._UO,
-	IO_ControlWord:= DataOut.Vars._UI,
+	IO_StatusWord:= I_DataIn.Vars._UO,
+	IO_ControlWord:= Q_DataOut.Vars._UI,
 	IO_HMI_WRN:= HMI.WRN, 
 	IO_HMI_ERR:= HMI.ERR, 
 	IO_HMI_STS:= HMI.STS);
@@ -61,8 +61,8 @@ _A_Activations();]]></ST>
       <Implementation>
         <ST><![CDATA[
 //logging
-RbtError.V := DataIn.Vars._GO.ErrorNr;
-RbtState.V := DataIn.Vars._GO.State;
+RbtError.V := I_DataIn.Vars._GO.ErrorNr;
+RbtState.V := I_DataIn.Vars._GO.State;
 
 //implementation example of how to select a program. 
 //* you can also use the method from the baseblock directly in your parentblock step conditions and remove these inputs
@@ -76,13 +76,13 @@ ELSE
 END_IF
 
 //auto confirm ready to drop (normally linked to scam, here testing real robot which is now talking to itself)
-DataOut.Vars._DI.SN_RequestDumpOk := DataIn.Vars._DO.SN_RequestDump;
-DataOut.Vars._DI.SN_InitLeft R= DataIn.Vars._DO.SN_InitLeftOk;
-DataOut.Vars._DI.SN_InitRight R= DataIn.Vars._DO.SN_InitRightOk;
+Q_DataOut.Vars._DI.SN_RequestDumpOk := I_DataIn.Vars._DO.SN_RequestDump;
+Q_DataOut.Vars._DI.SN_InitLeft R= I_DataIn.Vars._DO.SN_InitLeftOk;
+Q_DataOut.Vars._DI.SN_InitRight R= I_DataIn.Vars._DO.SN_InitRightOk;
 
 //Example command from scam/response linking
-DataOut.Vars._DI.K_DropBasket := I_K_DropBasket;
-Q_K_DropBasket_OK := DataIn.Vars._DO.K_DropBasket_OK;
+Q_DataOut.Vars._DI.K_DropBasket := I_K_DropBasket;
+Q_K_DropBasket_OK := I_DataIn.Vars._DO.K_DropBasket_OK;
 
 Cyl_Gripper(
 	I_HMI_Parent:= 0, 
@@ -90,8 +90,8 @@ Cyl_Gripper(
 	I_K_SimulationActive:= Glbl.SimEnable, 
 	I_ES_OK:= TRUE, 
 	I_K_DisableErrorDetection:= TRUE, 
-	I_K_AutoIn:= DataIn.Vars._DO.SN_CylIn, 
-	I_K_AutoOut:= DataIn.Vars._DO.SN_CylOut, 
+	I_K_AutoIn:= I_DataIn.Vars._DO.SN_CylIn, 
+	I_K_AutoOut:= I_DataIn.Vars._DO.SN_CylOut, 
 	Q_STS_In=> , 
 	Q_STS_Out=> );
 
@@ -108,11 +108,11 @@ Cyl_Hook(
 	Q_STS_Out=> );
 
 //Cylinder communication to robot >> if command in/out and status cylinder matches then respons command OK
-DataOut.Vars._DI.SN_CylInOk := 	DataIn.Vars._DO.SN_CylIn
+Q_DataOut.Vars._DI.SN_CylInOk := 	I_DataIn.Vars._DO.SN_CylIn
 								AND Cyl_Gripper.Q_STS_In
 								AND Cyl_Hook.Q_STS_In;
 								
-DataOut.Vars._DI.SN_CylOutOk := DataIn.Vars._DO.SN_CylOut
+Q_DataOut.Vars._DI.SN_CylOutOk := I_DataIn.Vars._DO.SN_CylOut
 								AND Cyl_Gripper.Q_STS_Out; 
 
 
@@ -123,7 +123,7 @@ PC_ScanningLeft_Z(
 	I_SimulateState:= , 
 	I_ErrNotState:= , 
 	Q_DetectedDirect=> , 
-	Q_DetectedDebounced=> DataOut.Vars._DI.PC_Left_Z , 
+	Q_DetectedDebounced=> Q_DataOut.Vars._DI.PC_Left_Z , 
 	Q_DetectedDebounced_RE=> , 
 	Q_DetectedDebounced_FE=> );
 	
@@ -134,7 +134,7 @@ PC_ScanningRight_Z(
 	I_SimulateState:= , 
 	I_ErrNotState:= , 
 	Q_DetectedDirect=> , 
-	Q_DetectedDebounced=> DataOut.Vars._DI.PC_Right_Z , 
+	Q_DetectedDebounced=> Q_DataOut.Vars._DI.PC_Right_Z , 
 	Q_DetectedDebounced_RE=> , 
 	Q_DetectedDebounced_FE=> );
 	
@@ -145,7 +145,7 @@ PX_BasketLeft_X(
 	I_SimulateState:= , 
 	I_ErrNotState:= , 
 	Q_DetectedDirect=> , 
-	Q_DetectedDebounced=> DataOut.Vars._DI.PX_Left_X , 
+	Q_DetectedDebounced=> Q_DataOut.Vars._DI.PX_Left_X , 
 	Q_DetectedDebounced_RE=> , 
 	Q_DetectedDebounced_FE=> );
 	
@@ -156,7 +156,7 @@ PX_BasketRight_X(
 	I_SimulateState:= , 
 	I_ErrNotState:= , 
 	Q_DetectedDirect=> , 
-	Q_DetectedDebounced=> DataOut.Vars._DI.PX_Right_X , 
+	Q_DetectedDebounced=> Q_DataOut.Vars._DI.PX_Right_X , 
 	Q_DetectedDebounced_RE=> , 
 	Q_DetectedDebounced_FE=> );]]></ST>
       </Implementation>
@@ -181,7 +181,7 @@ HMI.M_Update(	I_OrgControl:= I_OrgControl,
 //I_K_ProgSelect should already be simulated by the baseblock since that is default functionality
 //Only custom functionality needs to be simulated here
 
-DataIn.Vars._DO.K_DropBasket_OK := I_K_DropBasket;]]></ST>
+I_DataIn.Vars._DO.K_DropBasket_OK := I_K_DropBasket;]]></ST>
       </Implementation>
     </Action>
     <Method Name="M_TotalResetProcedure" Id="{c43ea640-f0cc-4e8e-a74f-35c2b6f3451a}">
@@ -195,7 +195,7 @@ METHOD PUBLIC M_TotalResetProcedure : BOOL]]></Declaration>
         <ST><![CDATA[//The coloborative robot needs a signal to confirm the payload before it does anything after a power cycle. 
 //You can connect it (DCS-config) to an input like is done here
 TmrPayloadConfirm(IN:= TRUE, PT:= T#1.5S);
-DataOut.Vars._DI.SN_PayloadConfirm := TRUE;
+Q_DataOut.Vars._DI.SN_PayloadConfirm := TRUE;
 
 //if done > reset vars, signal baseblock total_reset done by returning true so it can continue
 IF(	TmrPayloadConfirm.Q
@@ -204,7 +204,7 @@ IF(	TmrPayloadConfirm.Q
 THEN
 	//reset timer + signal 
 	TmrPayloadConfirm(IN:= FALSE);
-	DataOut.Vars._DI.SN_PayloadConfirm := FALSE;
+	Q_DataOut.Vars._DI.SN_PayloadConfirm := FALSE;
 	//signal base totale reset = done
 	M_TotalResetProcedure := TRUE;
 //else not done, keep baseblock in total reset state
@@ -218,7 +218,7 @@ END_IF]]></ST>
       <Get Name="Get" Id="{9eb48e93-0c61-4baa-9804-ea43c9c87e65}">
         <Declaration><![CDATA[]]></Declaration>
         <Implementation>
-          <ST><![CDATA[P_ControlWord ref= DataOut.Vars._UI;]]></ST>
+          <ST><![CDATA[P_ControlWord ref= Q_DataOut.Vars._UI;]]></ST>
         </Implementation>
       </Get>
     </Property>
@@ -227,7 +227,7 @@ END_IF]]></ST>
       <Get Name="Get" Id="{be720fec-749b-4671-b7c5-16bde11c2949}">
         <Declaration><![CDATA[]]></Declaration>
         <Implementation>
-          <ST><![CDATA[P_StatusWord ref= DataIn.Vars._UO;]]></ST>
+          <ST><![CDATA[P_StatusWord ref= I_DataIn.Vars._UO;]]></ST>
         </Implementation>
       </Get>
     </Property>

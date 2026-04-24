@@ -2,6 +2,7 @@
 <TcPlcObject Version="1.1.0.1">
   <DUT Name="RbtFanucUnloadingt_DataOut_Grouped" Id="{420222c1-9604-421c-bc36-925ea822a697}">
     <Declaration><![CDATA[{attribute 'pack_mode' := '1'} //no gaps! (compiler tries to allign with base types and might skip bits otherwise)
+{attribute 'analysis' := '-33'}
 TYPE RbtFanucUnloadingt_DataOut_Grouped :
 STRUCT
 	_UI:RbtFanuc_ControlWord;			//24bits	>>start pt=1
