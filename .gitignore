@@ -31,6 +31,7 @@ LineIDs.dbg
 **/.TcGit/
 
 # exclude not required folders
+**/Packages
 **/_Boot/
 **/_CompileInfo/
 **/_Libraries/

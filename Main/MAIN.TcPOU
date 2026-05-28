@@ -14,7 +14,6 @@ VAR
 	Organiser:cntrl_Organiser(						
 		SP_TmrReset := T#1S,
 		SP_TmrResetES := T#3S);
-
 END_VAR
 
 //TODO TEMPLATE >> Remove this section, it is for testing the library and template
@@ -52,7 +51,6 @@ END_VAR
 		sValue4,sValue5:string(1);
 		b0Value:BYTE;
 		iValue1,iValue2:INT;
-		
 		
 		
 		//random tests
