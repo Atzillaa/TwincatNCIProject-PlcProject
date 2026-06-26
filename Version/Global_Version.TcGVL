@@ -7,7 +7,7 @@
 // This function has been automatically generated from the project information.
 VAR_GLOBAL CONSTANT
 	{attribute 'const_non_replaced'}
-	stLibVersion_Boikon_Template : ST_LibVersion := (iMajor := 0, iMinor := 7, iBuild := 0, iRevision := 1117, nFlags := 0, sVersion := '0.7.0.1117');
+	stLibVersion_Boikon_Template : ST_LibVersion := (iMajor := 0, iMinor := 7, iBuild := 0, iRevision := 1126, nFlags := 0, sVersion := '0.7.0.1126');
 END_VAR
 ]]></Declaration>
   </GVL>

@@ -9,7 +9,7 @@
     <WriteProductVersion>false</WriteProductVersion>
     <GenerateTpy>true</GenerateTpy>
     <Name>PlcProject</Name>
-    <ProgramVersion>3.1.4026.23</ProgramVersion>
+    <ProgramVersion>3.1.4026.24</ProgramVersion>
     <Application>{d02a166d-96bb-44a6-96c7-fd0e94bc6829}</Application>
     <TypeSystem>{24d5d8c0-f52b-4135-85ce-1c040b1cd87d}</TypeSystem>
     <Implicit_Task_Info>{a083444f-8377-42e2-b625-bfc07cc1b483}</Implicit_Task_Info>
@@ -18,7 +18,7 @@
     <LibraryReferences>{015cb6ed-99fd-4f18-9128-1eb89efb4ed6}</LibraryReferences>
     <Company>Boikon</Company>
     <Released>false</Released>
-    <ProjectVersion>0.7.0.1117</ProjectVersion>
+    <ProjectVersion>0.7.0.1126</ProjectVersion>
     <CombineIds>false</CombineIds>
     <Title>Boikon Template</Title>
     <CompilerVersion>
@@ -76,24 +76,6 @@
     <Compile Include="DevelopmentPlayground\UnitTesting\Vis_Test.TcVIS">
       <SubType>Code</SubType>
       <DependentUpon>VisualizationManager.TcVMO</DependentUpon>
-    </Compile>
-    <Compile Include="DevelopmentPlayground\utl_LayerScan\eLrs.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DevelopmentPlayground\utl_LayerScan\HMI_LayerScan.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DevelopmentPlayground\utl_LayerScan\HMI_SP_LayerScan.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DevelopmentPlayground\utl_LayerScan\HMI_STS_LayerScan.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DevelopmentPlayground\utl_LayerScan\LrsPos.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DevelopmentPlayground\utl_LayerScan\utl_LayerScan.TcPOU">
-      <SubType>Code</SubType>
     </Compile>
     <Compile Include="General\HMI\HMI_ERR_General.TcDUT">
       <SubType>Code</SubType>
@@ -292,7 +274,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DevelopmentPlayground" />
-    <Folder Include="DevelopmentPlayground\utl_LayerScan" />
     <Folder Include="DevelopmentPlayground\UnitTesting" />
     <Folder Include="DevelopmentPlayground\ObjectOrientedExamples" />
     <Folder Include="General" />
@@ -342,8 +323,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PlaceholderReference Include="BoikonLibrary">
-      <DefaultResolution>[Boikon Library], * (Boikon)</DefaultResolution>
+    <PlaceholderReference Include="Boikon Library">
+      <DefaultResolution>Boikon Library, * (Boikon)</DefaultResolution>
       <Namespace>BoikonLib</Namespace>
     </PlaceholderReference>
     <PlaceholderReference Include="VisuDialogs">
@@ -353,6 +334,9 @@
     <PlaceholderReference Include="VisuDialogs" />
   </ItemGroup>
   <ItemGroup>
+    <PlaceholderResolution Include="Boikon Library">
+      <Resolution>[Boikon Library], 0.7.0.1126 (Boikon)</Resolution>
+    </PlaceholderResolution>
     <PlaceholderResolution Include="System_VisuElemBase">
       <Resolution>VisuElemBase, * (System)</Resolution>
     </PlaceholderResolution>
@@ -377,11 +361,6 @@
     <PlaceholderResolution Include="System_VisuNativeControl">
       <Resolution>VisuNativeControl, * (System)</Resolution>
     </PlaceholderResolution>
-  </ItemGroup>
-  <ItemGroup>
-    <SubObject Include="utl_LayerScan._A_HMI">
-      <ExcludeFromBuild>true</ExcludeFromBuild>
-    </SubObject>
   </ItemGroup>
   <ProjectExtensions>
     <PlcProjectOptions>

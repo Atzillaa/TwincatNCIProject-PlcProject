@@ -56,7 +56,6 @@ END_VAR
 		//random tests
 		dbglreal:LREAL;
 		dbgbool1,dbgbool2,dbgbool3:BOOL;
-		Scanner:utl_LayerScan;
 	END_VAR
 {END_IF}]]></Declaration>
     <Implementation>
@@ -252,33 +251,7 @@ ExampleMachinePart( //todo remove true
 //Test example MachinePart
 //It is a simple machine with 1 organiser and 1 scam fully functional with simulation and using general
 	a_General();
-	b_MachinePart();
-	
-	//check changing velo very quickly what happens
-	IF(dbgbool1)
-	THEN
-		IF(dbgbool2)
-		THEN
-			dbglreal := dbgLreal+1;
-		ELSE
-			dbglreal := dbgLreal -1;
-		END_IF
-		dbgbool2:=NOT dbgbool2;
-		utl_WriteProtectedlReal( IN:= main.ExampleMachinePart.srv_example.hmi.sts.MAN_SPD_ABSMODVEL, dbglreal);
-	END_IF
-
-	Scanner(
-		I_K_SearchLayerHeight:= , 
-		I_K_SearchLastSegment:= , 
-		I_CFG_SegmentHeight:= , 
-		I_POS_Axis:= , 
-		Q_STS_LayerStartData=> , 
-		Q_STS_LayerEndData=> , 
-		Q_STS_LastSegmentStartData=> , 
-		Q_STS_LastSegmentEndData=> );
-		
-	
-	]]></ST>
+	b_MachinePart();]]></ST>
       </Implementation>
     </Action>
   </POU>
