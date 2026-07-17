@@ -112,7 +112,6 @@ VAR_INPUT
 	//I_SP_GeneralShared:REFERENCE TO HMI_SP_GeneralShared; 	//General shared setpoints for multiple blocks
 	
 	I_K_ES_OK:BOOL;											//Signal emergency stop ok >> used for controls as extra safety to stop them no matter organiser state
-	I_K_ExternalError: BOOL;								//Signal external error >> used to put this scam into exception. Usually only connected to a general error but can be connected to another scam as well
 	I_STS_SUP_Empty:BOOL;									//Status supply is empty >> used to detect if this block has run empty as well (sup_empty + conveyor on for x time >> this part is empty)
 END_VAR
 
@@ -156,13 +155,8 @@ END_VAR]]></Declaration>
 			//reset HMI variables
 			utl_Any_Reset(I_Data:= HMI.ERR);
 			utl_Any_Reset(I_Data:= HMI.WRN);
-			//make the organiser happy
-			HM_ProgStatus.Prog_Error := FALSE;
-			HM_ProgStatus.Prog_Exception := FALSE;
 		END_IF
-	
-		//bits needed to keep the line running if a part midsection is disabled
-		HM_ProgStatus.Prog_Rest := TRUE;
+
 		Q_STS_Empty := I_STS_SUP_Empty;
 		RETURN;
 	END_IF
@@ -197,22 +191,16 @@ END_VAR]]></Declaration>
 	//Activations controlled by state
 	A_ActivationsState();
 	//Activations not controlled by state + instance calls
-	A_ActivationsAlways();]]></ST>
+	A_ActivationsAlways();
+	
+(*update organiser with scam status*)
+	A_UpdateOrganiserProgstatus();]]></ST>
     </Implementation>
     <Action Name="A_ActivationsAlways" Id="{8afecdd7-ac67-4dcd-ad16-8f534e152d9a}">
       <Implementation>
         <ST><![CDATA[(*
 	State undependant activations + instance calls
 *)
-
-//update organiser with local status
-	HM_ProgStatus.Prog_Error :=	//emergencystop not ok
-						NOT I_K_ES_OK
-						//optional >> request go to error state from external
-						OR I_K_ExternalError
-						//error active in this block or one of the linked children
-						OR HMI.P_STS_InError;
-	I_Organiser.M_UpdateProgStatus(HM_ProgStatus);
 
 //Internal flags
 	//Reset empty status
@@ -443,7 +431,7 @@ REPEAT
 					State.M_Step(
 						I_NewStep:= eTpc.Initialise,
 						//Optional: argument to log extra info for this step transition
-						I_NewStepLogInfo:= CONCAT('Start command at time:', SYSTEMTIME_TO_STRING(BknGlbl.LocalSystemTime)),
+						I_NewStepLogInfo:= CONCAT('TotalReset:', SYSTEMTIME_TO_STRING(BknGlbl.LocalSystemTime)),
 						//>>@ true & HMI-stepmode is activated, then the next state will be locked until you press the button release step on the HMI (used for debugging / commissioning
 						//!Do not enable for states in which things are cooking: (heater enabled / motor running / etc) or at least consider carefully potential dangers.
 						I_StepCanBeHeld:= TRUE,
@@ -502,6 +490,29 @@ REPEAT
 UNTIL(NOT State.P_IsMultiStepRequired)
 END_REPEAT
 END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_UpdateOrganiserProgstatus" Id="{df19c5fe-6788-46b9-a970-3114f1ef7943}">
+      <Implementation>
+        <ST><![CDATA[//machinepart in exception > done in A_Exceptions
+//HM_ProgStatus.Prog_Exception
+
+//machinepart in rest state > done in A_ActivationsState
+//HM_ProgStatus.Prog_Rest
+
+HM_ProgStatus.Prog_Error :=	//emergencystop not ok
+							NOT I_K_ES_OK
+							//error active in this block or one of the local children (cntrl_xxxx for example)
+							OR HMI.P_STS_InError;
+
+//production stopped by external factor >> for OEE performance tracking / lamp signal column 
+HM_ProgStatus.Prog_ExternallyBlocked := FALSE; //TODO TEMPLATE: Activate if needed, example: NOT SN_DscReadyToReceive;
+
+//machinepart needs attention >> for lamp signal column
+HM_ProgStatus.Prog_Attention := FALSE; //TODO TEMPLATE: Activate if needed, example: PC_PlanoBufferLowLevel.Q_DetectedDebounced;
+
+//call organiser update method
+I_Organiser.M_UpdateProgStatus(HM_ProgStatus);]]></ST>
       </Implementation>
     </Action>
   </POU>

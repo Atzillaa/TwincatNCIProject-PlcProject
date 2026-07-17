@@ -49,8 +49,10 @@ VAR
 	//SAFETY TEST
 		//simulate feedbacks outputs for safety example program (so we can test run on the plc test-board)
 		//normal output card, hardwired to safety input card for testing purposes
-		EnableSafetyTest:BOOL;
+		Sft_EnableSafetyTest:BOOL;
+		Sft_PB_IllegalRestart:BOOL; 		//just for testing, don't restart safety from plc
 		Sft_PB_ES:BOOL; 					//simulate pushbutton ok
+		Sft_PB_ES_Chan1Broken:BOOL; 		//simulate pushbutton contact 1 broken
 		Sft_FB_K_ES_OK:BOOL;				//simulate feedback relais feedback
 		Sft_FB_K_ES_StuckOn:BOOL;			//simulate es relais welded togerther
 		Sft_Y_FB1:BOOL;  					//simulate air valve 1 feedback
@@ -58,9 +60,20 @@ VAR
 		Sft_Y1_Leaking:BOOL;				//simulate air valve 2 is leaking
 		Sft_Y2_Leaking:BOOL;				//simulate air valve 2 is leaking
 		
+		//lightcurtain
+		Sft_LS_PosBox: INT:=0;
+		Sft_LS_JogBoxPlus:BOOL;
+		Sft_LS_JogBoxMin:BOOL;
+		Sft_LS_PosMS1: INT:=260;
+		Sft_LS_PosMS2: INT:=280;
+		Sft_LS_PosLS: INT:=300;
+		Qsf_LS_Muting1 AT %Q*:BOOL;
+		Qsf_LS_Muting2 AT %Q*:BOOL;
+		Qsf_LS_OSSD AT %Q*:BOOL;
+
 		//restart safety !!!THIS IS FOR TESTING, DON'T RESTART SAFETY WITH THE PLC! (connect reset button to safe input and use that as restart)
 		//for unittesting, a plc-output is hardwired to a safety input but we don't do this in the wild!
-		Qsf_ES_K_Restart:cntrl_Output;
+		Qsf_ES_K_IllegalRestart:cntrl_Output;
 		
 		//Safe Speed / Safe Position
 		Qsf_Servo_RefCam AT %Q*:BOOL; //connected to drive digital inputs
@@ -749,7 +762,7 @@ END_IF
     </Action>
     <Action Name="A_aFirstScan" Id="{65fb7e12-f359-0bec-2fa4-8af79ba1b3bd}">
       <Implementation>
-        <ST><![CDATA[EnableSafetyTest := TRUE;
+        <ST><![CDATA[Sft_EnableSafetyTest := TRUE;
 arrResetElementMonkyTestDone := FALSE;
 
 testVarInfo := __VARINFO(MAIN.General.BknLibrary);
@@ -1356,12 +1369,12 @@ THEN
 END_IF
 
 //if not enabled >> abort
-IF( NOT EnableSafetyTest)
+IF( NOT Sft_EnableSafetyTest)
 THEN
 	//set all outputs to low
 	Qsf_ES_PB1_OK(I_K_SimulationActive:= FALSE, I_K_State := FALSE);
 	Qsf_ES_PB2_OK(I_K_SimulationActive:= FALSE, I_K_State := FALSE);
-	Qsf_ES_K_Restart(I_K_SimulationActive:= FALSE, I_K_State := FALSE);
+	Qsf_ES_K_IllegalRestart(I_K_SimulationActive:= FALSE, I_K_State := FALSE);
 
 	Qsf_ES_K_FB(I_K_SimulationActive:= FALSE, I_K_State := FALSE);
 	Qsf_YPS1_FB(I_K_SimulationActive:= FALSE, I_K_State := FALSE);
@@ -1369,13 +1382,9 @@ THEN
 	RETURN; 
 END_IF 
 
-//overwrite inputs devices
-utl_WriteProtectedBool(main.General.SafetyZone1.PB_ES_MainCabinet._I, FALSE);
-utl_WriteProtectedBool(main.General.SafetyZone1.DR_Front._I, TRUE);
-utl_WriteProtectedBool(main.General.SafetyZone1.LS_Entry1._I, TRUE);
 
 //all control bits
-EnableSafetyTest;
+Sft_EnableSafetyTest;
 Sft_PB_ES;  		//sim pb ok
 Sft_FB_K_ES_OK;		//sim feedback ES_K
 Sft_Y_FB1;			//sim feedback y1
@@ -1392,10 +1401,11 @@ main.General.SafetyZone1.PbSf_ResetSafetyErrors.P_BypassStateTrue;
 
 
 //restart safety !!!THIS IS FOR TESTING, DON'T RESTART SAFETY WITH THE PLC! (connect reset button to safe input and use that as restart)
-Qsf_ES_K_Restart(
+Qsf_ES_K_IllegalRestart(
 	I_K_SimulationActive:= FALSE, 
-	I_K_State := main.Organiser.Tmr_ResetES.IN
-				 AND main.Organiser.Tmr_ResetEs.ET < T#100MS); 
+	I_K_State:=(	main.Organiser.Tmr_ResetES.IN
+				 	AND main.Organiser.Tmr_ResetEs.ET < T#100MS)
+				OR Sft_PB_IllegalRestart); 
 
 //Emergency stop pushbutton
 Tmr_Q_ES_PB1_OK(
@@ -1413,7 +1423,7 @@ Isf_Y_Air2();//note >> output from safety == test pulse!!!
 //Simulate ES-pushbutton
 Qsf_ES_PB1_OK(
 	I_K_SimulationActive:= FALSE, 
-	I_K_State := Tmr_Q_ES_PB1_OK.Q AND Sft_PB_ES);
+	I_K_State := Tmr_Q_ES_PB1_OK.Q AND Sft_PB_ES AND NOT Sft_PB_ES_Chan1Broken);
 Qsf_ES_PB2_OK(
 	I_K_SimulationActive:= FALSE, 
 	I_K_State := Tmr_Q_ES_PB2_OK.Q AND Sft_PB_ES);
@@ -1445,6 +1455,23 @@ Qsf_YPS2_FB(
 {IF defined (IsTemplateTestEnabled)}
 	Qsf_Servo_RefCam := MAIN.ExampleMachinePart.Srv_Example.P_STS_ActPosition > -1 AND MAIN.ExampleMachinePart.Srv_Example.P_STS_ActPosition < 1;
 {END_IF}
+
+//LightScreen / muting test 
+
+IF(Sft_LS_JogBoxMin AND BknGlbl.Blink_P_100ms) THEN Sft_LS_PosBox := Sft_LS_PosBox - 5; END_IF
+IF(Sft_LS_JogBoxPlus AND BknGlbl.Blink_P_100ms) THEN Sft_LS_PosBox := Sft_LS_PosBox + 5; END_IF
+
+Qsf_LS_OSSD :=	NOT (	Sft_LS_PosBox + 150 >= Sft_LS_PosLs
+						AND Sft_LS_PosBox <= Sft_LS_PosLS);
+				
+Qsf_LS_Muting1 := 	Sft_LS_PosBox + 150 >= Sft_LS_PosMS1
+					AND Sft_LS_PosBox <= Sft_LS_PosMS1;
+				
+Qsf_LS_Muting2 :=	Sft_LS_PosBox + 150 >= Sft_LS_PosMS2
+					AND Sft_LS_PosBox <= Sft_LS_PosMS2;
+
+
+
 ]]></ST>
       </Implementation>
     </Action>
@@ -1788,8 +1815,8 @@ CASE LoggedChannelsState OF
 					n:= 80); 
 			END_FOR
 			LoggedStrings.M_LogNow(
-				I_NrOfErrors := TO_UINT(BknLogCnstInternal.MaxIndexLogStrings+1), 
-				IO_Errors:= HM_InfoStrings);
+				I_MaxIndex:= BknLogCnstInternal.MaxIndexLogStrings, //log all
+				IO_StringsToLog:= HM_InfoStrings);
 			
 			LoggedChannelCnt := 0;
 			
@@ -1831,7 +1858,7 @@ CASE LoggedChannelsState OF
 			//new way of logging state + info
 			HM_InfoStrings[0] := TO_STRING(LoggedChannelsState);
 			HM_InfoStrings[1] := TO_STRING(LoggedChannelCnt);
-			LoggedStrings.M_LogNow(I_NrOfErrors := 2, IO_Errors:= HM_InfoStrings);
+			LoggedStrings.M_LogNow(I_MaxIndex := 1, IO_StringsToLog:= HM_InfoStrings);
 			
 			LoggedChannelCnt := 0;
 			//>>
@@ -1856,7 +1883,7 @@ CASE LoggedChannelsState OF
 			//new way of logging state + info
 			HM_InfoStrings[0] := TO_STRING(LoggedChannelsState);
 			HM_InfoStrings[1] := TO_STRING(LoggedChannelCnt);
-			LoggedStrings.M_LogNow(I_NrOfErrors := 2, IO_Errors:= HM_InfoStrings);
+			LoggedStrings.M_LogNow(I_MaxIndex := 1, IO_StringsToLog:= HM_InfoStrings);
 			
 			LoggedChannelCnt := 0;
 			//>>
@@ -1880,7 +1907,7 @@ CASE LoggedChannelsState OF
 			//new way of logging state + info
 			HM_InfoStrings[0] := TO_STRING(LoggedChannelsState);
 			HM_InfoStrings[1] := TO_STRING(LoggedChannelCnt);
-			LoggedStrings.M_LogNow(I_NrOfErrors := 2, IO_Errors:= HM_InfoStrings);
+			LoggedStrings.M_LogNow(I_MaxIndex := 1, IO_StringsToLog:= HM_InfoStrings);
 		
 			LoggedChannelCnt := 0;
 			//>>
@@ -1905,7 +1932,7 @@ CASE LoggedChannelsState OF
 			//new way of logging state + info
 			HM_InfoStrings[0] := TO_STRING(LoggedChannelsState);
 			HM_InfoStrings[1] := TO_STRING(LoggedChannelCnt);
-			LoggedStrings.M_LogNow(I_NrOfErrors := 2, IO_Errors:= HM_InfoStrings);
+			LoggedStrings.M_LogNow(I_MaxIndex := 1, IO_StringsToLog:= HM_InfoStrings);
 			
 			LoggedChannelCnt := 0;
 			//>>
@@ -1927,7 +1954,7 @@ CASE LoggedChannelsState OF
 			//new way of logging state + info
 			HM_InfoStrings[0] := TO_STRING(LoggedChannelsState);
 			HM_InfoStrings[1] := TO_STRING(LoggedChannelCnt);
-			LoggedStrings.M_LogNow(I_NrOfErrors := 2, IO_Errors:= HM_InfoStrings);
+			LoggedStrings.M_LogNow(I_MaxIndex := 1, IO_StringsToLog:= HM_InfoStrings);
 			
 			LoggedChannelCnt := 0;
 			
@@ -1956,7 +1983,7 @@ CASE LoggedChannelsState OF
 			//new way of logging state + info
 			HM_InfoStrings[0] := TO_STRING(LoggedChannelsState);
 			HM_InfoStrings[1] := TO_STRING(LoggedChannelCnt);
-			LoggedStrings.M_LogNow(I_NrOfErrors := 2, IO_Errors:= HM_InfoStrings);
+			LoggedStrings.M_LogNow(I_MaxIndex := 1, IO_StringsToLog:= HM_InfoStrings);
 
 
 			//>>
@@ -1977,7 +2004,7 @@ CASE LoggedChannelsState OF
 			//new way of logging state + info
 			HM_InfoStrings[0] := TO_STRING(LoggedChannelsState);
 			HM_InfoStrings[1] := TO_STRING(LoggedChannelCnt);
-			LoggedStrings.M_LogNow(I_NrOfErrors := 2, IO_Errors:= HM_InfoStrings);
+			LoggedStrings.M_LogNow(I_MaxIndex := 1, IO_StringsToLog:= HM_InfoStrings);
  
 			//>>
 			LoggedChannelCnt := 0;
@@ -1989,7 +2016,7 @@ CASE LoggedChannelsState OF
 		//new way of logging state + info
 			HM_InfoStrings[0] := TO_STRING(LoggedChannelsState);
 			HM_InfoStrings[1] := TO_STRING(LoggedChannelCnt);
-			LoggedStrings.M_LogNow(I_NrOfErrors := 2, IO_Errors:= HM_InfoStrings);
+			LoggedStrings.M_LogNow(I_MaxIndex := 1, IO_StringsToLog:= HM_InfoStrings);
 			
 		LoggedChannelStateInfo.V := '8: Logging with a bad datatype instance >> should cause system error';
 		

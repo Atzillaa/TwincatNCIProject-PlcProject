@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="cntrl_MurrModLight60" Id="{a0c48cb2-b035-4329-bbc5-201f4c7bb718}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+
+
+	Usage:
+		In the hw-manager @io-link card >
+			-auto scan for the device
+			-right click the device and select process data
+			-in this tab, select 'stack mode' and press activate
+			-now the output image is updated and only now start linking
+		Link the array of bytes while checkmark continuos is set to all outputs in 1 go
+		
+ 
+*)
+
+
+FUNCTION_BLOCK cntrl_MurrModLight60
+VAR_INPUT
+	I_K_Error:BOOL;			//emergency stop / error active
+	I_K_Alert:BOOL;			//operator assistance needed (product running out etc)
+	I_K_Running:BOOL;		//machine running
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	CFG_NrOfStacks:BYTE;
+	Q_: MurrModLight60_IO; //link to hw murr outputs
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//the uglyness... reason type "bit3" is only an hardware thing...
+Q_.Control.StacksBit0 := CFG_NrOfStacks.0;
+Q_.Control.StacksBit1 := CFG_NrOfStacks.1;
+Q_.Control.StacksBit2 := CFG_NrOfStacks.2;
+
+//if error active
+IF(I_K_Error)
+THEN
+	//set color
+	Q_.Control.Stack3 := eMurrModLight60Colors.COLOR_RED;
+ELSE
+	Q_.Control.Stack3 := 0;
+END_IF
+
+//if alert active
+IF(I_K_Alert)
+THEN
+	//set color
+	Q_.Control.Stack2 := eMurrModLight60Colors.COLOR_YELLOW 
+						+ eMurrModLight60Colors.PAT_GRADBLINK;
+ELSE
+	Q_.Control.Stack2 := 0;
+END_IF
+
+//if running
+IF(I_K_Running)
+THEN
+	//set color
+	Q_.Control.Stack1 := eMurrModLight60Colors.COLOR_GREEN;
+ELSE
+	Q_.Control.Stack1 := 0;
+END_IF]]></ST>
+    </Implementation>
+    <Method Name="FB_Init" Id="{2d0766b2-3141-4e4a-a07a-a8624fc2e8a1}">
+      <Declaration><![CDATA[//FB_Init is always available implicitly and it is used primarily for initialization.
+//The return value is not evaluated. For a specific influence, you can also declare the
+//methods explicitly and provide additional code there with the standard initialization
+//code. You can evaluate the return value.
+METHOD FB_Init: BOOL
+VAR_INPUT
+    bInitRetains: BOOL; // TRUE: the retain variables are initialized (reset warm / reset cold)
+    bInCopyCode: BOOL;  // TRUE: the instance will be copied to the copy code afterward (online change)
+
+	NrOfStacks:byte;	//number of stacks to use (the one I tested with had a max of 3, but you can decrease)   
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CFG_NrOfStacks := NrOfStacks;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

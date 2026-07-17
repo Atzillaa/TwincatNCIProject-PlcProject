@@ -29,7 +29,7 @@
     <DeviceLogFilter>LOG_INFO, LOG_ERROR</DeviceLogFilter>
     <AutoUpdateVisuProfile>true</AutoUpdateVisuProfile>
     <AutoUpdateUmlProfile>true</AutoUpdateUmlProfile>
-    <VirtualLibrary>false</VirtualLibrary>
+    <VirtualLibrary>true</VirtualLibrary>
     <WriteDefaultValuesToTmc>false</WriteDefaultValuesToTmc>
     <DeploymentEvents>
       <Events xmlns="">
@@ -46,6 +46,18 @@
     <Compile Include="CHECKBOUNDS.TcPOU">
       <SubType>Code</SubType>
       <ExcludeFromBuild>false</ExcludeFromBuild>
+    </Compile>
+    <Compile Include="DevelopmentPlayground\MurrModLight60\cntrl_MurrModLight60.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DevelopmentPlayground\MurrModLight60\MurrModLight60_IO.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DevelopmentPlayground\MurrModLight60\eMurrModLight60Colors.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DevelopmentPlayground\MurrModLight60\MurrModLight60_Outputs.TcDUT">
+      <SubType>Code</SubType>
     </Compile>
     <Compile Include="DevelopmentPlayground\ObjectOrientedExamples\IOopExmpl.TcIO">
       <SubType>Code</SubType>
@@ -274,6 +286,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DevelopmentPlayground" />
+    <Folder Include="DevelopmentPlayground\MurrModLight60" />
     <Folder Include="DevelopmentPlayground\UnitTesting" />
     <Folder Include="DevelopmentPlayground\ObjectOrientedExamples" />
     <Folder Include="General" />
@@ -327,6 +340,10 @@
       <DefaultResolution>Boikon Library, * (Boikon)</DefaultResolution>
       <Namespace>BoikonLib</Namespace>
     </PlaceholderReference>
+    <PlaceholderReference Include="CmpBitmapPool">
+      <DefaultResolution>CmpBitmapPool, * (System)</DefaultResolution>
+      <Namespace>CmpBitmapPool</Namespace>
+    </PlaceholderReference>
     <PlaceholderReference Include="VisuDialogs">
       <DefaultResolution>VisuDialogs, * (System)</DefaultResolution>
       <Namespace>VisuDialogs</Namespace>
@@ -335,7 +352,7 @@
   </ItemGroup>
   <ItemGroup>
     <PlaceholderResolution Include="Boikon Library">
-      <Resolution>[Boikon Library], 0.7.0.1126 (Boikon)</Resolution>
+      <Resolution>[Boikon Library], 0.7.0.1128 (Boikon)</Resolution>
     </PlaceholderResolution>
     <PlaceholderResolution Include="System_VisuElemBase">
       <Resolution>VisuElemBase, * (System)</Resolution>
@@ -365,8 +382,8 @@
   <ProjectExtensions>
     <PlcProjectOptions>
       <XmlArchive>
-        <Data>
-          <o xml:space="preserve" t="OptionKey">
+  <Data>
+    <o xml:space="preserve" t="OptionKey">
       <v n="Name">"&lt;ProjectRoot&gt;"</v>
       <d n="SubKeys" t="Hashtable" ckt="String" cvt="OptionKey">
         <v>{192FAD59-8248-4824-A8DE-9177C94C195A}</v>
@@ -547,16 +564,16 @@
       </d>
       <d n="Values" t="Hashtable" />
     </o>
-        </Data>
-        <TypeList>
-          <Type n="Boolean">System.Boolean</Type>
-          <Type n="Hashtable">System.Collections.Hashtable</Type>
-          <Type n="Int32">System.Int32</Type>
-          <Type n="NewestVersionConstraintToSave">{af9bafe2-ba31-4b15-a2b9-48a0f2cd09fb}</Type>
-          <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
-          <Type n="String">System.String</Type>
-        </TypeList>
-      </XmlArchive>
+  </Data>
+  <TypeList>
+    <Type n="Boolean">System.Boolean</Type>
+    <Type n="Hashtable">System.Collections.Hashtable</Type>
+    <Type n="Int32">System.Int32</Type>
+    <Type n="NewestVersionConstraintToSave">{af9bafe2-ba31-4b15-a2b9-48a0f2cd09fb}</Type>
+    <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
+    <Type n="String">System.String</Type>
+  </TypeList>
+</XmlArchive>
     </PlcProjectOptions>
   </ProjectExtensions>
 </Project>

@@ -39,6 +39,8 @@ END_VAR
 		LP_OrgGroupMachinePart:Cntrl_BannerKxx(
 			Intensity:= eBannerKxx_Intensity.Low);
 
+		LP_MurrTest: cntrl_MurrModLight60(NrOfStacks:=3);
+
 		//Performance test	
 		HM_ProfileBlocks:BOOL;
 		StopWatchGeneral,StopWatchMachineStuff:profiler;
@@ -134,7 +136,7 @@ END_IF]]></ST>
 Organiser(
 	//Emergencystop zone for scams connected to this organiser
 	I_SN_ES_OK:= General.Q_SN_ES_Zone1_OK,
-	I_SN_ExternalError:= General.Q_SN_ERR_General, //organiser should go into error caused by external factors
+	I_SN_ExternalError:= General.Q_SN_ERR_General, //organiser should go into error caused by external factors (like a general error)
 	//Total reset command for this organiser and connected scams
 	//note: scams that communicate with each other via interlocking should have the same total reset command otherwise deadlocks will occur!
 	I_SN_TotalReset:= General.Q_SN_TotalResetAll,
@@ -147,9 +149,6 @@ Organiser(
 
 ExampleMachinePart( //todo remove true
 	I_K_ES_OK:= General.Q_SN_ES_Zone1_OK, 			//Emergency stop for this zone OK. @ mutliple zones, fbGeneral must be adapted to supply these signals for each zone
-	I_K_ExternalError:= General.Q_SN_ERR_General,	//External error which should put this scam in exception as well
-														//>>adapt to your needs!!! if you only want to add airpressure NOK then add this signal as output in general and use it here
-														//>>if 2 scams belonging to seperate organisers are communicating with each other than you can make one also go into execption if the other has an error
 	I_Organiser:= Organiser, 						//Control signals from the organiser
 	I_SN_SUP_Request_OK := Glbl.Sim_MyMachinePart, 	//Connect to upstream, used to detect if this block has run empty
 	I_STS_SUP_Empty:= , 							//Connect to upstream. The upstream is empty, use this to enter energy-save mode (stop conveyors etc)
@@ -171,9 +170,10 @@ ExampleMachinePart( //todo remove true
 	TestScmClean(
 		I_Organiser:= OrganiserFake, //messes otherwise with my testing program (prog_rest gets reset)
 		I_K_ES_OK:= General.Q_SN_ES_Zone1_OK, 
-		I_K_ExternalError:= General.Q_SN_ERR_General, 
 		I_STS_SUP_Empty:= TRUE, 
 		Q_STS_Empty=> );
+		
+	LP_MurrTest();
 		
 //Showcasing
 	//multi assignments
@@ -195,6 +195,8 @@ ExampleMachinePart( //todo remove true
 	//ERROR can not assign byte to string: 
 		//sValue2 := sValue1[0];
 	//now you will have the asci-code as string...
+	
+	
 		sValue2 := TO_STRING(sValue1[0]);
 	//works but but now you have to deal with string-termination as well
 		sValue3[0] := sValue1[0];

@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="MurrModLight60_Outputs" Id="{801c65f2-8437-465e-9280-40262e052f29}">
+    <Declaration><![CDATA[//ignore unused variables
+{attribute 'analysis' := '-33'}
+TYPE MurrModLight60_Outputs :
+STRUCT
+	//byte 0
+	Stack1:BYTE; //combined bits for stack settings (color/pat/speed)
+	//byte 1
+	Stack2:BYTE; //combined bits for stack settings (color/pat/speed)
+	//byte 2
+	Stack3:BYTE; //combined bits for stack settings (color/pat/speed)
+	
+	//byte 3-4
+	SpareByte3:BYTE;
+	SpareByte4:BYTE;
+	
+	//byte 3
+	BuzzerOnOff:BIT;
+	BuzzerTypeBit0:BIT;
+	BuzzerTypeBit1:BIT;
+	BuzzerTypeBit2:BIT;
+
+	BuzzerLoudnessBit0:BIT;
+	BuzzerLoudnessBit1:BIT;
+	BuzzerLoudnessBit2:BIT;
+	BuzzerLoudnessBit3:BIT;
+	
+	//byte 4
+	StackMode:BIT;
+	LevelMode:BIT;
+	SliceMode:BIT;
+	SpareByte4_3:BIT;
+	SyncModeAct:BIT;
+	SyncModeTrig:BIT;
+	UserPrefSelBit0:BIT;
+	UserPrefSelBit1:BIT;
+	
+	//byte 5
+	TopDown:BIT;
+	SpareBYte5_1:BIT;
+	ColorDom:BIT;
+	EcoMode:BIT;
+	SpareByte5_4:BIT;
+	
+	StacksBit0:BIT;		
+	StacksBit1:BIT;
+	StacksBit2:BIT;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -14,12 +14,21 @@
 		
 		If the group leaves run state then this is detected as an hardware error. 
 		This must be reset with a dedicated reset es-stop errors button on the HMI >> PbSf_ResetSafetyErrors
+		
+		
+	Usage:
+		-in twinsafe/targetsystem > set checkmark: "map crc" link to this block's crc input
+			after the safety is checked by the safety-officer	
+		
 *) 
 
 FUNCTION_BLOCK cntrl_SafetyController1 EXTENDS cntrl_SafetyLogic
 VAR_INPUT
 	I_HMI_Parent:ItfHMI;								//HMI of the parent block. If this block is in error, it will set the parent P_StsInError property
 	I_OrgControl: ItfOrgControl;						//Organiser control bits
+	
+	//TODO template: remove if not needed
+	I_K_EnableLsRejectMuting:BOOL;						//Signal enable muting of lightcurtain reject
 	
 	//TODO template: remove if not needed
 	I_STS_AirPressure_OK:BOOL;							//Status airpressure ok >> needed for the safety logic to only enable safe air if pressure is valid (otherwise safety errors will occur)
@@ -42,11 +51,19 @@ VAR
 	HMI:HMI_SafetyController1;								//All HMI related variables
 	
 	//TODO TEMPLATE
-		//Add/remove safety devices (pushbuttons/lightscreen/etc) here and make sure to call them
-	//hw-inputs with errors
-	PB_ES_MainCabinet: cntrl_InputHmiStsErr;			//Pushbutton emergency stop pressed on main cabinet
-	DR_Front:cntrl_InputHmiStsErr;						//Door infeed closed
-	LS_Entry1:cntrl_InputHmiStsErr;						//Lightscreen entry 1
+		//Add/remove safety devices (pushbuttons/lightscreen/etc) to create errors/statusses for the HMI
+	//if the devices are wired with an extra output to the plc, you can use this:
+		//PB_ES_MainCabinet: cntrl_InputHmiStsErr;			//Pushbutton emergency stop pressed on main cabinet
+	//else if the statusses need to come form twinsafe then instead of creating extra alias output ports and linking those
+	//	it is easier to go to the properties of a input block in twinsafe and set: "map state = true"
+	//	and then let the boikonlibrary handle it: 
+	//	!This only works well if every pushbutton/door is wired seperately to a a safe input and you'll have to use in twinsafe individual blocks for each
+	//  else switch to first method using cntrl_InputHmiStsErr for those which are the safe inputs are wired in series.
+	//	  (the status input must then be wired for each door/pb seperately to a plc-input)
+	PB_ES_MainCabinet: cntrl_safeMon;					//Pushbutton main cabinet
+	DR_Front:cntrl_safeMon;								//Door infeed
+	LS_Entry1:cntrl_safeMuting;							//Lightscreen entry 1
+	
 	
 	//TODO TEMPLATE 
 		//adapt as needed (i've added ES_DelayedOff so it can be logged, normally you don't need it in the plc side)
@@ -66,7 +83,6 @@ VAR
 
 	//TODO TEMPLATE >> this is needed if you have the boikon safety valves in the safetygroup. This will prevent activating safeair if there is no air supply (otherwise it would cause a safe-air-edm error)
 	Qsf_K_EnableSafeAir AT%Q*:BOOL;						//Status airpressure is ok
-
 	
 	//in the base block these inputs are already defined since they are always used:
 		//Qsf_K_RunSafety /  Qsf_K_ResetSafetyErrors
@@ -77,8 +93,16 @@ END_VAR
     <Implementation>
       <ST><![CDATA[//call baseblock functionality, handles:  resetting / starting / error detection of the safety program
 SUPER^._M_StepConditions(
-		I_CrcKey:= 16#1A93DE8F,			//TODO TEMPLATE: request the correct key from the safety officer, otherwise you will get a safety project is not verified warning >> required by the NEN-NORMS
-		I_GroupsInRun:= Isf_STS_GroupHwRun.Q AND Isf_STS_GroupZone1Run.Q AND Isf_STS_GroupZone2Run.Q AND Isf_STS_GroupZones1_2Run.Q, //TODO TEMPLATE: adapt to nr of groups
+		//TODO TEMPLATE: request the correct key from the safety officer, otherwise you will get a safety project is not verified warning >> required by the NEN-NORMS
+		I_CrcKey:= 16#1A93DE8F,
+		//TODO TEMPLATE: adapt to nr of groups
+		I_GroupsInRun:= Isf_STS_GroupHwRun.Q 
+						AND Isf_STS_GroupZone1Run.Q 
+						AND Isf_STS_GroupZone2Run.Q 
+						AND Isf_STS_GroupZones1_2Run.Q, 
+						//NOTE: this is 1 way of handling multiple groups.
+						//the disadvantage is that if 1 groups has an issue, all groups are reset (cycled stop > reset > run)
+						//if you don't want this then create extra cntrl_SafetyController(s) for group(s) that have to be independant
 		IO_HMI_WRN:= HMI.WRN,		
 		IO_HMI_ERR:= HMI.ERR,
 		IO_HMI_STS:= HMI.STS);	
@@ -159,23 +183,18 @@ _A_HMI();
 	PB_ES_MainCabinet(
 		I_OrgControl := I_OrgControl,
 		I_HMI_Parent := HMI,
-		I_K_SetError := PB_ES_MainCabinet.Q,
-		I_K_SimulationActive:= I_K_SimulationActive,
-		I_K_SimulateOn:= NOT Isf_STS_ES_Zone1_OK.Q); //simulating not ok if es-circuit is not ok >> change as needed
+		I_K_SimulationActive:= I_K_SimulationActive);
 		
 	DR_Front(
 		I_OrgControl := I_OrgControl,
 		I_HMI_Parent := HMI,
-		I_K_SetError := NOT DR_Front.Q,
-		I_K_SimulationActive:= I_K_SimulationActive, 
-		I_K_SimulateOn:= Isf_STS_ES_Zone1_OK.Q); //simulating not ok if es-circuit is not ok >> change as needed
+		I_K_SimulationActive:= I_K_SimulationActive); 
 		
 	LS_Entry1(
 		I_OrgControl := I_OrgControl,
 		I_HMI_Parent := HMI,
-		I_K_SetError := NOT LS_Entry1.Q,
-		I_K_SimulationActive:= I_K_SimulationActive, 
-		I_K_SimulateOn:= Isf_STS_ES_Zone1_OK.Q); //simulating not ok if es-circuit is not ok >> change as needed
+		I_K_SimulationActive:= I_K_SimulationActive,
+		I_K_EnableMuting:= I_K_EnableLsRejectMuting);
 
 //outputs
 	Q_K_ES_Zone1_OK := Isf_STS_ES_Zone1_OK.Q;

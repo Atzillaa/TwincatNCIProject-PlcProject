@@ -105,7 +105,6 @@ VAR_INPUT
 	I_SP_GeneralShared:REFERENCE TO HMI_SP_GeneralShared; 	//General shared setpoints for multiple blocks
 		
 	I_K_ES_OK:BOOL;									//Signal emergency stop ok >> used for controls as extra safety to stop them no matter organiser state
-	I_K_ExternalError: BOOL;						//Signal external error >> used to put this scam into exception. Usually only connected to a general error but can be connected to another scam as well
 	I_SN_SUP_Request_OK:BOOL;						//Signal supply is running AND delivering products
 	I_STS_SUP_Empty:BOOL;							//Status supply is empty (used FOR energy save mode)
 END_VAR
@@ -137,6 +136,8 @@ VAR
 	HM_CamReceivedData: ARRAY[0..100] OF BYTE;			//Received data from camera
 	HM_CamOmronFhEthReceivedData: STRING;				//Received data from omron FhEth controller
 	
+	DataBuilder:utl_Any_DataBuilder;
+	HM_InfoString:STRING;
 	HM_DebugMultiStep_ResetInActivations:BOOL;			//enable testing if multistep works correctly
 	HM_DebugServoRestart:bool;
 	
@@ -212,7 +213,7 @@ VAR
 	Srv_Example:cntrl_Servo(
 		TMR_PowerSave:=T#30S,			//time before entering powersave mode 0=disabled (if no command is given then power down after this time @ any command is reset timer) !It takes some time to awake the servo
 		EnableSoftLimits:=FALSE,		//enable software limits (with button manual disable hw-limits, the parameter in the nc-task is set to 0, we need to know if it should be reenabled afterwards
-		InputNrHomingSensor:=0,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
+		InputNrHomingSensor:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
 		InputNrHwLimitNeg:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
 		InputNrHwLimitPos:=4,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
 		JogMinusOffHomeSensor:=FALSE,	//"jog-"  when moving off homing sensor (if false then jog+ is used) in homing function
@@ -267,6 +268,7 @@ VAR
 	
 
 (*Inputs / Outputs*)
+	//note> since there is a logged library input-block (cntrl_InputXXX) 
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[(*
@@ -299,23 +301,16 @@ END_VAR]]></Declaration>
 	//Activate outputs controlled by state
 	A_ActivationsState();
 	//Activate outputs not controlled by state + call all instances
-	A_ActivationsAlways();]]></ST>
+	A_ActivationsAlways();
+	
+(*update organiser with scam status*)
+	A_UpdateOrganiserProgstatus();]]></ST>
     </Implementation>
     <Action Name="A_ActivationsAlways" Id="{7f43319a-34da-47f2-9cfc-9b246623e45b}">
       <Implementation>
         <ST><![CDATA[(*
 	State undependant activations + instance calls
 *)
-
-//update organiser
-	HM_ProgStatus.Prog_Error :=	//emergencystop not ok
-								NOT I_K_ES_OK
-								//optional >> request go to error state from external
-								OR I_K_ExternalError
-								//error active in this block or one of the linked children
-								OR HMI.P_STS_InError;
-	I_Organiser.M_UpdateProgStatus(HM_ProgStatus);
-
 //Internal flags
 	//if running and product detected or supply might be supplying products > reset empty status
 	IF (	I_Organiser.EnableDevices_K
@@ -928,7 +923,7 @@ REPEAT
 				State.M_Step(
 					I_NewStep:= eTMP.InitCyl,
 					//Optional: argument to log extra info for this step transition
-					I_NewStepLogInfo:= CONCAT('Start command at time:', SYSTEMTIME_TO_STRING(BknGlbl.LocalSystemTime)),
+					I_NewStepLogInfo:= CONCAT('TotalReset:', SYSTEMTIME_TO_STRING(BknGlbl.LocalSystemTime)),
 					//>>@ true & HMI-stepmode is activated, then the next state will be locked until you press the button release step on the HMI (used for debugging / commissioning
 					//!Do not enable for states in which things are cooking: (heater enabled / motor running / etc) or at least consider carefully potential dangers.
 					I_StepCanBeHeld:= TRUE,
@@ -1004,11 +999,23 @@ REPEAT
 				Srv_Example.I_SP_Position:= HMI.SP.POS_SrvBegin;
 				Srv_Interrol.I_Position:= HMI.SP.POS_SrvBegin;
 				
+				//example on how to avoid concat(concat(concat(concat......)))))
+				//NOTE: it is not the most performant because of all the fancy c#-linq-like stuff but it is the simplest and faster than concat
+				// 		really fast is using utl_Any_CopyWithOffset directly (the databuilder is a wrapper around that function)
+				DataBuilder.
+					//assign databuffer
+					M_SetTarget(HM_InfoString).
+					//add a string that is not a variable otherwise use: M_WithData(HM_MyStringVar)
+					M_WithStringLiteral('Last cycle time:').
+					M_WithStringLiteral(TO_STRING(TO_REAL(BknGlbl.SystemTimeInTicks - HM_LastTicksStateRest)/10000000)).
+					M_WithStringLiteral('s Servos target pos:').
+					M_WithStringLiteral(TO_STRING(HMI.SP.POS_SrvBegin)); 
+					
 				//>>
 				State.M_Step(
 					I_NewStep:= eTMP.SrvPosStart,
 					//just an example what you can do (add state info for logging purposes), this argument is optional
-					I_NewStepLogInfo:= Concat('Last cycle time(s):', TO_STRING(TO_REAL(BknGlbl.SystemTimeInTicks - HM_LastTicksStateRest)/10000000)),
+					I_NewStepLogInfo:= HM_InfoString,
 					I_StepCanBeHeld:= FALSE);
 				
 				HM_LastTicksStateRest := BknGlbl.SystemTimeInTicks;	
@@ -1277,6 +1284,29 @@ REPEAT
 UNTIL(NOT State.P_IsMultiStepRequired)
 END_REPEAT
 END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_UpdateOrganiserProgstatus" Id="{6038fee5-0464-4adf-b948-3960685abba2}">
+      <Implementation>
+        <ST><![CDATA[//machinepart in exception > done in A_Exceptions
+//HM_ProgStatus.Prog_Exception
+
+//machinepart in rest state > done in A_ActivationsState
+//HM_ProgStatus.Prog_Rest
+
+HM_ProgStatus.Prog_Error :=	//emergencystop not ok
+							NOT I_K_ES_OK
+							//error active in this block or one of the local children (cntrl_xxxx for example)
+							OR HMI.P_STS_InError;
+
+//production stopped by external factor >> for OEE performance tracking / lamp signal column 
+HM_ProgStatus.Prog_ExternallyBlocked := NOT SN_DscReadyToReceive.Q;
+
+//machinepart needs attention >> for lamp signal column
+HM_ProgStatus.Prog_Attention := PC_PlanoBufferLL.Q_DetectedDebounced;
+
+//call organiser update method
+I_Organiser.M_UpdateProgStatus(HM_ProgStatus);]]></ST>
       </Implementation>
     </Action>
   </POU>

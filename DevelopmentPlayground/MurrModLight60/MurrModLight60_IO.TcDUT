@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="MurrModLight60_IO" Id="{6aa69600-88a5-4865-bd80-0e3d87c20652}">
+    <Declaration><![CDATA[//ignore unused variables
+{attribute 'analysis' := '-33'}
+TYPE MurrModLight60_IO :
+UNION
+	//hw linking
+	_Q AT %Q*: ARRAY[0..7] OF BYTE;
+	//program use
+	Control:MurrModLight60_Outputs;
+END_UNION
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

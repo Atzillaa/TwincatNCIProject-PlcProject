@@ -606,6 +606,11 @@ Only for boikon engineers"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"4767"</v>
+              <v n="TextDefault">"Enable muting"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"253"</v>
               <v n="TextDefault">"Enable Run"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -903,8 +908,18 @@ HMI Buttons"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"1308"</v>
+              <v n="TextDefault">"ID: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"920"</v>
               <v n="TextDefault">"if &gt;-1 then autocal will use this value"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2858"</v>
+              <v n="TextDefault">"Illegal safety restart button"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1010,6 +1025,16 @@ HMI Buttons"</v>
             <o>
               <v n="TextID">"788"</v>
               <v n="TextDefault">"Jog Speed: %2.2f"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1817"</v>
+              <v n="TextDefault">"JogMin"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2977"</v>
+              <v n="TextDefault">"JogPlus"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1201,6 +1226,11 @@ real channels"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"4802"</v>
+              <v n="TextDefault">"mijn voorbeeld %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"297"</v>
               <v n="TextDefault">"Move Mode"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -1241,8 +1271,28 @@ real channels"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"57"</v>
+              <v n="TextDefault">"MS1"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3322"</v>
+              <v n="TextDefault">"MS2"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"523"</v>
               <v n="TextDefault">"MS_OK"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"4890"</v>
+              <v n="TextDefault">"Muted"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2142"</v>
+              <v n="TextDefault">"Muting active"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1445,6 +1495,11 @@ as needed"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"2498"</v>
+              <v n="TextDefault">"PB_ES_CHAN1 KAPUT"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"1969"</v>
               <v n="TextDefault">"Pers. save failed"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -1472,6 +1527,26 @@ as needed"</v>
             <o>
               <v n="TextID">"1646"</v>
               <v n="TextDefault">"port:%i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1847"</v>
+              <v n="TextDefault">"Pos LS: %I"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2270"</v>
+              <v n="TextDefault">"Pos LS: %i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3813"</v>
+              <v n="TextDefault">"Pos MS1: %i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3111"</v>
+              <v n="TextDefault">"Pos MS2: %i"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1616,6 +1691,11 @@ General.Q_SN_TotalReset
             <o>
               <v n="TextID">"967"</v>
               <v n="TextDefault">"Restart safety"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"4488"</v>
+              <v n="TextDefault">"Restart Safety"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -2035,6 +2115,11 @@ Start/Stop/Reset buttons simulate real hw-inputs"</v>
             <o>
               <v n="TextID">"1422"</v>
               <v n="TextDefault">"State: %i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1267"</v>
+              <v n="TextDefault">"State: %i %s"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
