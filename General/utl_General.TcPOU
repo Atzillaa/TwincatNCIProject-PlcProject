@@ -84,8 +84,9 @@ VAR
 	EthercatManager:cntrl_EthercatManager(DelayedStartMaster:= TRUE);	//Ethercat devices manager
 	
 	//TODO TEMPLATE 
-		//>> adapt safety template as needed + rename + add as many zones as you need (hint: use 1 general/zone)	
-	SafetyZone1:cntrl_SafetyController1; //note: this block extends the basic mandatory functionality. The extension (located in your project) has to be adapted as needed
+		//>> adapt safety template as needed + rename
+		//>> the template example controls multiple groups but if you want you can create a controller/group	
+	SafetyController:cntrl_SafetyController1; //note: this block extends the basic mandatory functionality. The extension (located in your project) has to be adapted as needed
 	
 	//TODO TEMPLATE 
 		//make syncunits for groups of terminals which belongs together (all terminals behind a EK1122)
@@ -147,7 +148,7 @@ HMI.ERR.ExampleErrorPreConfiggedPrio s= BknGlbl.FirstScan;
         <ST><![CDATA[//Signals 
 Q_SN_ERR_General := HMI.P_STS_InError;
 
-Q_SN_ES_Zone1_OK := SafetyZone1.Q_K_ES_Zone1_OK; 
+Q_SN_ES_Zone1_OK := SafetyController.Q_K_ES_Zone1_OK; 
 
 Q_SN_StartAll := I_Pb_StartAll.Q;
 					
@@ -200,7 +201,7 @@ EthercatManager(
 
 //TODO TEMPLATE >> see instructions @ instance declaration and comment inside this block
 	//note: nicest way to restart safety is to use a dedicated hw button. Here I've connected it to the more general reset signal/buttons
-SafetyZone1(
+SafetyController(
 	I_HMI_Parent:= HMI,
 	I_K_SimulationActive:= 	Glbl.SimEnable
 							AND NOT UnitTesting.Sft_EnableSafetyTest,		//TODO TEMPLATE >> remove this line (for unittesting I've a "real" safety setup on the testboard that manipulates safety card inputs with plc output)

@@ -5,7 +5,7 @@
       <Data>
         <o xml:space="preserve" t="VisualObject">
           <n n="LastVisuLanguageModelEntry" />
-          <v n="UniqueIdGenerator">"328"</v>
+          <v n="UniqueIdGenerator">"349"</v>
           <o n="VisualElemList" t="VisualElemList">
             <l n="VisualElementList" t="VisualElemCollection" cet="GenericVisualElem">
               <o>
@@ -3425,6 +3425,7 @@
                       <v n="DialogPosition" t="DialogPositionSetting">UseGlobalSetting</v>
                       <v n="DialogXPos">""</v>
                       <v n="DialogYPos">""</v>
+                      <v n="InputType_4_9_0_0">""</v>
                     </o>
                   </a>
                 </d>
@@ -3618,6 +3619,7 @@
                       <v n="DialogPosition" t="DialogPositionSetting">UseGlobalSetting</v>
                       <v n="DialogXPos">""</v>
                       <v n="DialogYPos">""</v>
+                      <v n="InputType_4_9_0_0">""</v>
                     </o>
                   </a>
                 </d>
@@ -3811,6 +3813,7 @@
                       <v n="DialogPosition" t="DialogPositionSetting">UseGlobalSetting</v>
                       <v n="DialogXPos">""</v>
                       <v n="DialogYPos">""</v>
+                      <v n="InputType_4_9_0_0">""</v>
                     </o>
                   </a>
                 </d>
@@ -4291,7 +4294,7 @@
                           </o>
                           <o>
                             <v n="Flags">2L</v>
-                            <v n="BasicTypeNodeValue">"MAIN.General.SafetyZone1"</v>
+                            <v n="BasicTypeNodeValue">"MAIN.General.SafetyController"</v>
                             <v n="BasicTypeNodeAcceptsExpression">true</v>
                             <n n="BasicTypeNodeFastAccess" />
                             <a n="BasicTypeNodeEnumValues" et="String" />
@@ -4361,7 +4364,7 @@
                     </o>
                     <o>
                       <v n="Id">83490878L</v>
-                      <v n="Value">"MAIN.General.SafetyZone1"</v>
+                      <v n="Value">"MAIN.General.SafetyController"</v>
                     </o>
                     <o>
                       <v n="Id">1013868361L</v>
@@ -5898,7 +5901,7 @@
                     </o>
                     <o>
                       <v n="Id">390574330L</v>
-                      <v n="Value">"Enable"</v>
+                      <v n="Value">"Enable = block simulation"</v>
                     </o>
                     <o>
                       <v n="Id">2597686782L</v>
@@ -5906,7 +5909,7 @@
                     </o>
                     <o>
                       <v n="Id">823443203L</v>
-                      <v n="Value">"677"</v>
+                      <v n="Value">"3109"</v>
                     </o>
                   </l>
                 </o>
@@ -6094,7 +6097,7 @@
                     </o>
                     <o>
                       <v n="Id">390574330L</v>
-                      <v n="Value">"Y1 is leaking"</v>
+                      <v n="Value">"PS-Y1 leaking"</v>
                     </o>
                     <o>
                       <v n="Id">2597686782L</v>
@@ -6102,7 +6105,7 @@
                     </o>
                     <o>
                       <v n="Id">823443203L</v>
-                      <v n="Value">"1002"</v>
+                      <v n="Value">"2938"</v>
                     </o>
                   </l>
                 </o>
@@ -6290,7 +6293,7 @@
                     </o>
                     <o>
                       <v n="Id">390574330L</v>
-                      <v n="Value">"Y2 is leaking"</v>
+                      <v n="Value">"PS-Y2 leaking"</v>
                     </o>
                     <o>
                       <v n="Id">2597686782L</v>
@@ -6298,7 +6301,7 @@
                     </o>
                     <o>
                       <v n="Id">823443203L</v>
-                      <v n="Value">"3053"</v>
+                      <v n="Value">"1193"</v>
                     </o>
                   </l>
                 </o>
@@ -7261,7 +7264,7 @@
                       <l n="VisualElemMemberList" t="VisualElemMemberCollection" cet="VisualElemMember">
                         <o>
                           <v n="Id">1186196937L</v>
-                          <v n="Value">"MAIN.General.SafetyZone1.I_K_EnableLsRejectMuting"</v>
+                          <v n="Value">"MAIN.General.SafetyController.I_K_EnableLsRejectMuting"</v>
                         </o>
                       </l>
                     </o>
@@ -7597,7 +7600,7 @@
                     </o>
                     <o>
                       <v n="Id">2477733581L</v>
-                      <v n="Value">"MAIN.General.SafetyZone1.LS_Entry1._HM_State"</v>
+                      <v n="Value">"MAIN.General.SafetyController.LS_Entry1._HM_State"</v>
                     </o>
                     <o>
                       <v n="Id">823443203L</v>
@@ -7771,7 +7774,7 @@
                     </o>
                     <o>
                       <v n="Id">2477733581L</v>
-                      <v n="Value">"MAIN.General.SafetyZone1.LS_Entry1._HM_State"</v>
+                      <v n="Value">"MAIN.General.SafetyController.LS_Entry1._HM_State"</v>
                     </o>
                     <o>
                       <v n="Id">823443203L</v>
@@ -7894,7 +7897,7 @@
                     </o>
                     <o>
                       <v n="Id">1999528970L</v>
-                      <v n="Value">"MAIN.General.SafetyZone1.LS_Entry1.HMI.STS.StateMuted"</v>
+                      <v n="Value">"MAIN.General.SafetyController.LS_Entry1.HMI.STS.StateMuted"</v>
                     </o>
                     <o>
                       <v n="Id">3719097617L</v>
@@ -8132,7 +8135,7 @@
                     </o>
                     <o>
                       <v n="Id">2477733581L</v>
-                      <v n="Value">"MAIN.General.SafetyZone1.PB_ES_MainCabinet._HM_State"</v>
+                      <v n="Value">"MAIN.General.SafetyController.PB_ES_MainCabinet._HM_State"</v>
                     </o>
                     <o>
                       <v n="Id">823443203L</v>
@@ -9161,7 +9164,7 @@ END_VAR"</v>
         <Type n="HierarchicalProperties">{af53e824-e51f-4be1-b210-d001ef8efbd1}</Type>
         <Type n="HotkeyConfiguration">{6b108d46-58af-4e41-a3f4-174d8f160cc4}</Type>
         <Type n="InputBoxInputAction">{e8e7e747-f76f-4dee-ab1c-b9637e41ac26}</Type>
-        <Type n="InputBoxInputAction[]">_3S.CoDeSys.VisualElem.InputBoxInputAction[], VisualElem.plugin, Version=4.8.0.0, Culture=neutral, PublicKeyToken=null</Type>
+        <Type n="InputBoxInputAction[]">_3S.CoDeSys.VisualElem.InputBoxInputAction[], VisualElem.plugin, Version=4.10.0.0, Culture=neutral, PublicKeyToken=null</Type>
         <Type n="Int16">System.Int16</Type>
         <Type n="Int32">System.Int32</Type>
         <Type n="Int64">System.Int64</Type>

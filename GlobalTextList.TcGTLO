@@ -591,6 +591,11 @@ Only for boikon engineers"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"3109"</v>
+              <v n="TextDefault">"Enable = block simulation"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"555"</v>
               <v n="TextDefault">"Enable Array Tests"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -751,13 +756,28 @@ Only for boikon engineers"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"2042"</v>
+              <v n="TextDefault">"ES Zone1"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"236"</v>
               <v n="TextDefault">"ES Zone1 Ok"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"4777"</v>
+              <v n="TextDefault">"ES Zone2"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"148"</v>
               <v n="TextDefault">"ES Zone2 Ok"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1003"</v>
+              <v n="TextDefault">"ES ZoneAll"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1525,6 +1545,11 @@ as needed"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"852"</v>
+              <v n="TextDefault">"Plcblock State: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"1646"</v>
               <v n="TextDefault">"port:%i"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -1590,8 +1615,28 @@ as needed"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"3242"</v>
+              <v n="TextDefault">"PS-Y1 ForceOff"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2938"</v>
+              <v n="TextDefault">"PS-Y1 leaking"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"4034"</v>
               <v n="TextDefault">"PS-Y2"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1330"</v>
+              <v n="TextDefault">"PS-Y2 ForceOff"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1193"</v>
+              <v n="TextDefault">"PS-Y2 leaking"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1944,6 +1989,31 @@ Needs to be wired in correct way"</v>
             <o>
               <v n="TextID">"1287"</v>
               <v n="TextDefault">"Setpoints:"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"385"</v>
+              <v n="TextDefault">"SFT-group HW: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1417"</v>
+              <v n="TextDefault">"SFT-group Z-ALL: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"5074"</v>
+              <v n="TextDefault">"SFT-group Z2: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"4685"</v>
+              <v n="TextDefault">"SFT-group zone 1: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3502"</v>
+              <v n="TextDefault">"SFT-groupZ1: %s"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -2536,6 +2606,21 @@ Start/Stop/Reset buttons simulate real hw-inputs"</v>
             <o>
               <v n="TextID">"1429"</v>
               <v n="TextDefault">"Y:%i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2907"</v>
+              <v n="TextDefault">"Zone1 OK"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3345"</v>
+              <v n="TextDefault">"Zone2 OK"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1899"</v>
+              <v n="TextDefault">"Zones"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
           </l>

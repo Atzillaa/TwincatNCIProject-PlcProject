@@ -23,6 +23,9 @@ VAR
 		tmpLword0:LWORD;
 		tmpLword1:LWORD;
 		tmpLword2:LWORD;
+		tmp1ArrByte4:ARRAY[0..3]OF BYTE;
+		tmp2ArrByte4:ARRAY[0..3]OF BYTE;
+		tmp3ArrByte4:ARRAY[0..3]OF BYTE;
 		
 
 	//out of curiousity
@@ -133,8 +136,6 @@ VAR
 	
 	//string testing
 		Str_BenchNrLoops:INT;
-		Bench_utl_String_SingleConcat: Profiler;
-		Bench_utl_StringDuoConcat: Profiler;
 		Bench_utl_Any_CopyWithOffset_Single:Profiler;
 		Bench_Utl_Any_CopyWithOffset_Duo:Profiler;
 		Bench_ConcatSingle: Profiler;
@@ -347,7 +348,8 @@ END_VAR
 //if not firstscan > done, else do tests once
 IF(NOT BknGlbl.FirstScan and not HM_DebugContiniously) THEN RETURN;END_IF
 
-//Fix terminator
+
+//STRING Fix terminator
 	//prefill control array
  	//initialise
 	MEMSET(
@@ -379,38 +381,7 @@ IF(NOT BknGlbl.FirstScan and not HM_DebugContiniously) THEN RETURN;END_IF
 		RETURN;
 	END_IF
  
- //Single concat
- 
- 	//Test concat '12' with '34' >> test string terminator + test if the rest is untouched
- 	//initialise
-	MEMSET(
-		destAddr:=ADR(TstStr1),
-		fillByte:=99,
-		n:=SIZEOF(TstStr1));
- 	ResultString:= '12';
-	utl_StringSingleConcat(ResultString,'34');
-	IF(	ResultString <> '1234'
-		OR TstStr1[4] <> 0
-		OR TstStr1[5] <> 99
-		OR TstStr1[6] <> 99)
-	THEN
-		utl_SystemMessage(I_Message:= 'utl_StringSingleConcat failed test 1');
-		_M_StringStuff := TRUE;
-		RETURN;
-	END_IF
 
-	//given to large strings >> concat as much as possible
-  	ResultString := '0123456789';
-	utl_StringSingleConcat(ResultString,'012345678901234567890123456789012345678901234567890123456789abcdefghijklmn');
-	IF(	ResultString <> '0123456789012345678901234567890123456789012345678901234567890123456789abcdefghij'
-		//terminator / end string at [80] , sizeof == 81
-		OR TstStr1[SIZEOF(ResultString)-1] <> 0
-		OR TstStr1[SIZEOF(ResultString)] <> 99) //[81] should be untouched
-	THEN
-		utl_SystemMessage(I_Message:= 'utl_StringSingleConcat failed test 3');
-		_M_StringStuff := TRUE;
-		RETURN;
-	END_IF
 
 
 
@@ -431,28 +402,14 @@ IF(NOT BknGlbl.FirstScan and not HM_DebugContiniously) THEN RETURN;END_IF
 		Bench_ConcatDuo(START:= TRUE, RESET:= TRUE);
 		FOR Cnt := 0 TO Str_BenchNrLoops BY 1
 		DO
-			ResultString := concat(SourceString1,SourceString2);
-			ResultString := concat(ResultString,SourceString3);
+			ResultString := concat(
+								SourceString1,
+								concat(
+									SourceString2,
+									SourceString3));
 		END_FOR
 		Bench_ConcatDuo(START:= FALSE, RESET:= FALSE);
 
-		//single concat
-		Bench_utl_String_SingleConcat(START:= TRUE, RESET:= TRUE);
-		FOR Cnt := 0 TO Str_BenchNrLoops BY 1
-		DO
-			ResultString := SourceString1;
-			utl_StringSingleConcat(ResultString, SourceString2);
-		END_FOR
-		Bench_utl_String_SingleConcat(START:= FALSE, RESET:= FALSE);
-	
-		//duo concat
-		Bench_utl_StringDuoConcat(START:= TRUE, RESET:= TRUE);
-		FOR Cnt := 0 TO Str_BenchNrLoops BY 1
-		DO
-			ResultString := SourceString1;
-			utl_StringDuoConcat(ResultString, SourceString2, SourceString3);
-		END_FOR
-		Bench_utl_StringDuoConcat(START:= FALSE, RESET:= FALSE); 
 
 		//utl_any_CopyWithOffset SINGLE
 		Bench_utl_Any_CopyWithOffset_Single(START:=TRUE);
@@ -488,17 +445,18 @@ IF(NOT BknGlbl.FirstScan and not HM_DebugContiniously) THEN RETURN;END_IF
 
 		//utl_any_DataBuilder MULTI
 		Bench_Utl_Any_DataBuilder_Duo(START:=TRUE);
-		//DataBuilder.M_SetTarget(MyString,0);
 		FOR Cnt:=0 TO Str_BenchNrLoops BY 1
 		DO
-			//DataBuilder.M_WithData(SourceString1).M_WithData(SourceString2).M_WithData(SourceString3);
-			DataBuilder.M_SetTarget(MyString,0).M_WithData(SourceString1).M_WithData(SourceString2).M_WithData(SourceString3); 
+			DataBuilder.
+				M_SetTarget(MyString,0).
+				M_WithData(SourceString1).
+				M_WithData(SourceString2).
+				M_WithData(SourceString3); 
 		END_FOR
 		Bench_Utl_Any_DataBuilder_Duo(START:=FALSE);
 
 		//string = string 1 + string2
 		Bench_utl_Any_CopyWithOffset_Single.DATA.AverageExecTime;		//11 	@ 2024-10
-		Bench_utl_String_SingleConcat.DATA.AverageExecTime;				//23	@ 2024-10 / 100 loopies
 		Bench_ConcatSingle.DATA.AverageExecTime;						//39 	@ 2024-10
 		
 		//string = string1 + string2 + string3
@@ -507,8 +465,6 @@ IF(NOT BknGlbl.FirstScan and not HM_DebugContiniously) THEN RETURN;END_IF
 		Bench_Utl_Any_CopyWithOffset_Duo.DATA.AverageExecTime;			
 		//				18 @2026-04
 		Bench_Utl_Any_CopyWithOffsets_Duo.DATA.AverageExecTime;
-		//33 @2024-10	38 @2026-04			
-		Bench_utl_StringDuoConcat.DATA.AverageExecTime;
 		//				47 @2026-04
 		Bench_Utl_Any_DataBuilder_Duo.DATA.AverageExecTime;
 		//82@ 2024-10	82 @2026-04
@@ -1142,8 +1098,6 @@ END_IF
 		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest copy with source offset == terminator');
 		HM_HoustonWeHaveAProblem := TRUE;
 	END_IF
-	
-
 
 //Test: copy with read and destination offset
 	arrStr10[1] := 'bbbbbbbbbb';
@@ -1169,30 +1123,7 @@ END_IF
 		HM_HoustonWeHaveAProblem := TRUE;
 	END_IF
 	
-//Test: copy with read and destination offset
-	arrStr10[1] := 'bbbbbbbbbb';
-	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
-					I_Destination:= arrStr10[1], 
-					I_Source:= arrStr5[0],
-					I_ReadOffset:= 1,
-					I_WriteOffset:=2));
-	
-	IF(
-		//area around destination untouched
-		arrStr10[0] <> 'aaaaaaaaaa'
-		OR arrStr10[2] <> 'cccccccccc'
-		//destination is expected value
-		OR arrStr10[1] <> 'bbello'
-		//source untouched
-		OR arrStr5[0] <> 'Hello'
-		OR arrStr5[1] <> 'World'
-		//return value should be destination location terminator
-		OR tmpInt1 <> 6)
-	THEN
-		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest copy with read and destination offset');
-		HM_HoustonWeHaveAProblem := TRUE;
-	END_IF
-	
+
 //Test: copy with truncation
 	arrStr10[1] := 'bbbbbbbbbb';
 	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
@@ -1216,44 +1147,143 @@ END_IF
 		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest copy with truncation');
 		HM_HoustonWeHaveAProblem := TRUE;
 	END_IF
-
-//
-//TODO not type string tests  >> use tmpLword etc
-//
-tmpByte0 := 2#01010101;
-tmpByte1 := 2#10101010;
-tmpLword0 := 0;
-tmpLword1 := 0;
-tmpLword2 := 0;
-
-//test lsb input shifted 1
-tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
-					I_Destination:= tmpLword0, 
-					I_Source:= tmpByte0,
-					I_ReadOffset:= 1,
-					I_WriteOffset:=0));
-//todo if not good
-
-					
-//test msb input shifted 2
-tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
-					I_Destination:= tmpLword0, 
-					I_Source:= tmpByte1,
-					I_ReadOffset:= 2,
-					I_WriteOffset:=8));
-//todo if not good
-
-//test overflow
-tmpByte0:=0;
-tmpLword0:=16#F0F0F0F0;
-tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
-					I_Destination:= tmpByte0, 
-					I_Source:= tmpLword0,
+	
+//test missing string terminator in source
+	//reset destination with: '----------' also terminator == '-'
+	MEMSET(destAddr:= ADR(arrStr10[1]), fillByte:= 45, n:=11 );
+	
+	//mess up source terminator location ([5] = 6th byte)
+	arrStr5[0][5] := BknGlcn.CHAR_9;
+		
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+					I_Destination:= arrStr10[1], 
+					I_Source:= arrStr5[0],
 					I_ReadOffset:= 0,
-					I_WriteOffset:=0));
-//todo if not good
+					I_WriteOffset:=7));
+	
+	IF(
+		//area around destination untouched
+		arrStr10[0] <> 'aaaaaaaaaa'
+		OR arrStr10[2] <> 'cccccccccc'
+		//destination is expected value
+		OR arrStr10[1] <> '-------Hel'
+		//destination termination == fixed
+		OR arrStr10[1][10] <> 0
+		//source untouched
+		OR arrStr5[0][0] <> 72 	//H
+		OR arrStr5[0][4] <> 111	//o 
+		OR arrStr5[0][5] <> 57	//9
+		OR arrStr5[1] <> 'World')
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest copy with broken source string');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF
+	
+	//fix terminator
+	utl_StringFixTermination(arrStr5[0],SIZEOF(arrStr5[0])-1);
+	IF(arrStr5[0] <> 'Hello')
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest copy with fix source terminator');
+		HM_HoustonWeHaveAProblem := TRUE;
+	END_IF 
+	
 
-]]></ST>
+//
+//BINARY TESTS (not string, another code path)
+//
+tmp1ArrByte4[0] := 1;
+tmp1ArrByte4[1] := 2;
+tmp1ArrByte4[2] := 3;
+tmp1ArrByte4[3] := 4;
+
+tmp3ArrByte4[0] := 10;
+tmp3ArrByte4[1] := 11;
+tmp3ArrByte4[2] := 12;
+tmp3ArrByte4[3] := 13;
+
+//Read offset = 1
+	//prefill destination
+	MEMSET(destAddr:= ADR(tmp2ArrByte4) , fillByte:= 255, n:= SIZEOF(tmp2ArrByte4));
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+						I_Destination:= tmp2ArrByte4, 
+						I_Source:= tmp1ArrByte4,
+						I_ReadOffset:= 1,
+						I_WriteOffset:=0));
+	IF(	
+		//destination check
+		tmpInt1 <> 3
+		OR tmp2ArrByte4[0] <> 2	OR tmp2ArrByte4[1] <> 3	OR tmp2ArrByte4[2] <> 4 OR tmp2ArrByte4[3] <> 255
+		//source/dest untouched
+		OR tmp1ArrByte4[0] <> 1 OR tmp1ArrByte4[1] <> 2 OR tmp1ArrByte4[2] <> 3 OR tmp1ArrByte4[3] <> 4
+		OR tmp3ArrByte4[0] <> 10 OR tmp3ArrByte4[1] <> 11 OR tmp3ArrByte4[2] <> 12 OR tmp3ArrByte4[3] <> 13
+	)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failedunittest binary read offset 1');
+		HM_HoustonWeHaveAProblem := TRUE;	
+	END_IF
+	
+	
+//Write offset = 1
+	//prefill destination
+	MEMSET(destAddr:= ADR(tmp2ArrByte4) , fillByte:= 255, n:= SIZEOF(tmp2ArrByte4));
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+						I_Destination:= tmp2ArrByte4, 
+						I_Source:= tmp1ArrByte4,
+						I_WriteOffset:=1));
+	IF(	
+		//destination check
+		tmpInt1 <> 4
+		OR tmp2ArrByte4[0] <> 255	OR tmp2ArrByte4[1] <> 1	OR tmp2ArrByte4[2] <> 2 OR tmp2ArrByte4[3] <> 3
+		//source/dest untouched
+		OR tmp1ArrByte4[0] <> 1 OR tmp1ArrByte4[1] <> 2 OR tmp1ArrByte4[2] <> 3 OR tmp1ArrByte4[3] <> 4
+		OR tmp3ArrByte4[0] <> 10 OR tmp3ArrByte4[1] <> 11 OR tmp3ArrByte4[2] <> 12 OR tmp3ArrByte4[3] <> 13
+	)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest binary write offset 1');
+		HM_HoustonWeHaveAProblem := TRUE;	
+	END_IF
+
+//Read+Write offset = 1
+	//prefill destination
+	MEMSET(destAddr:= ADR(tmp2ArrByte4) , fillByte:= 255, n:= SIZEOF(tmp2ArrByte4));
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+						I_Destination:= tmp2ArrByte4, 
+						I_Source:= tmp1ArrByte4,
+						I_ReadOffset:= 1,
+						I_WriteOffset:=1));
+	IF(	
+		//destination check
+		tmpInt1 <> 4
+		OR tmp2ArrByte4[0] <> 255	OR tmp2ArrByte4[1] <> 2	OR tmp2ArrByte4[2] <> 3 OR tmp2ArrByte4[3] <> 4
+		//source/dest untouched
+		OR tmp1ArrByte4[0] <> 1 OR tmp1ArrByte4[1] <> 2 OR tmp1ArrByte4[2] <> 3 OR tmp1ArrByte4[3] <> 4
+		OR tmp3ArrByte4[0] <> 10 OR tmp3ArrByte4[1] <> 11 OR tmp3ArrByte4[2] <> 12 OR tmp3ArrByte4[3] <> 13
+	)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest binary read+write offset 1');
+		HM_HoustonWeHaveAProblem := TRUE;	
+	END_IF
+
+//try force write outside destination memory (should not happen)
+	MEMSET(destAddr:= ADR(tmp2ArrByte4) , fillByte:= 255, n:= SIZEOF(tmp2ArrByte4));
+	tmpInt1:= TO_INT(utl_Any_CopyWithOffsets(
+						I_Destination:= tmp2ArrByte4, 
+						I_Source:= tmp1ArrByte4,
+						I_WriteOffset:=4));
+	IF(	
+		//destination check
+		tmpInt1 <> 4 //note: if copied nothing, it will return I_WriteOffset this is expected behaviour
+		OR tmp2ArrByte4[0] <> 255	OR tmp2ArrByte4[1] <> 255	OR tmp2ArrByte4[2] <> 255 OR tmp2ArrByte4[3] <> 255
+		//source/dest untouched
+		OR tmp1ArrByte4[0] <> 1 OR tmp1ArrByte4[1] <> 2 OR tmp1ArrByte4[2] <> 3 OR tmp1ArrByte4[3] <> 4
+		OR tmp3ArrByte4[0] <> 10 OR tmp3ArrByte4[1] <> 11 OR tmp3ArrByte4[2] <> 12 OR tmp3ArrByte4[3] <> 13
+	)
+	THEN
+		utl_SystemMessage(I_Message:= 'utl_Any_CopyWithOffsets failed unittest binary corrupt memory');
+		HM_HoustonWeHaveAProblem := TRUE;	
+	END_IF		
+		
+		]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_AnyReset_AnyFindFirstByte" Id="{5a1f8c94-5a6f-07ff-1419-b09f7b65852d}">
@@ -1397,15 +1427,13 @@ Qsf_Servo_RefCam;
 //monitor
 main.General.I_Pb_ResetAll._i;
 main.General.Q_SN_ES_Zone1_OK;
-main.General.SafetyZone1.PbSf_ResetSafetyErrors.P_BypassStateTrue;
+main.General.SafetyController.PbSf_ResetSafetyErrors.P_BypassStateTrue;
 
 
 //restart safety !!!THIS IS FOR TESTING, DON'T RESTART SAFETY WITH THE PLC! (connect reset button to safe input and use that as restart)
 Qsf_ES_K_IllegalRestart(
 	I_K_SimulationActive:= FALSE, 
-	I_K_State:=(	main.Organiser.Tmr_ResetES.IN
-				 	AND main.Organiser.Tmr_ResetEs.ET < T#100MS)
-				OR Sft_PB_IllegalRestart); 
+	I_K_State:=	Sft_PB_IllegalRestart); 
 
 //Emergency stop pushbutton
 Tmr_Q_ES_PB1_OK(
@@ -1443,7 +1471,7 @@ Qsf_ES_K_FB(
 	Qsf_YPS2_FB.I_K_State := Tmr_Q_Y_PS2_FB.Q_OnOff AND Sft_Y_FB2;
 //if simulating leaking valve >> detect pressure (sensor low)
 	Qsf_YPS1_FB.I_K_State R= Sft_Y1_Leaking;
-	Qsf_YPS2_FB.I_K_State R= Sft_Y2_Leaking;
+	Qsf_YPS2_FB.I_K_State R= Sft_Y2_Leaking AND NOT Qsf_YPS1_fb.P_State;
 //set outputs
 Qsf_YPS1_FB(
 	I_K_SimulationActive:= FALSE); 
