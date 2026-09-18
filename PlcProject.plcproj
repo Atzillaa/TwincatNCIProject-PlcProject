@@ -17,7 +17,7 @@
     <Implicit_Jitter_Distribution>{77a89226-9001-46b8-b1ee-69a072445987}</Implicit_Jitter_Distribution>
     <LibraryReferences>{015cb6ed-99fd-4f18-9128-1eb89efb4ed6}</LibraryReferences>
     <Company>Boikon</Company>
-    <Released>true</Released>
+    <Released>false</Released>
     <ProjectVersion>0.7.1.0000</ProjectVersion>
     <CombineIds>false</CombineIds>
     <Title>Boikon Template</Title>

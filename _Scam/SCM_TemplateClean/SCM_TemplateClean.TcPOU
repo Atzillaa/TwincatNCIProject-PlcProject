@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="SCM_TemplateClean" Id="{8bc014cc-36c6-4eaf-a98c-fc3a181393b9}" SpecialFunc="None">
     <Declaration><![CDATA[(*Clean SCAM template. 
@@ -143,15 +143,16 @@ VAR
 		JogMinusOffHomeSensor:=FALSE,	//"jog-"  when moving off homing sensor (if false then jog+ is used) in homing function
 		HomingsensorIs_NC:=FALSE,		//the homing sensor is of type normally closed (note limitswitches are always normally closed)
 		TmrErr_JogOffHomeSensor:=T#3S,	//time to try and jog off homing sensor t#0S = disable
-		HomeTorqueMode:=eSrvHomeTorqueMode.NoTorque,  //<<< ADDED: no torque homing
 		HomeTorqueSpeed:=0,						//Speed to use for homing in torque mode
-		HomingMode:= MC_ForceCalibration,	//homing mode to use >> Default, Direct, Set, Reset, TorquePositiveDirection, TorqueNegativeDirection
+		HomingMode:= eSrvHomingModes.Set,	//homing mode to use >> Default, Direct, Set, Reset, TorquePositiveDirection, TorqueNegativeDirection
 		CouplingSyncPosFirst:=FALSE,			//at couple command, sync the position first to the master axis
 		SPD_CouplingSyncSpeed:=0,				//speed to use when syncing position for coupling
 		DST_CouplingSyncMaxDiff:=0,				//max difference allowed when sync couling >> otherwise error
+		//MAKE SURE VALUE IS CORRECT (set to 0 to use nc-task configured dynamics)
+		DEC_EmergencyError:=1000,			//deceleration ramp to use for emergency/error situation <= 0 means use default ramp
 		//SET LOWER!!! >> jog=50, velo=250
-		SPD_JOG_Max:=200,						//max allowed allowed jog speed (also used to jog of homing sensor during homing)
-		SPD_AbsModVel_MaxMan:=200				//max allowed speed in manual absolute,velocity, modulo mode	
+		SPD_JOG_Max:=200,					//max allowed allowed jog speed (also used to jog of homing sensor during homing)
+		SPD_AbsModVel_MaxMan:=200			//max allowed speed in manual absolute,velocity, modulo mode	
 		);
 		
 	Srv_Yaxis: cntrl_Servo(
@@ -163,15 +164,16 @@ VAR
 		JogMinusOffHomeSensor:=FALSE,	//"jog-"  when moving off homing sensor (if false then jog+ is used) in homing function
 		HomingsensorIs_NC:=FALSE,		//the homing sensor is of type normally closed (note limitswitches are always normally closed)
 		TmrErr_JogOffHomeSensor:=T#3S,	//time to try and jog off homing sensor t#0S = disable
-		HomeTorqueMode:=eSrvHomeTorqueMode.NoTorque,  //<<< ADDED: no torque homing
 		HomeTorqueSpeed:=0,						//Speed to use for homing in torque mode
-		HomingMode:= MC_ForceCalibration,	//homing mode to use >> Default, Direct, Set, Reset, TorquePositiveDirection, TorqueNegativeDirection
+		HomingMode:= eSrvHomingModes.Set,	//homing mode to use >> Default, Direct, Set, Reset, TorquePositiveDirection, TorqueNegativeDirection
 		CouplingSyncPosFirst:=FALSE,			//at couple command, sync the position first to the master axis
 		SPD_CouplingSyncSpeed:=0,				//speed to use when syncing position for coupling
 		DST_CouplingSyncMaxDiff:=0,				//max difference allowed when sync couling >> otherwise error
+		//MAKE SURE VALUE IS CORRECT (set to 0 to use nc-task configured dynamics)
+		DEC_EmergencyError:=1000,			//deceleration ramp to use for emergency/error situation <= 0 means use default ramp
 		//SET LOWER!!! >> jog=50, velo=250
-		SPD_JOG_Max:=200,						//max allowed allowed jog speed (also used to jog of homing sensor during homing)
-		SPD_AbsModVel_MaxMan:=200				//max allowed speed in manual absolute,velocity, modulo mode	
+		SPD_JOG_Max:=200,					//max allowed allowed jog speed (also used to jog of homing sensor during homing)
+		SPD_AbsModVel_MaxMan:=200			//max allowed speed in manual absolute,velocity, modulo mode	
 		);
 		
 	Srv_Zaxis: cntrl_Servo(
@@ -183,16 +185,17 @@ VAR
 		JogMinusOffHomeSensor:=FALSE,	//"jog-"  when moving off homing sensor (if false then jog+ is used) in homing function
 		HomingsensorIs_NC:=FALSE,		//the homing sensor is of type normally closed (note limitswitches are always normally closed)
 		TmrErr_JogOffHomeSensor:=T#3S,	//time to try and jog off homing sensor t#0S = disable
-		HomeTorqueMode:=eSrvHomeTorqueMode.NoTorque,  //<<< ADDED: no torque homing
 		HomeTorqueSpeed:=0,						//Speed to use for homing in torque mode
-		HomingMode:= MC_ForceCalibration,	//homing mode to use >> Default, Direct, Set, Reset, TorquePositiveDirection, TorqueNegativeDirection
+		HomingMode:= eSrvHomingModes.Set,	//homing mode to use >> Default, Direct, Set, Reset, TorquePositiveDirection, TorqueNegativeDirection
 		CouplingSyncPosFirst:=FALSE,			//at couple command, sync the position first to the master axis
 		SPD_CouplingSyncSpeed:=0,				//speed to use when syncing position for coupling
 		DST_CouplingSyncMaxDiff:=0,				//max difference allowed when sync couling >> otherwise error
+		//MAKE SURE VALUE IS CORRECT (set to 0 to use nc-task configured dynamics)
+		DEC_EmergencyError:=1000,			//deceleration ramp to use for emergency/error situation <= 0 means use default ramp
 		//SET LOWER!!! >> jog=50, velo=250
-		SPD_JOG_Max:=200,						//max allowed allowed jog speed (also used to jog of homing sensor during homing)
-		SPD_AbsModVel_MaxMan:=200				//max allowed speed in manual absolute,velocity, modulo mode	
-		);
+		SPD_JOG_Max:=200,					//max allowed allowed jog speed (also used to jog of homing sensor during homing)
+		SPD_AbsModVel_MaxMan:=200			//max allowed speed in manual absolute,velocity, modulo mode	
+		);	
 	
 	(*Inputs / Outputs*)	
 END_VAR]]></Declaration>
@@ -291,6 +294,26 @@ END_VAR]]></Declaration>
 	Srv_Xaxis(
 		I_HMI_Parent:= HMI,
 		I_PTR_MasterAxis:= Srv_Xaxis.P_PointerToAxisRefExtended, 
+		I_K_SimulationActive:= Glbl.Sim_MyMachinePart, 
+		I_ES_OK:= I_K_ES_OK,
+		I_OrgControl:= I_Organiser, 
+		//..several commands.. 
+		I_CPF_CoupleFactor:= 1,
+		I_K_ExternalSetpoint:= FALSE);
+		
+	Srv_Yaxis(
+		I_HMI_Parent:= HMI,
+		I_PTR_MasterAxis:= Srv_Yaxis.P_PointerToAxisRefExtended, 
+		I_K_SimulationActive:= Glbl.Sim_MyMachinePart, 
+		I_ES_OK:= I_K_ES_OK,
+		I_OrgControl:= I_Organiser, 
+		//..several commands.. 
+		I_CPF_CoupleFactor:= 1,
+		I_K_ExternalSetpoint:= FALSE);
+		
+	Srv_Zaxis(
+		I_HMI_Parent:= HMI,
+		I_PTR_MasterAxis:= Srv_Zaxis.P_PointerToAxisRefExtended, 
 		I_K_SimulationActive:= Glbl.Sim_MyMachinePart, 
 		I_ES_OK:= I_K_ES_OK,
 		I_OrgControl:= I_Organiser, 
