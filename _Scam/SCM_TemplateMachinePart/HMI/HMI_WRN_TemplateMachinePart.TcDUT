@@ -12,9 +12,9 @@ STRUCT
 		a clear variable name which describes the warning		as described below
 		StepLockActive:BOOL;									//Warning [machinepart]: in step modus (steps are held until confirmation the continue to the next step)
 	*)
-	
 	NotRdyRcv_Discharge:BOOL;								//Warning [machinepart]: not ready to receive products
 	CameraNotReady:BOOL;									//Warning [machinepart]: waiting for camera ready
+	PlanoBufferNeedsRefill:BOOL;							//Warning [machinepart]: Planobuffer needs refill
 END_STRUCT
 END_TYPE]]></Declaration>
   </DUT>

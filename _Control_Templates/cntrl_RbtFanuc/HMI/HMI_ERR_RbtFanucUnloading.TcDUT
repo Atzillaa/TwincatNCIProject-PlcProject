@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="HMI_ERR_RbtFanucUnloading" Id="{5c3c7d9c-06c2-4120-8dbb-646d01ca0ca0}">
+    <Declaration><![CDATA[TYPE HMI_ERR_RbtFanucUnloading EXTENDS HMI_ERR_RbtFanuc:
+STRUCT
+	;//add custom bools on top of library block here
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

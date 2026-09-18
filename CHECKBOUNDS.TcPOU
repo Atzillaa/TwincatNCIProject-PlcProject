@@ -17,6 +17,7 @@ Changes:
 	2023-02 HP
 		-new systemmessage logging
 *)
+{warning 'TODO Template: CHECKBOUNDS is active, this causes increased processor load. Exclude block from build when possible'}
 FUNCTION CHECKBOUNDS : DINT
 VAR_INPUT
         index, lower, upper : DINT;

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="RbtFanucUnloading_GI" Id="{07eb1f12-2bc4-47a5-b587-ec7c235fce0c}">
+    <Declaration><![CDATA[{attribute 'analysis' := '-33'}
+TYPE RbtFanucUnloading_GI :
+STRUCT
+	//copy to your project and adapt names + number of bits to your situation
+	Word0:WORD;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

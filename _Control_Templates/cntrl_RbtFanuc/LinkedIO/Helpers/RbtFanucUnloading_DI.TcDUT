@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="RbtFanucUnloading_DI" Id="{5f87b6c7-b8ed-4e51-8a14-12130957fa6b}">
+    <Declaration><![CDATA[{attribute 'analysis' := '-33'}
+TYPE RbtFanucUnloading_DI :
+STRUCT
+	//bits 0-15
+	SN_InitLeft:BIT;		//DI+00 command init/start left side
+	SN_InitRight:BIT;		//DI+01 command init/start left side
+	SN_CylInOk:BIT;			//DI+02 command resp cylinder is in
+	SN_CylOutOk:BIT;		//DI+03 command resp cylinder is out
+	SN_CrateEmptyOk:BIT;	//DI+04 command resp crate is empty
+	SN_RequestDumpOk:BIT;	//DI+05 command resp crate is dumped
+	SN_PayloadConfirm:BIT;	//DI+-6 command to confirm payload > must be setup in dcs
+	bit07:BIT;
+	bit08:BIT;
+	bit09:BIT;
+	PC_Left_Z:BIT;			//DI+10
+	PC_Right_Z:BIT;			//DI+11
+	PX_Left_X:BIT;			//DI+12
+	PX_Right_X:BIT;			//DI+13
+	bit14:BIT;
+    bit15:BIT;
+    K_DropBasket:BIT;		//Command from scam to drop basket
+    bit17:BIT;
+    bit18:BIT;
+    bit19:BIT;
+    bit20:BIT;
+    bit21:BIT;
+    bit22:BIT;
+    bit23:BIT;
+    bit24:BIT;
+    bit25:BIT;
+    bit26:BIT;
+    bit27:BIT;
+    bit28:BIT;
+    bit29:BIT;
+    bit30:BIT;
+    bit31:BIT;
+END_STRUCT
+END_TYPE
+
+(*
+	//copy to your project and adapt names + number of bits to your situation
+	//bits 0-15
+	bit00:BIT;
+    bit01:BIT;
+    bit02:BIT;
+    bit03:BIT;
+    bit04:BIT;
+    bit05:BIT;
+    bit06:BIT;
+    bit07:BIT;
+    bit08:BIT;
+    bit09:BIT;
+    bit10:BIT;
+    bit11:BIT;
+    bit12:BIT;
+    bit13:BIT;
+    bit14:BIT;
+    bit15:BIT;
+    bit16:BIT;
+    bit17:BIT;
+    bit18:BIT;
+    bit19:BIT;
+    bit20:BIT;
+    bit21:BIT;
+    bit22:BIT;
+    bit23:BIT;
+    bit24:BIT;
+    bit25:BIT;
+    bit26:BIT;
+    bit27:BIT;
+    bit28:BIT;
+    bit29:BIT;
+    bit30:BIT;
+    bit31:BIT;
+*)]]></Declaration>
+  </DUT>
+</TcPlcObject>

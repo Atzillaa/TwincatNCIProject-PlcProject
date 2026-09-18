@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="eMurrModLight60Colors" Id="{89a8ef87-4e87-40d0-8353-7f60d6cd643e}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+{attribute 'to_string'}
+TYPE eMurrModLight60Colors :
+(
+	COLOR_OFF:= 		2#0,
+	COLOR_RED:= 		2#001,
+	COLOR_GREEN:= 		2#010,
+	COLOR_YELLOW:= 		2#011,
+	COLOR_BLUE:= 		2#100,
+	COLOR_CUSTOM1:= 	2#101,
+	COLOR_CUSTOM2:= 	2#110,
+	COLOR_WHITE:= 		2#111,
+	
+	PAT_CONTINIOUS:= 	2#001000,
+	PAT_BLINKING:=		2#010000,
+	PAT_FLASHING:= 		2#011000,
+	PAT_GRADBLINK:=		2#100000,
+	
+	SPD_LOW:=			2#01000000,
+	SPD_MID:=			2#10000000,
+	SPD_FAST:=			2#11000000
+)BYTE;
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

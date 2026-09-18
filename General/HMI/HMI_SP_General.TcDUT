@@ -3,7 +3,7 @@
   <DUT Name="HMI_SP_General" Id="{aa5f8390-c294-41f2-b589-bc6f928e7c23}">
     <Declaration><![CDATA[TYPE HMI_SP_General :
 STRUCT
-	{warning 'TODO: Template example / remove when not needed'}
+	{warning 'TODO Template: example / remove when not needed'}
 	//These setpoint are made available for all blocks
 	Shared:HMI_SP_GeneralShared;											//Common setpoints used for multiple machine parts
 END_STRUCT

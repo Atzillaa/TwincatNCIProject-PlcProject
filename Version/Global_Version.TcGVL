@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
-  <GVL Name="Global_Version" Id="{cdca3793-99ac-480f-acfa-c7c12bb89e66}">
+  <GVL Name="Global_Version" Id="{63f6c867-28a2-484b-bbc7-b38d5a41072c}">
     <Declaration><![CDATA[{attribute 'TcGenerated'}
 {attribute 'no-analysis'}
 {attribute 'linkalways'}
 // This function has been automatically generated from the project information.
 VAR_GLOBAL CONSTANT
 	{attribute 'const_non_replaced'}
-	stLibVersion_Boikon_Template : ST_LibVersion := (iMajor := 0, iMinor := 7, iBuild := 0, iRevision := 1, nFlags := 0, sVersion := '0.7.0.1');
+	stLibVersion_Boikon_Template : ST_LibVersion := (iMajor := 0, iMinor := 7, iBuild := 1, iRevision := 0, nFlags := 1, sVersion := '0.7.1.0');
 END_VAR
 ]]></Declaration>
   </GVL>

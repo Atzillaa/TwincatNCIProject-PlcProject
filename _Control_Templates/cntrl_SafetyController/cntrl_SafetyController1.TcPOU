@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="cntrl_SafetyController1" Id="{0b5d08c4-3f3d-038d-29be-43842dc82558}" SpecialFunc="None">
+    <Declaration><![CDATA[(*	TODO TEMPLATE SAFETYZONE >> change to your needs
+	This is a template for a twinsafe safety project
+		*Multiple groups are controlled in this example, but you can also chose to create a block per group > easier to create modules
+	
+	It should cover the basic needs, but you will have to adapt this as needed
+	This block extends cntrl_SafetyLogic from the library
+		minimal updates needed:
+		-add/rename inputs and errors for es-pushbuttons/-doors/-lightbarriers/etc
+
+	Base functionality:
+		After a firstscan, the safety group is started and the error is acked. This will put the safety group in run if there are no active errors present
+		In run the safety circuit can be restarted by the operator.
+		
+		If the group leaves run state then this is detected as an hardware error. 
+		This must be reset with a dedicated reset es-stop errors button on the HMI >> PbSf_ResetSafetyErrors
+		
+		
+	Usage:
+		-DO NOT: send restart signal via the plc, this signal should be connected to a real input to twinsafe via a safe input terminal.
+		-the err-ack signal is handled in the base block via HMI.STS > in the HMI it should be obvious to the user that a safety error occured and thus a safey issue is present
+		-in twinsafe for groups / blockinstance you need to monitor (estop/mon/muting):
+			>map state = true (so you can link via hw-terminal)
+		-in twinsafe/targetsystem > set checkmark: "map crc" link to this block's crc input
+			after the safety is checked by the safety-officer	
+
+*) 
+
+FUNCTION_BLOCK cntrl_SafetyController1 EXTENDS cntrl_SafetyLogic
+VAR_INPUT
+	I_HMI_Parent:ItfHMI;								//HMI of the parent block. If this block is in error, it will set the parent P_StsInError property
+	I_OrgControl: ItfOrgControl;						//Organiser control bits
+	
+	//TODO template: remove if not needed
+	I_K_EnableLsRejectMuting:BOOL;						//Signal enable muting of lightcurtain reject
+	
+	//TODO template: remove if not needed
+	I_STS_AirPressure_OK:BOOL;							//Status airpressure ok >> needed for the safety logic to only enable safe air if pressure is valid (otherwise safety errors will occur)
+END_VAR
+VAR_OUTPUT
+	//TODO template: add/rename zones as needed
+	Q_K_ES_Zone1_OK:BOOL;								//safety circuit zone 1 ok
+	Q_K_ES_Zone1_TOFOK:BOOL;							//safety circuit zone 1 delayed off ok
+	Q_K_ES_Zone2_OK:BOOL;								//safety circuit zone 2 ok
+END_VAR
+VAR
+(*Configuration*)	
+
+(*Logged variables*)
+
+(*Internals*)
+
+(*Instances*)
+	HMI:HMI_SafetyController1;								//All HMI related variables
+
+(*IO*)
+	//These outputs are defined in the baseblock (always used):
+		//Qsf_K_RunSafety
+		// Qsf_K_ResetSafetyErrors
+	
+	//TODO TEMPLATE
+		//Add/Remove safety groups
+		SFG_Hardware_Run:cntrl_safeGroup;					//Safetygroup hardware (inputs etc / plc communication)
+		SFG_Zone1_Run:cntrl_safeGroup;						//Safetygroup zone 1
+		SFG_Zone2_Run:cntrl_safeGroup;						//Safetygroup zone 2
+		SFG_ZoneAll_Run:cntrl_safeGroup;					//Safetygroup zone All
+	
+		//Add/Remove safety zones
+		ES_Zone1:cntrl_safeEstop;							//emergency stop zone 1
+		ES_Zone2:cntrl_safeEstop;							//emergency stop zone 2
+	
+		//Add/remove safety devices (pushbuttons/lightscreen/etc) to create errors/statusses for the HMI
+		//you can go 2 ways here
+			//easy way if each door / pb-es is connected seperately (not in series) to a twinsafe terminal
+				//>>use for each device a safeMon block and set in properties "map state = true" now link this output to the boikon library equivalent block
+				//in this template block it is assumed this is the case
+			//more work and no twinsafe-state-loggging: each pb/door is wired by an extra contact to the plc-unsafe inputs only for diagnostics / HMI-errors
+				//use cntrl_InputHmiStsErr
+		//everything is wired seperately to safe terminals and setting "map state = true" for the twinsafe mon blocks.
+		PB_ES_MainCabinet: cntrl_safeMon;					//Pushbutton main cabinet
+		DR_Front:cntrl_safeMon;								//Door infeed
+		LS_Entry1:cntrl_safeMuting;							//Lightscreen entry 1
+
+		//Add/Remove alias connections
+		// this is needed if you have the boikon safety valves in the safetygroup. This will prevent activating safeair if there is no air supply (otherwise it would cause a safe-air-edm error)
+		Qsf_K_EnableSafeAir AT%Q*:BOOL;						//Status airpressure is ok
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//call baseblock functionality, handles:  resetting / starting / error detection of the safety program
+SUPER^._M_StepConditions(
+		//TODO TEMPLATE: request the correct key from the safety officer, otherwise you will get a safety project is not verified warning >> required by the NEN-NORMS
+		I_CrcKey:= 16#1A93E370,
+		//TODO TEMPLATE: adapt to nr of groups
+		I_GroupsInRun:= SFG_Hardware_Run.Q_STS_OK
+						AND SFG_Zone1_Run.Q_STS_OK
+						AND SFG_Zone2_Run.Q_STS_OK
+						AND SFG_ZoneAll_Run.Q_STS_OK, 
+						//NOTE: this is 1 way of handling multiple groups.
+						//the disadvantage is that if 1 groups has an issue, all groups are reset (cycled stop > reset > run)
+						//if you don't want this then create extra cntrl_SafetyController(s) for group(s) that have to be independant
+		IO_HMI_WRN:= HMI.WRN,		
+		IO_HMI_ERR:= HMI.ERR,
+		IO_HMI_STS:= HMI.STS);	
+SUPER^._M_Activations(
+		IO_HMI_ERR:= HMI.ERR,
+		IO_HMI_STS:= HMI.STS);
+
+
+//update HMI variables
+_A_HMI();
+
+//io linked to safety logic via mapped states
+SFG_Hardware_Run(
+	I_HMI_Parent:= HMI, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= I_K_SimulationActive);
+	
+SFG_Zone1_Run(
+	I_HMI_Parent:= HMI, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= I_K_SimulationActive);
+	
+SFG_Zone2_Run(
+	I_HMI_Parent:= HMI, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= I_K_SimulationActive);
+	
+SFG_ZoneAll_Run(
+	I_HMI_Parent:= HMI, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= I_K_SimulationActive);
+	
+ES_Zone1(
+	I_HMI_Parent:= HMI, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= I_K_SimulationActive, 
+	Q_STS_OK=> Q_K_ES_Zone1_OK, 
+	Q_STS_TOF_OK=> Q_K_ES_Zone1_TOFOK);
+
+ES_Zone2(
+	I_HMI_Parent:= HMI, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= I_K_SimulationActive, 
+	Q_STS_OK=> Q_K_ES_Zone2_OK);
+		
+PB_ES_MainCabinet(
+	I_HMI_Parent:= HMI, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= I_K_SimulationActive);
+
+DR_Front(
+	I_HMI_Parent:= HMI, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= I_K_SimulationActive);
+	
+LS_Entry1(
+	I_HMI_Parent:= HMI, 
+	I_OrgControl:= I_OrgControl, 
+	I_K_SimulationActive:= I_K_SimulationActive,
+	I_K_EnableMuting:=I_K_EnableLsRejectMuting);
+
+	
+//io linked to alias devices safety logic
+	//if airpressure ok and reset pressed >> enable safe air
+	//the reason behind this is to prevent EDM errors if the main air is offline and the e-system would try to enable air >> would cause edm error on sensor check
+	Qsf_K_EnableSafeAir S= 	I_OrgControl.Reset_K_RE
+							AND I_STS_AirPressure_OK;
+	Qsf_K_EnableSafeAir R= NOT I_STS_AirPressure_OK;
+]]></ST>
+    </Implementation>
+    <Action Name="_A_HMI" Id="{b7243d6a-58da-4c9e-b9c9-be61cad44887}">
+      <Implementation>
+        <ST><![CDATA[//Update HMI variables (check error status + reset, check warnings)
+HMI.M_Update(	I_OrgControl:= I_OrgControl,
+				I_HMI_Parent:= I_HMI_Parent,
+				I_ERR:= HMI.ERR,
+				I_WRN:= HMI.WRN,
+				I_MAN:= HMI.MAN);
+				
+//Warnings
+				
+//Errors
+
+//Statusses
+	HMI.STS.CrcCodeProject := Isf_STS_CrcSafetyProject;]]></ST>
+      </Implementation>
+    </Action>
+  </POU>
+</TcPlcObject>

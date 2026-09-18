@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="RbtFanucUnloading_DataOut" Id="{d0ed950b-f480-408b-be9a-fd7b5e36313e}">
+    <Declaration><![CDATA[{attribute 'analysis' := '-33'}
+(*
+	Robot IO config:
+		Go to config when you're in the DO/DI / UO/UI / GO/GI sections.
+		if needed, delete default configs
+		To link to ethercat card use, 
+			rack 106 (some robot-types might use another rack nr. check manual) 
+			slot 1
+			start =>offset on the linked variables
+			
+		Example for this situation:
+			UO => rack 106, slot 1, start 0   =>this will link UO[1]-CmdEnabled to ByAddress.0, which is good since Vars._UO.CmdEnabled is the first bit declared in the Vars structure.
+			since the struct declared in the plc for the UO (Fanuc_StatusWord) is aligned to 3 bytes, DO must have an offset of 16
+			DO => rack 106, slot 1, start 16 
+*)
+TYPE RbtFanucUnloading_DataOut :
+UNION
+	//linked directly to robot 
+	ByAddress AT %Q*: ARRAY[0..3] OF RbtFanucUnloading_Array8Uint;
+	
+	//data as variables for use in the plc
+	Vars:RbtFanucUnloadingt_DataOut_Grouped;
+
+END_UNION
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

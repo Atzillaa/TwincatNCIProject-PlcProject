@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
-  <ImagePool Name="ImagePool" Id="{18800594-357f-4dd5-8976-633218f6e11e}">
+  <ImagePool Name="ImagePool" Id="{bd382d9f-374a-43e8-981f-17a16dabc52b}">
     <XmlArchive>
       <Data>
         <o xml:space="preserve" t="ImagePoolObject">
@@ -12,9 +12,9 @@
               <v n="ItemID">1</v>
             </o>
           </l>
-          <v n="GuidInit">{3ad40469-35ff-405a-ba48-3bb1577c6365}</v>
-          <v n="GuidReInit">{f3d9a03d-ed17-4b4a-b7aa-b6f56c364bd2}</v>
-          <v n="GuidExitX">{e61b460e-2281-4a68-a0a1-f7e27f2ed3a3}</v>
+          <v n="GuidInit">{77b959d1-bab9-43e7-874a-4dee0bc006c7}</v>
+          <v n="GuidReInit">{91f9a5ef-f296-47fd-b8d8-1f7bea0f9345}</v>
+          <v n="GuidExitX">{1035da4f-dcb1-43e3-9c9b-4072927c4a44}</v>
           <v n="ValidIds">false</v>
         </o>
       </Data>

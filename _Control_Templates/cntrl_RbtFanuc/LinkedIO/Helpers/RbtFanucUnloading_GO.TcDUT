@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="RbtFanucUnloading_GO" Id="{715d883e-3319-4687-b9af-8691602e5624}">
+    <Declaration><![CDATA[{attribute 'analysis' := '-33'}
+TYPE RbtFanucUnloading_GO :
+STRUCT
+	//GO[1]
+	ErrorNr:UINT;
+	State:UINT;
+	NrPickedCrates:UINT;
+	NrPayload:uint;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

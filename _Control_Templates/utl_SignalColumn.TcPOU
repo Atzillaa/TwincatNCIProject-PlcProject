@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="utl_SignalColumn" Id="{74924eb2-f972-498c-bf42-2154e14e2136}" SpecialFunc="None">
+    <Declaration><![CDATA[(* Signal column with default (BOIKON) colors
+
+	This block is the boikon default for a signal column.
+	Per customer it may vary how to colors have to work, this is why this block is in the project and not in the library
+		>Adapt as needed!
+	
+	Changes
+	2025-10-09
+		-it's alive
+	
+*)
+
+FUNCTION_BLOCK PUBLIC utl_SignalColumn
+VAR_INPUT
+	I_STS_Error:BOOL;				//Status any machine-part is in error (any organiser in error state)
+	I_STS_Running:BOOL;				//Status all machine-parts are running (all organisers in Auto_K)
+	I_STS_NoDischarge:BOOL;			//Status discharge (next machine) not accepting products
+	I_STS_OperatorInput:BOOL;		//Status any machine-part needs operator interaction
+END_VAR
+
+VAR
+	Q_H_Error AT %Q*:BOOL;			//Lamp signal error: 												RED
+	Q_H_Running AT %Q*:BOOL;		//Lamp signal running:												GREEN
+	Q_H_Operator AT %Q*:BOOL;		//Lamp signal operator interaction needed (refill products etc):	WHITE
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Q_H_Error := I_STS_Error 
+			OR (	I_STS_NoDischarge
+					AND BknGlbl.Blink_1s);
+Q_H_Running := I_STS_Running;
+Q_H_Operator := I_STS_OperatorInput;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

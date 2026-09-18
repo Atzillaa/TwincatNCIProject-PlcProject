@@ -400,6 +400,21 @@ a"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"4469"</v>
+              <v n="TextDefault">"Confirm Dumped"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3258"</v>
+              <v n="TextDefault">"Confirm Empty"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"49"</v>
+              <v n="TextDefault">"Confirm Payload"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"369"</v>
               <v n="TextDefault">"Cpu load: %2.1f"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -481,6 +496,11 @@ Only for boikon engineers"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"2589"</v>
+              <v n="TextDefault">"Debug block inputs REMOVE ME"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"728"</v>
               <v n="TextDefault">"Debug I_K_Auto_ExtSpmode"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -513,6 +533,11 @@ Only for boikon engineers"</v>
             <o>
               <v n="TextID">"424"</v>
               <v n="TextDefault">"Diag: %i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3729"</v>
+              <v n="TextDefault">"Disable Block"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -566,6 +591,11 @@ Only for boikon engineers"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"3109"</v>
+              <v n="TextDefault">"Enable = block simulation"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"555"</v>
               <v n="TextDefault">"Enable Array Tests"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -578,6 +608,11 @@ Only for boikon engineers"</v>
             <o>
               <v n="TextID">"2077"</v>
               <v n="TextDefault">"Enable I safety inputs sim"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"4767"</v>
+              <v n="TextDefault">"Enable muting"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -718,6 +753,31 @@ Only for boikon engineers"</v>
             <o>
               <v n="TextID">"382"</v>
               <v n="TextDefault">"ES Zone Ok TOF"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2042"</v>
+              <v n="TextDefault">"ES Zone1"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"236"</v>
+              <v n="TextDefault">"ES Zone1 Ok"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"4777"</v>
+              <v n="TextDefault">"ES Zone2"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"148"</v>
+              <v n="TextDefault">"ES Zone2 Ok"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1003"</v>
+              <v n="TextDefault">"ES ZoneAll"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -868,8 +928,18 @@ HMI Buttons"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"1308"</v>
+              <v n="TextDefault">"ID: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"920"</v>
               <v n="TextDefault">"if &gt;-1 then autocal will use this value"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2858"</v>
+              <v n="TextDefault">"Illegal safety restart button"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -908,6 +978,16 @@ HMI Buttons"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"1167"</v>
+              <v n="TextDefault">"Init left"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"459"</v>
+              <v n="TextDefault">"Init Right"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"114"</v>
               <v n="TextDefault">"Inputs"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -925,6 +1005,11 @@ HMI Buttons"</v>
             <o>
               <v n="TextID">"1227"</v>
               <v n="TextDefault">"ip:%s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3514"</v>
+              <v n="TextDefault">"I_K_SelectProg"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -960,6 +1045,16 @@ HMI Buttons"</v>
             <o>
               <v n="TextID">"788"</v>
               <v n="TextDefault">"Jog Speed: %2.2f"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1817"</v>
+              <v n="TextDefault">"JogMin"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2977"</v>
+              <v n="TextDefault">"JogPlus"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1151,6 +1246,11 @@ real channels"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"4802"</v>
+              <v n="TextDefault">"mijn voorbeeld %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"297"</v>
               <v n="TextDefault">"Move Mode"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -1191,8 +1291,28 @@ real channels"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"57"</v>
+              <v n="TextDefault">"MS1"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3322"</v>
+              <v n="TextDefault">"MS2"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"523"</v>
               <v n="TextDefault">"MS_OK"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"4890"</v>
+              <v n="TextDefault">"Muted"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2142"</v>
+              <v n="TextDefault">"Muting active"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1262,6 +1382,16 @@ as needed"</v>
             <o>
               <v n="TextID">"204"</v>
               <v n="TextDefault">"Nr slaves: %i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"4498"</v>
+              <v n="TextDefault">"Nr: %i "</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"605"</v>
+              <v n="TextDefault">"NrPicks: %i"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1340,6 +1470,11 @@ as needed"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"91"</v>
+              <v n="TextDefault">"PayloadNr: %i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"1212"</v>
               <v n="TextDefault">"PB ES MCC"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -1380,6 +1515,11 @@ as needed"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"2498"</v>
+              <v n="TextDefault">"PB_ES_CHAN1 KAPUT"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"1969"</v>
               <v n="TextDefault">"Pers. save failed"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -1405,8 +1545,33 @@ as needed"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"852"</v>
+              <v n="TextDefault">"Plcblock State: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"1646"</v>
               <v n="TextDefault">"port:%i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1847"</v>
+              <v n="TextDefault">"Pos LS: %I"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2270"</v>
+              <v n="TextDefault">"Pos LS: %i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3813"</v>
+              <v n="TextDefault">"Pos MS1: %i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3111"</v>
+              <v n="TextDefault">"Pos MS2: %i"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1430,6 +1595,11 @@ as needed"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"2680"</v>
+              <v n="TextDefault">"Project dependant statusses"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"32"</v>
               <v n="TextDefault">"Project log groups"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -1445,8 +1615,28 @@ as needed"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"3242"</v>
+              <v n="TextDefault">"PS-Y1 ForceOff"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2938"</v>
+              <v n="TextDefault">"PS-Y1 leaking"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"4034"</v>
               <v n="TextDefault">"PS-Y2"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1330"</v>
+              <v n="TextDefault">"PS-Y2 ForceOff"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1193"</v>
+              <v n="TextDefault">"PS-Y2 leaking"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1462,6 +1652,11 @@ as needed"</v>
             <o>
               <v n="TextID">"1777"</v>
               <v n="TextDefault">"Raw result: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2622"</v>
+              <v n="TextDefault">"RBT: %s"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1544,6 +1739,11 @@ General.Q_SN_TotalReset
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"4488"</v>
+              <v n="TextDefault">"Restart Safety"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"198"</v>
               <v n="TextDefault">"Restart safety DANGER"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -1571,6 +1771,11 @@ General.Q_SN_TotalReset
             <o>
               <v n="TextID">"270"</v>
               <v n="TextDefault">"Rev"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1608"</v>
+              <v n="TextDefault">"Robot signals (normally auto controlled)"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1692,8 +1897,18 @@ Needs to be wired in correct way"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"1127"</v>
+              <v n="TextDefault">"Sero LS positive"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"780"</v>
               <v n="TextDefault">"Service &gt;&gt; first check and fix reason of error"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2718"</v>
+              <v n="TextDefault">"Servo LS positive"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1774,6 +1989,31 @@ Needs to be wired in correct way"</v>
             <o>
               <v n="TextID">"1287"</v>
               <v n="TextDefault">"Setpoints:"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"385"</v>
+              <v n="TextDefault">"SFT-group HW: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1417"</v>
+              <v n="TextDefault">"SFT-group Z-ALL: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"5074"</v>
+              <v n="TextDefault">"SFT-group Z2: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"4685"</v>
+              <v n="TextDefault">"SFT-group zone 1: %s"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3502"</v>
+              <v n="TextDefault">"SFT-groupZ1: %s"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -1945,6 +2185,11 @@ Start/Stop/Reset buttons simulate real hw-inputs"</v>
             <o>
               <v n="TextID">"1422"</v>
               <v n="TextDefault">"State: %i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1267"</v>
+              <v n="TextDefault">"State: %i %s"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
@@ -2361,6 +2606,21 @@ Start/Stop/Reset buttons simulate real hw-inputs"</v>
             <o>
               <v n="TextID">"1429"</v>
               <v n="TextDefault">"Y:%i"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"2907"</v>
+              <v n="TextDefault">"Zone1 OK"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"3345"</v>
+              <v n="TextDefault">"Zone2 OK"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"1899"</v>
+              <v n="TextDefault">"Zones"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
           </l>

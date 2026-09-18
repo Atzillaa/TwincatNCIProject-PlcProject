@@ -5,13 +5,7 @@
 {attribute 'qualified_only'}
 {attribute 'analysis' := '-33'}
 VAR_GLOBAL
-//Checkbounds can be disabled by setting exclude from build is true at the properties of this block
-//NOTE: getting it on again, can be a bit of a hassle, 
-//	-include checkbounds in build
-//  -add some variable to this global struct >> now this will get rebuild with the variables needed for checkbounds
-{IF defined (pou: CHECKBOUNDS)}
-	{warning 'CHECKBOUNDS is active, this causes increased processor load. Exclude block from build when possible'}
-{END_IF}
+//Variables set by Checkbounds. This function increases processor load and should be disabled once bounds problems are solved
 	OutOfBounds:BOOL:=FALSE;						//Should always be false otherwise a bounds problem >> function CHECKBOUNDS must be implemented in the project, check the beckhoff help !only for testing purposes!
 	OutOfBoundsIndex:DINT := 0;						//Index trying to address which was out of bounds
 

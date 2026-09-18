@@ -2,6 +2,7 @@
 <TcPlcObject Version="1.1.0.1">
   <DUT Name="eTMP" Id="{943a76cc-00f3-4a33-846d-6a221247c14a}">
     <Declaration><![CDATA[//enum of states
+{attribute 'strict'}
 {attribute 'to_string'}
 {attribute 'qualified_only'}
 TYPE eTMP :
@@ -36,7 +37,7 @@ TYPE eTMP :
 END_TYPE
 
 //info on attributes:
-//strict 			: also tests if the name is not used for something else
+//strict 			: don't allow mixing of types
 //to_string			: allows the enum to be converted to string
 //qualified_only 	: forces the user to start witht the type name (to avoid the situation that accidentially another enum is used)  ]]></Declaration>
   </DUT>

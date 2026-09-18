@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1">
   <POU Name="SCM_TemplateClean" Id="{8bc014cc-36c6-4eaf-a98c-fc3a181393b9}" SpecialFunc="None">
     <Declaration><![CDATA[(*Clean SCAM template. 
@@ -44,11 +44,17 @@
 			Fdr		>>Frequency drive
 			Srv		>>servo
 			Vcg		>>Vacuum generator
-			//sensors
+			//Inputs
+			Dr		>>door
+			Pb		>>pushbutton
 			Pc		>>photocell
 			Px		>>proximity sensor (capacitive/inductive)
 			Ps		>>pressure sensor
 			Rs		>>reed switch
+			//Outputs
+			K		>>relais
+			Y		>>klep
+
 					
 			Example: Srv_LaserHeight / Cyl_TapeCutter / Tmr_CutDelay
 				
@@ -85,14 +91,17 @@
 		
 	Changes
 		2019-12 HP
-		-New tc3 template
+			-New tc3 template
 		DateTime.Now() HP
-		-this blocks keeps being updated with new blocks/styles/etc
+			-this blocks keeps being updated with new blocks/styles/etc
 		2024-02 HP
-		-new hmi struct
+			-new hmi struct
+		2025-10 HP
+			-Better split of activations over actions
+		
 *)
 
-FUNCTION_BLOCK SCM_TemplateClean IMPLEMENTS ItfEnumConverter
+FUNCTION_BLOCK SCM_TemplateClean
 
 VAR CONSTANT
 END_VAR
@@ -103,7 +112,6 @@ VAR_INPUT
 	//I_SP_GeneralShared:REFERENCE TO HMI_SP_GeneralShared; 	//General shared setpoints for multiple blocks
 	
 	I_K_ES_OK:BOOL;											//Signal emergency stop ok >> used for controls as extra safety to stop them no matter organiser state
-	I_K_ExternalError: BOOL;								//Signal external error >> used to put this scam into exception. Usually only connected to a general error but can be connected to another scam as well
 	I_STS_SUP_Empty:BOOL;									//Status supply is empty >> used to detect if this block has run empty as well (sup_empty + conveyor on for x time >> this part is empty)
 END_VAR
 
@@ -118,14 +126,14 @@ VAR
 
 	(*Internals*)
 	HMI:HMI_TemplateClean;					//All Hmi variables
-	eS: eTpc; 								//Main state program
+	State:sTpc;								//Program state
 	eE:	(U_0,U1_0,U1_1,U1_2	);				//Main state exceptions
 	HM_ProgStatus:ProgStatus;				//Program general status bits	
 	HM_LastTicksStateRest:ULINT;			//System ticks value last time left rest state
 	HM_Empty:BOOL;							//Internal machinepart is empty
 		
 	(*Instances*)
-	Step:utl_Step;							//used for state transitioning
+	//Cyl_InfStopper:....					//Cylinder infeed stopper
 	Srv_Xaxis: cntrl_Servo(
 		TMR_PowerSave:=T#1M,			//time before entering powersave mode 0=disabled (if no command is given then power down after this time @ any command is reset timer) !It takes some time to awake the servo
 		EnableSoftLimits:=TRUE,		//enable software limits (with button manual disable hw-limits, the parameter in the nc-task is set to 0, we need to know if it should be reenabled afterwards
@@ -192,28 +200,22 @@ END_VAR]]></Declaration>
       <ST><![CDATA[(*
 	Machinepart not enabled >> note: optional remove setpoint and this code if not needed!
 *)
-	//If this part is not enabled >> reset errors/warnings/outputs
+	//If this part is not enabled >> ...
 	IF (	NOT HMI.SP.MachinePartEnabled)
 	THEN
-		//if reset command >> reset errors / warnings (in case an error was set when the machine was still enabled)
-		IF(	I_Organiser.Reset_K
-			OR I_Organiser.TotalReset_K)
+		//if not disabled yet >> reset outputs + errors + warnings
+		IF(	State.eS <> eTpc.Disabled)
 		THEN
-			//Make sure output of devices are turned off.
-			A_StepActivationsInit();
+			//Make sure output of devices are turned off by setting state total reset and then running activations once
+			State.M_Step(I_NewStep:= eTpc.Disabled);
+			A_ActivationsInit();
+			A_ActivationsAlways();
 			
 			//reset HMI variables
 			utl_Any_Reset(I_Data:= HMI.ERR);
 			utl_Any_Reset(I_Data:= HMI.WRN);
-			//make the organiser happy
-			HM_ProgStatus.Prog_Error := FALSE;
-			HM_ProgStatus.Prog_Exception := FALSE;
 		END_IF
-		
-		eS:=eTpc.TotalReset_Example;
-		
-		(*bits needed to keep the line running if a part midsection is disabled*)
-		HM_ProgStatus.Prog_Rest := TRUE;
+
 		Q_STS_Empty := I_STS_SUP_Empty;
 		RETURN;
 	END_IF
@@ -222,7 +224,7 @@ END_VAR]]></Declaration>
 	Update HMI variables
 	Check if an error is active >> set Q_ProgStatus.Prog_Errror
 *)
-	HMI.M_Update(	I_OrgControl:= I_Organiser, 	//used for reset manuals/errors commands
+	HMI.M_Update(	I_OrgControl:= I_Organiser, 				//used for reset manuals/errors commands
 					I_HMI_Parent := 0, 							//This is top level, no error propagation
 					I_ERR:= HMI.ERR,							//The update function will check for error changes (signal to the hmi to update errors) + reset errors
 					I_WRN:= HMI.WRN,							//The update function will check for warning changes (signal to the hmi to update errors)
@@ -235,24 +237,114 @@ END_VAR]]></Declaration>
 (*	Exceptions & step-controller*)
 	A_Exceptions();
 
-(*	Step transitions*)
-	//if not in exception >> execute step transitions
+(*	State transitions*)
+	//if not in exception >> execute state transitions
 	IF ( 	NOT HM_ProgStatus.Prog_Exception)
 	THEN 
 		A_StepTransitions();
 	END_IF
 
 (*	Activations*)
-	A_StepActivations(); ]]></ST>
+	//Reset all activations controlled by states
+	A_ActivationsInit();
+	//Activations controlled by state
+	A_ActivationsState();
+	//Activations not controlled by state + instance calls
+	A_ActivationsAlways();
+	
+(*update organiser with scam status*)
+	A_UpdateOrganiserProgstatus();]]></ST>
     </Implementation>
+    <Action Name="A_ActivationsAlways" Id="{8afecdd7-ac67-4dcd-ad16-8f534e152d9a}">
+      <Implementation>
+        <ST><![CDATA[(*
+	State undependant activations + instance calls
+*)
+
+//Internal flags
+	//Reset empty status
+	IF (	NOT I_STS_SUP_Empty
+			AND I_Organiser.Auto_K)
+	THEN
+		HM_Empty := FALSE;
+	END_IF
+
+//Warnings/Statusses	
+	Q_STS_Empty := HM_Empty;
+	HMI.STS.IsEmpty := HM_Empty; //can be used for a indicator (green/grey circle) on the HMI this machinepart is empty
+	
+	//TODO TEMPLATE
+	//usually only done when connected to an external machine (customer) >> remove warning if not needed
+	HMI.WRN.NotRdyRcv_Discharge := 	I_Organiser.EnableDevices_K
+									AND FALSE;
+	HMI.WRN.Standby := 	I_Organiser.EnableDevices_K
+						AND HM_Empty;
+
+//Timers
+	//Tmr_...
+
+//Instance calls		
+	//Cyl_....
+	//Srv_....	
+	//etc
+
+	Srv_Xaxis(
+		I_HMI_Parent:= HMI,
+		I_PTR_MasterAxis:= Srv_Xaxis.P_PointerToAxisRefExtended, 
+		I_K_SimulationActive:= Glbl.Sim_MyMachinePart, 
+		I_ES_OK:= I_K_ES_OK,
+		I_OrgControl:= I_Organiser, 
+		//..several commands.. 
+		I_CPF_CoupleFactor:= 1,
+		I_K_ExternalSetpoint:= FALSE);]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_ActivationsInit" Id="{e2474eae-d283-0ec5-3ed7-e90d9e6b223c}">
+      <Implementation>
+        <ST><![CDATA[(*	
+	Initialisation of state dependant activations
+*)
+
+HM_ProgStatus.Prog_Rest := FALSE;]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_ActivationsState" Id="{67496d37-6410-4af1-b602-edf8aa745e2f}">
+      <Implementation>
+        <ST><![CDATA[(*
+	State dependant activations
+*)
+CASE State.eS OF
+	eTpc.TotalReset:
+		//Controls
+		//Internals
+		//Warnings/Errors
+
+	eTpc.Initialise:
+		//Controls
+		//Internals
+		//Warnings/Errors
+
+	eTpc.Rest:
+		//Controls
+			HM_ProgStatus.Prog_Rest := TRUE;
+		//Internals
+		//Warnings/Errors
+		
+(*  use for copy-pasting
+	eTpc.:
+		//Controls
+		//Internals
+		//Warnings/Errors
+*)
+END_CASE]]></ST>
+      </Implementation>
+    </Action>
     <Action Name="A_Exceptions" Id="{83afa6e6-ad6d-0ee1-2c0b-705a40832f0d}">
       <Implementation>
         <ST><![CDATA[(* State transition controller
 	Handles multistep + step hold + statusses for hmi + logging*) 
 		//>>must be before all method calls, since the input arguments are used
-	Step(
-		I_StepEnumConverter := THIS^,
-		I_OrgControl := I_Organiser);
+	State(I_OrgControl := I_Organiser);
 
 
 (*Exceptions
@@ -320,13 +412,13 @@ CASE eE OF
 		IF(	NOT I_Organiser.TotalReset_K)
 		THEN
 			//Total reset main program
-			Step.M_Step(
-				I_NewStep:= eTpc.TotalReset_Example,
-				I_StepCanBeHeld:= FALSE);
+			State.M_Step(
+				I_NewStep:= eTpc.TotalReset,
+				I_StepCanBeHeld:= TRUE);
 			
 			//disable multistepping for 1 round
 			{warning disable C0139}
-			Step.P_IsMultiStepRequired;
+			State.P_IsMultiStepRequired;
 			
 			//>>
 			eE := U_0;
@@ -360,11 +452,11 @@ HM_ProgStatus.Prog_Exception := (eE > U_0);]]></ST>
 
 
 (*Step activations*)
-CASE eS OF
-	eTpc.TotalReset_Example:
+CASE State.eS OF
+	eTpc.TotalReset:
 	;
 
-	eTpc.Rest_Example:
+	eTpc.Rest:
 		//Example simulate sensor ON immediatly
 			//fbPC_Example.I_SimulateState := eSensorState.Detected;
 		
@@ -372,144 +464,6 @@ CASE eS OF
 			//IF(Step.P_StepTime > T#33MS) THEN fbPC_Example.I_SimulateState := eSensorState.Detected; END_IF
 		
 END_CASE	]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="A_StepActivations" Id="{67496d37-6410-4af1-b602-edf8aa745e2f}">
-      <Implementation>
-        <ST><![CDATA[(*How it works:
-	First activations which have to be done by a step are initialised to false
-			//section initialisation
-			fbSrv_Belt.I_K_PosAbsolute := false;
-		
-	Then set activations for devices controlled by steps, to true:
-		CASE eS OF
-			eTMP.InitCyl:
-				Cyl_Example.I_K_AutoIn := TRUE;
-			...
-		END_CASE
-		
-		
-	At last activations/blocks calls that always have to be done are executed
-	
-		IO_ERR.ErrorThatIsAlwaysActive S= myCondition;	
-		..
-		fbSrv_Belt(
-			I_EN0:= TRUE,
-			...skipping a few rows here
-			//I_K_Auto_Homing:= ,				Note: activation controlled by state
-			I_K_Auto_Velocity:= FALSE,
-			I_SPD_Auto_Velocity:= 0,
-			//I_K_Auto_Absolute:= ,				Note: activation controlled by state
-			//I_POS_Auto_Absolute:= ,			Note: activation controlled by state
-			..skipping a few ros here
-			IO_MAN:= IO_MAN.Srv_Conveyor,
-			IO_SP:= IO_SP.Srv_Conveyor,
-			IO_STS:= IO_STS.Srv_Conveyor,
-			IO_WRN:= IO_WRN.Srv_Conveyor,
-			IO_ERR:= IO_ERR.Srv_Conveyor);
-		
-		
-		The advantages are:
-			-much easier to see what is activated in each step + easier to change
-			-less chance to create bugs, bugs are easier spotted
-			-it saves a lot of processor usage in comparison to the old method:
-				Q_K_SomeOutput := eStep=S1 OR eStep=S2 OR ....etc etc)
-*)
-
-(*Initialise step activated activations*)
-	A_StepActivationsInit();
-
-(*Activations by step*)
-	CASE eS OF
-		eTpc.TotalReset_Example:
-			(*Controls*)
-			(*Internals*)
-			(*Warnings/Errors*)
-	
-	
-		eTpc.Initialise_Example:
-			(*Controls*)
-			(*Internals*)
-			(*Warnings/Errors*)
-	
-		eTpc.Rest_Example:
-			(*Controls*)
-				HM_ProgStatus.Prog_Rest := TRUE;
-			(*Internals*)
-			(*Warnings/Errors*)
-			
-	(*
-		S_Example:
-			(*Controls*)
-			(*Internals*)
-			(*Warnings/Errors*)
-	*)
-	END_CASE
-
-
-(*Activations always*)
-
-(*Default positions for cylinders 
-	*If you don't want to specify in each step the IN OR out activation for a cylinder
-	then you could do it like here:
-		In := NOT Out
-		>>now only the Out activation has to be programmed in the activations-case
-		
-	*However it is more readable if you don't use this way of activating cylinders and just specify in each step in or out
-*)
-	IF(NOT (eS = eTpc.TotalReset_Example))
-	THEN
-		//Cyl_Example.I_K_AutoOut := NOT Cyl_Example.I_K_AutoIn; 
-	END_IF
-	
-(*Warnings/Statusses*)
-	//update organiser with local status
-	HM_ProgStatus.Prog_Error :=	//emergencystop not ok
-						NOT I_K_ES_OK
-						//optional >> request go to error state from external
-						OR I_K_ExternalError
-						//error active in this block or one of the linked children
-						OR HMI.P_STS_InError;
-	I_Organiser.M_UpdateProgStatus(HM_ProgStatus);
-	
-	Q_STS_Empty := HM_Empty;
-	HMI.STS.IsEmpty := HM_Empty; //can be used to indicate on the HMI this machinepart is empty
-	
-	//TODO TEMPLATE
-	//usually only done when connected to an external machine (customer) >> remove warning if not needed
-	HMI.WRN.NotRdyRcv_Discharge := 	I_Organiser.EnableDevices_K
-									AND FALSE;
-	HMI.WRN.Standby := 	I_Organiser.EnableDevices_K
-						AND HM_Empty;
-(*Internals*)
-	//Reset empty status
-	IF (	NOT I_STS_SUP_Empty
-			AND I_Organiser.Auto_K)
-	THEN
-		HM_Empty := FALSE;
-	END_IF
-
-(*Timers*)
-
-
-(*Instance calls*)		
-		
-	Srv_Xaxis(
-		I_HMI_Parent:= HMI,
-		I_PTR_MasterAxis:= Srv_Xaxis.P_PointerToAxisRefExtended, 
-		I_K_SimulationActive:= Glbl.Sim_MyMachinePart, 
-		I_ES_OK:= I_K_ES_OK,
-		I_OrgControl:= I_Organiser, 
-		//..several commands.. 
-		I_CPF_CoupleFactor:= 1,
-		I_K_ExternalSetpoint:= FALSE);
-		
-		]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="A_StepActivationsInit" Id="{e2474eae-d283-0ec5-3ed7-e90d9e6b223c}">
-      <Implementation>
-        <ST><![CDATA[HM_ProgStatus.Prog_Rest := FALSE;]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_StepTransitions" Id="{59016bf7-b834-0a7f-0314-510f2d30212c}">
@@ -532,48 +486,69 @@ END_CASE	]]></ST>
 (*Main program steps*)
 
 //if stepping not locked, by steplock mode >> can be toggled in HMI to lock certain steps for commissioning/debugging
-IF( NOT Step.Q_K_LockSteps)
+IF( NOT State.Q_K_LockSteps)
 THEN
 //Repeat until conditions to step to next state are false OR looped already twice (normally programs don't loop multiple times!)
 REPEAT 
-	CASE eS OF
-		eTpc.TotalReset_Example:
-			//if initialise command from the organiser >> start initialisation
-			IF ( I_Organiser.Init_K)
-			THEN
-				//>>
-				Step.M_Step(
-					I_NewStep:= eTpc.Initialise_Example,
-					//Optional: argument to log extra info for this step transition
-					I_NewStepLogInfo:= CONCAT('Start command at time:', SYSTEMTIME_TO_STRING(BknGlbl.LocalSystemTime)),
-					//>>@ true & HMI-stepmode is activated, then the next state will be locked until you press the button release step on the HMI (used for debugging / commissioning
-					//!Do not enable for states in which things are cooking: (heater enabled / motor running / etc) or at least consider carefully potential dangers.
-					I_StepCanBeHeld:= TRUE,
-					//Optional: >> the repeat around this CASE-statement will NOT execute, the next step will take at least 1 cycle == activations for that step are executed 	
-					I_BlockMultiStep:=TRUE); 
-			END_IF
-		
-		eTpc.Initialise_Example:
-			IF( FALSE) 
-			THEN
-				//>>
-				Step.M_Step(
-					I_NewStep:= eTpc.Rest_Example,
-					I_StepCanBeHeld:= TRUE);
-			END_IF
+	CASE State.eS OF
+		eTpc.Disabled,
+		eTpc.TotalReset:
+			//if initialise command from the organiser																>>Initialise
+				IF ( I_Organiser.Init_K)
+				THEN
+					//>>
+					State.M_Step(
+						I_NewStep:= eTpc.Initialise,
+						//Optional: argument to log extra info for this step transition
+						I_NewStepLogInfo:= CONCAT('TotalReset:', SYSTEMTIME_TO_STRING(BknGlbl.LocalSystemTime)),
+						//>>@ true & HMI-stepmode is activated, then the next state will be locked until you press the button release step on the HMI (used for debugging / commissioning
+						//!Do not enable for states in which things are cooking: (heater enabled / motor running / etc) or at least consider carefully potential dangers.
+						I_StepCanBeHeld:= TRUE,
+						//Optional: >> the repeat around this CASE-statement will NOT execute, the next step will take at least 1 cycle == activations for that step are executed 	
+						I_BlockMultiStep:=TRUE); 
+				END_IF
 
-		eTpc.Rest_Example: 
-			IF( I_Organiser.Auto_K
-				AND FALSE)
-			THEN
-				//>>
-				Step.M_Step(
-					I_NewStep:= eTpc.Rest_Example,
-					//just an example what you can do (add state info for logging purposes), this argument is optional
-					I_NewStepLogInfo:= Concat('Last cycle time(s):', TO_STRING(TO_REAL(BknGlbl.SystemTimeInTicks - HM_LastTicksStateRest)/10000000)),
-					I_StepCanBeHeld:= FALSE);
-				HM_LastTicksStateRest := BknGlbl.SystemTimeInTicks;
-			END_IF
+		eTpc.Initialise:
+			//if components initialised																				>>Rest
+				IF( FALSE) 
+				THEN
+					//>>
+					State.M_Step(
+						I_NewStep:= eTpc.Rest,
+						I_StepCanBeHeld:= TRUE);
+				END_IF
+
+		eTpc.Rest:
+			//if machine started and start condition																>>Rest
+				IF( I_Organiser.Auto_K
+					AND FALSE)
+				THEN
+					//>>
+					State.M_Step(
+						I_NewStep:= eTpc.Rest,
+						//just an example what you can do (add state info for logging purposes), this argument is optional
+						I_NewStepLogInfo:= Concat('Last cycle time(s):', TO_STRING(TO_REAL(BknGlbl.SystemTimeInTicks - HM_LastTicksStateRest)/10000000)),
+						I_StepCanBeHeld:= FALSE);
+					HM_LastTicksStateRest := BknGlbl.SystemTimeInTicks;
+				END_IF
+
+		(*  use for copy-pasting
+				Keep tab-structure > try fold icon on comment lines for step reasons ;)
+			
+			eTpc.:
+				//if [ReasonForStep]																				>>[TargetState]
+					IF()
+					THEN
+						//>>
+						State.M_Step(
+							I_NewStep:= eTpc.,
+							I_StepCanBeHeld:= TRUE);
+				//else if [ReasonForStep]																			>>[TargetState]
+					ELSEIF
+					THEN
+						
+					END_IF
+		*)
 
 	//unkown state, should never happen. Best to not do an autorecovery, just let it hang			
 	ELSE
@@ -581,35 +556,33 @@ REPEAT
 	END_CASE 
 
 //until flag to multistep is false 
-UNTIL(NOT Step.P_IsMultiStepRequired)
+UNTIL(NOT State.P_IsMultiStepRequired)
 END_REPEAT
 END_IF]]></ST>
       </Implementation>
     </Action>
-    <Property Name="P_EnumAsInt" Id="{8ff0248d-e32c-40fb-8bc5-640884d866fb}">
-      <Declaration><![CDATA[PROPERTY P_EnumAsInt : INT]]></Declaration>
-      <Get Name="Get" Id="{3ec08425-d81e-4c01-a15b-30bbe6a65652}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[P_EnumAsInt := eS;]]></ST>
-        </Implementation>
-      </Get>
-      <Set Name="Set" Id="{f1036c59-cf36-4c75-a772-71f9bc2ca46f}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[eS := P_EnumAsInt;]]></ST>
-        </Implementation>
-      </Set>
-    </Property>
-    <Property Name="P_EnumAsString" Id="{c55e0e27-dd05-42be-9260-43fe3c834889}">
-      <Declaration><![CDATA[PROPERTY P_EnumAsString : STRING(40)
-]]></Declaration>
-      <Get Name="Get" Id="{132aa2c6-aa24-488a-8da5-dd103f153ba9}">
-        <Declaration><![CDATA[]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[P_EnumAsString := TO_STRING(eS);]]></ST>
-        </Implementation>
-      </Get>
-    </Property>
+    <Action Name="A_UpdateOrganiserProgstatus" Id="{df19c5fe-6788-46b9-a970-3114f1ef7943}">
+      <Implementation>
+        <ST><![CDATA[//machinepart in exception > done in A_Exceptions
+//HM_ProgStatus.Prog_Exception
+
+//machinepart in rest state > done in A_ActivationsState
+//HM_ProgStatus.Prog_Rest
+
+HM_ProgStatus.Prog_Error :=	//emergencystop not ok
+							NOT I_K_ES_OK
+							//error active in this block or one of the local children (cntrl_xxxx for example)
+							OR HMI.P_STS_InError;
+
+//production stopped by external factor >> for OEE performance tracking / lamp signal column 
+HM_ProgStatus.Prog_ExternallyBlocked := FALSE; //TODO TEMPLATE: Activate if needed, example: NOT SN_DscReadyToReceive;
+
+//machinepart needs attention >> for lamp signal column
+HM_ProgStatus.Prog_Attention := FALSE; //TODO TEMPLATE: Activate if needed, example: PC_PlanoBufferLowLevel.Q_DetectedDebounced;
+
+//call organiser update method
+I_Organiser.M_UpdateProgStatus(HM_ProgStatus);]]></ST>
+      </Implementation>
+    </Action>
   </POU>
 </TcPlcObject>

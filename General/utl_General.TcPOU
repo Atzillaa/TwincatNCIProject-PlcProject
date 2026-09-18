@@ -19,17 +19,6 @@
 		Especially if blocks are communicating with each other with interlocks this is needed (for those to be total reset together). 
 		In that case use this signal for those organisers + Hide the total reset button for these organisers in the HMI (the organiser viewscreen has a property for this) so the single organiser total reset can't be done.
 
-	Versions
-		2023-09-14 HP
-			-big update happened, if things are missing / not working >> contact me
-		2024-02 HP
-			-another big update, new hmi structs + improvements
-			-addec cntrl_SafetyZone
-			-added cntrl_CxPowerSupply
-		2025-05 HP
-			-V0.7 another round of big updates
-		
-		
 	Usage:
 		Use Q_SN_Start/Stop/Reset/TotalReset-All signals for the organisers that should be started whith the buttons defined here
 		Use Q_SN_ES_Zone1_OK for the scams that belong to this zone
@@ -38,10 +27,15 @@
 FUNCTION_BLOCK utl_General;
 VAR_INPUT
 	I_SN_ResetErrors:BOOL;						//Signal reset general errors
-	
 	I_SN_Lp_Pb_StartAll:BOOL;					//Signal activate lamp pushbutton >> if only 1 organiser, connect directly to specific organiser output, in case of multiple organisers make it sensible yourself
 	I_SN_Lp_Pb_StopAll:BOOL;					//Signal activate lamp pushbutton >> if only 1 organiser, connect directly to specific organiser output, in case of multiple organisers make it sensible yourself
 	I_SN_Lp_Pb_ResetAll:BOOL;					//Signal activate lamp pushbutton >> if only 1 organiser, connect directly to specific organiser output, in case of multiple organisers make it sensible yourself
+	
+	//Machine status (used for signal column)
+	I_STS_Error:BOOL;							//Status any machine-part is in error (any organiser in error state)
+	I_STS_Running:BOOL;							//Status all machine-parts are running (all organisers in Auto_K)
+	I_STS_NoDischarge:BOOL;						//Status discharge (next machine) not accepting products
+	I_STS_OperatorInput:BOOL;					//Status any machine-part needs operator interaction
 END_VAR
 
 VAR_OUTPUT
@@ -69,6 +63,9 @@ VAR
 	BknLibrary:utl_BknLibrary(				//Handles library functionality (BknGlb-variables + logging)
 		EnableTaskCycleTimeExceedWarning:=TRUE);			//dis/enable cycletime exceeding warnings (you really shouldn't...)
 
+	//TODO TEMPLATE >> This is a template block which uses the boikon default. You might have to adapt this block based on the customers requirements
+	SignalColumn: utl_SignalColumn;
+
 	//TODO TEMPLATE >>
 		//Remove if you don't have a cx2100-xxx module
 		//Configure correctly if it has an ups and set the correct address (hw-config, second tab esb-device)
@@ -87,16 +84,16 @@ VAR
 	EthercatManager:cntrl_EthercatManager(DelayedStartMaster:= TRUE);	//Ethercat devices manager
 	
 	//TODO TEMPLATE 
-		//>> adapt safety template as needed + rename + add as many zones as you need (hint: use 1 general/zone)	
-	SafetyZone1:cntrl_SafetyZone1; //note: this block extends the basic mandatory functionality. The extension (located in your project) has to be adapted as needed
+		//>> adapt safety template as needed + rename
+		//>> the template example controls multiple groups but if you want you can create a controller/group	
+	SafetyController:cntrl_SafetyController1; //note: this block extends the basic mandatory functionality. The extension (located in your project) has to be adapted as needed
 	
 	//TODO TEMPLATE 
 		//make syncunits for groups of terminals which belongs together (all terminals behind a EK1122)
 		//make an instance per syncunit here and hw-link to the wc-state of the syncunit group 
 	I_WcState_MCC: cntrl_SyncUnitMonitor;			//SyncUnitGroup for main cabinet 
 	I_WcState_RIO1: cntrl_SyncUnitMonitor;			//SyncUnitGroup for RIO1
-	I_WcState_RIO1Servo1: cntrl_SyncUnitMonitor;	//SyncUnitGroup for servo group in RIO1
-	I_WcState_SafetyZone1: cntrl_SyncUnitMonitor;	//SyncUnitGroup for safety zone1
+	I_WcState_SafetyZones: cntrl_SyncUnitMonitor;	//SyncUnitGroup for safety
 	
 
 	I_PS_AirpressureOk: cntrl_InputHmiStsErr;		//Pressure switch airpressure ok 
@@ -139,6 +136,9 @@ HMI.M_Update(	I_OrgControl:= OrganiserGeneral,
 	
 //Warnings
 HMI.WRN.CheckBoundsTriggered := Glbl.OutOfBounds;
+
+//Errors
+HMI.ERR.ExampleErrorPreConfiggedPrio s= BknGlbl.FirstScan;
 	
 ]]></ST>
       </Implementation>
@@ -148,7 +148,7 @@ HMI.WRN.CheckBoundsTriggered := Glbl.OutOfBounds;
         <ST><![CDATA[//Signals 
 Q_SN_ERR_General := HMI.P_STS_InError;
 
-Q_SN_ES_Zone1_OK := SafetyZone1.Q_K_ES_OK; 
+Q_SN_ES_Zone1_OK := SafetyController.Q_K_ES_Zone1_OK; 
 
 Q_SN_StartAll := I_Pb_StartAll.Q;
 					
@@ -181,6 +181,12 @@ BknLibrary(
 	IO_TaskInfo:= _TaskInfo[GetCurrentTaskInfo.Index],
 	IO_AppInfo:= _AppInfo);
 
+//Machine status signal column	
+SignalColumn(
+	I_STS_Error:= I_STS_Error , 
+	I_STS_Running:= I_STS_Running, 
+	I_STS_NoDischarge:= I_STS_NoDischarge, 
+	I_STS_OperatorInput:= I_STS_OperatorInput);
 	
 //TODO TEMPLATE see instructions @ declaration
 CxPowerSupply(
@@ -195,11 +201,11 @@ EthercatManager(
 
 //TODO TEMPLATE >> see instructions @ instance declaration and comment inside this block
 	//note: nicest way to restart safety is to use a dedicated hw button. Here I've connected it to the more general reset signal/buttons
-SafetyZone1(
+SafetyController(
 	I_HMI_Parent:= HMI,
 	I_K_SimulationActive:= 	Glbl.SimEnable
-							AND NOT UnitTesting.EnableSafetyTest,		//TODO TEMPLATE >> remove this line (for unittesting I've a "real" safety setup on the testboard that manipulates safety card inputs with plc output)
-	I_K_Enable:= 	NOT I_WcState_SafetyZone1.Q_STS_SyncUnitDataOk, 	//NOTE: connecting enable like this has the advantage that safety is started and ErrAcked at startup of ethercat
+							AND NOT UnitTesting.Sft_EnableSafetyTest,		//TODO TEMPLATE >> remove this line (for unittesting I've a "real" safety setup on the testboard that manipulates safety card inputs with plc output)
+	I_K_Enable:= I_WcState_SafetyZones.Q_STS_SyncUnitDataOk, 			//NOTE: connecting enable like this has the advantage that safety is started and ErrAcked at startup of ethercat
 																		//Disadvantage is that it will auto reset errors at restart of ethercat (you might find this an advantage...)
 	I_OrgControl:= OrganiserGeneral,
 	I_STS_AirPressure_OK := I_PS_AirpressureOk.Q);
@@ -210,6 +216,8 @@ I_Pb_StartAll(
 	//I_K_SimulateOn:= , >>overwritten by visu general 
 	);
 
+//RE > preset sim-on
+I_PbNc_StopAll.I_K_SimulateOn S= Glbl.SimEnable AND NOT I_PbNc_StopAll.I_K_SimulationActive;
 I_PbNc_StopAll(
 	I_K_SimulationActive:= Glbl.SimEnable, 
 	//I_K_SimulateOn:= , >>overwritten by visu general 
@@ -237,13 +245,7 @@ I_WcState_RIO1(
 	I_K_SimulationActive:= Glbl.SimEnable, 
 	I_K_SimulateDataValid:= TRUE);
 				
-I_WcState_RIO1Servo1(
-	I_HMI_Parent:= HMI,
-	I_OrgControl:= OrganiserGeneral,
-	I_K_SimulationActive:= Glbl.SimEnable, 
-	I_K_SimulateDataValid:= TRUE);
-
-I_WcState_SafetyZone1(
+I_WcState_SafetyZones(
 	I_HMI_Parent:= HMI,
 	I_OrgControl:= OrganiserGeneral,
 	I_K_SimulationActive:= Glbl.SimEnable, 
@@ -253,7 +255,7 @@ I_PS_AirpressureOk(
 	I_HMI_Parent := HMI,
 	I_OrgControl := OrganiserGeneral,
 	I_K_SetError := NOT I_PS_AirpressureOk.Q,
-	I_K_SimulationActive:= Glbl.SimEnable OR UnitTesting.EnableSafetyTest, //TODO TEMPLATE, remove OR UnitTesting
+	I_K_SimulationActive:= Glbl.SimEnable OR UnitTesting.Sft_EnableSafetyTest, //TODO TEMPLATE, remove OR UnitTesting
 	I_K_SimulateOn:= TRUE);
 
 //TODO TEMPLATE >> dependant on your ups solution adapt as needed
@@ -271,8 +273,12 @@ I_UPS_InBatteryMode(
 IF(	BknGlbl.FirstScan
 	OR BknGlbl.FirstScanOnlineChange)
 THEN
-	//current project version >> autogenerated!
-	HMI.STS.Version := Global_Version.stLibVersion_Boikon_Template.sVersion;
+	//current project version >> autogenerated, sometimes autogenerator takes a second build before the file is generated
+	{IF defined (variable:stLibVersion_Boikon_Template)}
+		HMI.STS.Version := Global_Version.stLibVersion_Boikon_Template.sVersion;
+	{ELSE}
+		HMI.STS.Version := 'Needs Fixing';
+	{END_IF}
 	//reset out of bounds detection
 	Glbl.OutOfBounds := FALSE;
 END_IF]]></ST>

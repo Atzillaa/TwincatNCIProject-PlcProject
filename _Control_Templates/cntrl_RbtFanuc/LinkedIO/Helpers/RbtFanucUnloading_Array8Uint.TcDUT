@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="RbtFanucUnloading_Array8Uint" Id="{5d5ed9d4-74a4-42d7-8e84-a85cd505c62b}">
+    <Declaration><![CDATA[{attribute 'analysis' := '-33'}
+TYPE RbtFanucUnloading_Array8Uint :
+STRUCT
+	_E: ARRAY [0..7] OF UINT;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
