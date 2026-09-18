@@ -126,7 +126,65 @@ VAR
 		
 	(*Instances*)
 	Step:utl_Step;							//used for state transitioning
-	//Cyl_InfStopper:....					//Cylinder infeed stopper
+	Srv_Xaxis: cntrl_Servo(
+		TMR_PowerSave:=T#1M,			//time before entering powersave mode 0=disabled (if no command is given then power down after this time @ any command is reset timer) !It takes some time to awake the servo
+		EnableSoftLimits:=TRUE,		//enable software limits (with button manual disable hw-limits, the parameter in the nc-task is set to 0, we need to know if it should be reenabled afterwards
+		InputNrHomingSensor:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
+		InputNrHwLimitNeg:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
+		InputNrHwLimitPos:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
+		JogMinusOffHomeSensor:=FALSE,	//"jog-"  when moving off homing sensor (if false then jog+ is used) in homing function
+		HomingsensorIs_NC:=FALSE,		//the homing sensor is of type normally closed (note limitswitches are always normally closed)
+		TmrErr_JogOffHomeSensor:=T#3S,	//time to try and jog off homing sensor t#0S = disable
+		HomeTorqueMode:=eSrvHomeTorqueMode.NoTorque,  //<<< ADDED: no torque homing
+		HomeTorqueSpeed:=0,						//Speed to use for homing in torque mode
+		HomingMode:= MC_ForceCalibration,	//homing mode to use >> Default, Direct, Set, Reset, TorquePositiveDirection, TorqueNegativeDirection
+		CouplingSyncPosFirst:=FALSE,			//at couple command, sync the position first to the master axis
+		SPD_CouplingSyncSpeed:=0,				//speed to use when syncing position for coupling
+		DST_CouplingSyncMaxDiff:=0,				//max difference allowed when sync couling >> otherwise error
+		//SET LOWER!!! >> jog=50, velo=250
+		SPD_JOG_Max:=200,						//max allowed allowed jog speed (also used to jog of homing sensor during homing)
+		SPD_AbsModVel_MaxMan:=200				//max allowed speed in manual absolute,velocity, modulo mode	
+		);
+		
+	Srv_Yaxis: cntrl_Servo(
+		TMR_PowerSave:=T#1M,			//time before entering powersave mode 0=disabled (if no command is given then power down after this time @ any command is reset timer) !It takes some time to awake the servo
+		EnableSoftLimits:=TRUE,		//enable software limits (with button manual disable hw-limits, the parameter in the nc-task is set to 0, we need to know if it should be reenabled afterwards
+		InputNrHomingSensor:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
+		InputNrHwLimitNeg:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
+		InputNrHwLimitPos:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
+		JogMinusOffHomeSensor:=FALSE,	//"jog-"  when moving off homing sensor (if false then jog+ is used) in homing function
+		HomingsensorIs_NC:=FALSE,		//the homing sensor is of type normally closed (note limitswitches are always normally closed)
+		TmrErr_JogOffHomeSensor:=T#3S,	//time to try and jog off homing sensor t#0S = disable
+		HomeTorqueMode:=eSrvHomeTorqueMode.NoTorque,  //<<< ADDED: no torque homing
+		HomeTorqueSpeed:=0,						//Speed to use for homing in torque mode
+		HomingMode:= MC_ForceCalibration,	//homing mode to use >> Default, Direct, Set, Reset, TorquePositiveDirection, TorqueNegativeDirection
+		CouplingSyncPosFirst:=FALSE,			//at couple command, sync the position first to the master axis
+		SPD_CouplingSyncSpeed:=0,				//speed to use when syncing position for coupling
+		DST_CouplingSyncMaxDiff:=0,				//max difference allowed when sync couling >> otherwise error
+		//SET LOWER!!! >> jog=50, velo=250
+		SPD_JOG_Max:=200,						//max allowed allowed jog speed (also used to jog of homing sensor during homing)
+		SPD_AbsModVel_MaxMan:=200				//max allowed speed in manual absolute,velocity, modulo mode	
+		);
+		
+	Srv_Zaxis: cntrl_Servo(
+		TMR_PowerSave:=T#1M,			//time before entering powersave mode 0=disabled (if no command is given then power down after this time @ any command is reset timer) !It takes some time to awake the servo
+		EnableSoftLimits:=TRUE,		//enable software limits (with button manual disable hw-limits, the parameter in the nc-task is set to 0, we need to know if it should be reenabled afterwards
+		InputNrHomingSensor:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
+		InputNrHwLimitNeg:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
+		InputNrHwLimitPos:=-1,			//input nr for the sensor in "axis_ref_Extended.I_DigitalInputs" -1 == disabled
+		JogMinusOffHomeSensor:=FALSE,	//"jog-"  when moving off homing sensor (if false then jog+ is used) in homing function
+		HomingsensorIs_NC:=FALSE,		//the homing sensor is of type normally closed (note limitswitches are always normally closed)
+		TmrErr_JogOffHomeSensor:=T#3S,	//time to try and jog off homing sensor t#0S = disable
+		HomeTorqueMode:=eSrvHomeTorqueMode.NoTorque,  //<<< ADDED: no torque homing
+		HomeTorqueSpeed:=0,						//Speed to use for homing in torque mode
+		HomingMode:= MC_ForceCalibration,	//homing mode to use >> Default, Direct, Set, Reset, TorquePositiveDirection, TorqueNegativeDirection
+		CouplingSyncPosFirst:=FALSE,			//at couple command, sync the position first to the master axis
+		SPD_CouplingSyncSpeed:=0,				//speed to use when syncing position for coupling
+		DST_CouplingSyncMaxDiff:=0,				//max difference allowed when sync couling >> otherwise error
+		//SET LOWER!!! >> jog=50, velo=250
+		SPD_JOG_Max:=200,						//max allowed allowed jog speed (also used to jog of homing sensor during homing)
+		SPD_AbsModVel_MaxMan:=200				//max allowed speed in manual absolute,velocity, modulo mode	
+		);
 	
 	(*Inputs / Outputs*)	
 END_VAR]]></Declaration>
@@ -436,11 +494,17 @@ END_CASE	]]></ST>
 
 (*Instance calls*)		
 		
-	//Cyl_....
-
-	//Srv_....	
-	
-	//etc]]></ST>
+	Srv_Xaxis(
+		I_HMI_Parent:= HMI,
+		I_PTR_MasterAxis:= Srv_Xaxis.P_PointerToAxisRefExtended, 
+		I_K_SimulationActive:= Glbl.Sim_MyMachinePart, 
+		I_ES_OK:= I_K_ES_OK,
+		I_OrgControl:= I_Organiser, 
+		//..several commands.. 
+		I_CPF_CoupleFactor:= 1,
+		I_K_ExternalSetpoint:= FALSE);
+		
+		]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_StepActivationsInit" Id="{e2474eae-d283-0ec5-3ed7-e90d9e6b223c}">

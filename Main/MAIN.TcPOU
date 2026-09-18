@@ -22,6 +22,7 @@ END_VAR
 		{attribute 'analysis' := '-33'}
 		TestScmClean: SCM_TemplateClean;					//Remove >> Only here so it will get error checked
 		ExampleMachinePart: SCM_TemplateMachinePart;		//Remove >> Example for how to use
+
 	
 		HM_ProfileBlocks:bool;
 		StopWatchGeneral:profiler;
@@ -120,18 +121,12 @@ Organiser(
 	Q_LP_Stop=>, 
 	Q_LP_Reset=>);
 
-ExampleMachinePart(
-	I_K_ES_OK:= General.Q_SN_ES_Zone1_OK, 			//Emergency stop for this zone OK. @ mutliple zones, fbGeneral must be adapted to supply these signals for each zone
-	I_K_ExternalError:= General.Q_SN_ERR_General,	//External error which should put this scam in exception as well
-														//>>adapt to your needs!!! if you only want to add airpressure NOK then add this signal as output in general and use it here
-														//>>if 2 scams belonging to seperate organisers are communicating with each other than you can make one also go into execption if the other has an error
-	I_Organiser:= Organiser, 						//Control signals from the organiser
-	I_SN_SUP_Request_OK := Glbl.Sim_MyMachinePart, 	//Connect to upstream, used to detect if this block has run empty
-	I_STS_SUP_Empty:= , 							//Connect to upstream. The upstream is empty, use this to enter energy-save mode (stop conveyors etc)
-	I_SP_GeneralShared:= General.P_SP_Shared,		//Connect to where to common setpoints originate / are shared
-	Q_STS_Empty=> , 								//Connect to downstream. The supply is empty and this part is now empty and in energy-save mode
-	Q_SN_SUP_Request=> ,							//Connect to upstream. This program is running and ready to receive products
-);
+SCM_TemplateClean(
+	I_Organiser:= , 
+	I_K_ES_OK:= , 
+	I_K_ExternalError:= , 
+	I_STS_SUP_Empty:= , 
+	Q_STS_Empty=> );
 {END_IF}]]></ST>
       </Implementation>
     </Action>
