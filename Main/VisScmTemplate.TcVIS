@@ -5,7 +5,7 @@
       <Data>
         <o xml:space="preserve" t="VisualObject">
           <n n="LastVisuLanguageModelEntry" />
-          <v n="UniqueIdGenerator">"117"</v>
+          <v n="UniqueIdGenerator">"119"</v>
           <o n="VisualElemList" t="VisualElemList">
             <l n="VisualElementList" t="VisualElemCollection" cet="GenericVisualElem">
               <o>
@@ -478,7 +478,7 @@
                           </o>
                           <o>
                             <v n="Flags">2L</v>
-                            <v n="BasicTypeNodeValue">"MAIN.TestScmClean.Srv_Xaxis"</v>
+                            <v n="BasicTypeNodeValue">"MAIN.ExampleMachinePart.Srv_Xaxis"</v>
                             <v n="BasicTypeNodeAcceptsExpression">true</v>
                             <n n="BasicTypeNodeFastAccess" />
                             <a n="BasicTypeNodeEnumValues" et="String" />
@@ -544,7 +544,7 @@
                     </o>
                     <o>
                       <v n="Id">4279782897L</v>
-                      <v n="Value">"MAIN.TestScmClean.Srv_Xaxis"</v>
+                      <v n="Value">"MAIN.ExampleMachinePart.Srv_Xaxis"</v>
                     </o>
                     <o>
                       <v n="Id">1013868361L</v>
@@ -8589,7 +8589,7 @@
                         <l n="TypeNodeChildren" t="ArrayList" cet="BasicTypeNode">
                           <o>
                             <v n="Flags">1L</v>
-                            <v n="BasicTypeNodeValue">"Yaxis"</v>
+                            <v n="BasicTypeNodeValue">"'Yaxis'"</v>
                             <v n="BasicTypeNodeAcceptsExpression">true</v>
                             <n n="BasicTypeNodeFastAccess" />
                             <a n="BasicTypeNodeEnumValues" et="String" />
@@ -8623,7 +8623,7 @@
                           </o>
                           <o>
                             <v n="Flags">2L</v>
-                            <v n="BasicTypeNodeValue">"MAIN.TestScmClean.Srv_Yaxis"</v>
+                            <v n="BasicTypeNodeValue">"MAIN.ExampleMachinePart.Srv_Yaxis"</v>
                             <v n="BasicTypeNodeAcceptsExpression">true</v>
                             <n n="BasicTypeNodeFastAccess" />
                             <a n="BasicTypeNodeEnumValues" et="String" />
@@ -8689,11 +8689,11 @@
                     </o>
                     <o>
                       <v n="Id">838510094L</v>
-                      <v n="Value">"Yaxis"</v>
+                      <v n="Value">"'Yaxis'"</v>
                     </o>
                     <o>
                       <v n="Id">4279782897L</v>
-                      <v n="Value">"MAIN.TestScmClean.Srv_Yaxis"</v>
+                      <v n="Value">"MAIN.ExampleMachinePart.Srv_Yaxis"</v>
                     </o>
                     <o>
                       <v n="Id">1013868361L</v>
@@ -8815,7 +8815,7 @@
                     </o>
                     <o>
                       <v n="Id">1649127785L</v>
-                      <v n="Value">380</v>
+                      <v n="Value">376</v>
                     </o>
                     <o>
                       <v n="Id">357335551L</v>
@@ -9144,7 +9144,7 @@
                     </o>
                     <o>
                       <v n="Id">550940142L</v>
-                      <v n="Value">487</v>
+                      <v n="Value">483</v>
                     </o>
                     <o>
                       <v n="Id">1473355128L</v>
@@ -9171,7 +9171,7 @@
                         <l n="TypeNodeChildren" t="ArrayList" cet="BasicTypeNode">
                           <o>
                             <v n="Flags">1L</v>
-                            <v n="BasicTypeNodeValue">"Zaxis"</v>
+                            <v n="BasicTypeNodeValue">"'Zaxis'"</v>
                             <v n="BasicTypeNodeAcceptsExpression">true</v>
                             <n n="BasicTypeNodeFastAccess" />
                             <a n="BasicTypeNodeEnumValues" et="String" />
@@ -9205,7 +9205,7 @@
                           </o>
                           <o>
                             <v n="Flags">2L</v>
-                            <v n="BasicTypeNodeValue">"MAIN.TestScmClean.Srv_Zaxis"</v>
+                            <v n="BasicTypeNodeValue">"MAIN.ExampleMachinePart.Srv_Zaxis"</v>
                             <v n="BasicTypeNodeAcceptsExpression">true</v>
                             <n n="BasicTypeNodeFastAccess" />
                             <a n="BasicTypeNodeEnumValues" et="String" />
@@ -9271,11 +9271,11 @@
                     </o>
                     <o>
                       <v n="Id">838510094L</v>
-                      <v n="Value">"Zaxis"</v>
+                      <v n="Value">"'Zaxis'"</v>
                     </o>
                     <o>
                       <v n="Id">4279782897L</v>
-                      <v n="Value">"MAIN.TestScmClean.Srv_Zaxis"</v>
+                      <v n="Value">"MAIN.ExampleMachinePart.Srv_Zaxis"</v>
                     </o>
                     <o>
                       <v n="Id">1013868361L</v>

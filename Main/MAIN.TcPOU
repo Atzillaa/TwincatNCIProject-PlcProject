@@ -24,10 +24,9 @@ END_VAR
 	VAR
 		//Scam-template >> use tool supplied in the folder, to make a copy for your own scam implementation 
 		OrganiserFake: cntrl_OrganiserFake;
-		TestScmClean: SCM_TemplateClean;
 		
 		//Fully functional test scam which uses almost all library blocks >> can be used as example how to do things 
-		ExampleMachinePart: SCM_TemplateMachinePart;
+		ExampleMachinePart: SCM_TemplateClean;
 
 		//just to show it's possible
 		//these variables will now have the same comment (these 2 lines)
@@ -61,19 +60,11 @@ END_VAR
 	END_VAR
 {END_IF}]]></Declaration>
     <Implementation>
-      <ST><![CDATA[//TODO template: Testing functions + running the example scam "MachinePart" >> REMOVE!
-{IF defined (IsTemplate)}
-	z_TemplateTestingExamples();
-	//stop main here
-	RETURN;
-{END_IF}
-
-//TODO template: general actions can be added here. 
+      <ST><![CDATA[//TODO template: general actions can be added here. 
 //in utl_General I've added the usual suspects needed for a machine.
 //please keep in mind I've only included common reocurring items, you need to thoroughly check / update / clean the block!
 a_General();
-
-//Next call all the machineparts. Make an action / section]]></ST>
+b_MachinePart();]]></ST>
     </Implementation>
     <Action Name="a_General" Id="{ef997c49-6f4c-4175-83bc-febdc880087c}">
       <Implementation>
@@ -150,110 +141,10 @@ Organiser(
 ExampleMachinePart( //todo remove true
 	I_K_ES_OK:= General.Q_SN_ES_Zone1_OK, 			//Emergency stop for this zone OK. @ mutliple zones, fbGeneral must be adapted to supply these signals for each zone
 	I_Organiser:= Organiser, 						//Control signals from the organiser
-	I_SN_SUP_Request_OK := Glbl.Sim_MyMachinePart, 	//Connect to upstream, used to detect if this block has run empty
 	I_STS_SUP_Empty:= , 							//Connect to upstream. The upstream is empty, use this to enter energy-save mode (stop conveyors etc)
-	I_SP_GeneralShared:= General.P_SP_Shared,		//Connect to where to common setpoints originate / are shared
 	Q_STS_Empty=> , 								//Connect to downstream. The supply is empty and this part is now empty and in energy-save mode
 	Q_SN_SUP_Request=> ,							//Connect to upstream. This program is running and ready to receive products
 );]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="z_TemplateTestingExamples" Id="{046fd0ae-7c41-4232-933d-3fc23e2d5855}">
-      <Implementation>
-        <ST><![CDATA[//Unittesting
-	//run tests on various library blocks 
-	//*all blocks using pointers will get added eventually
-	//*the unittests will do bad things to these blocks, if they're programmed well no blue screen will occur	
-	UnitTesting(); 
-			
-	//test if template clean will build (if it isn't called the compiler won't stop on errors)
-	TestScmClean(
-		I_Organiser:= OrganiserFake, //messes otherwise with my testing program (prog_rest gets reset)
-		I_K_ES_OK:= General.Q_SN_ES_Zone1_OK, 
-		I_STS_SUP_Empty:= TRUE, 
-		Q_STS_Empty=> );
-		
-	LP_MurrTest();
-		
-//Showcasing
-	//multi assignments
-	MyBool1 := MyBool2 := MyBool3;
-	
-//type casting examples
-	//time
-	sMyUtcTime := SYSTEMTIME_TO_STRING(BknGlbl.UtcSystemTime);
-	//cast string value to int value
-	iValue1 := TO_INT(sValue1);		//string value as int
-	
-	{analysis -0175} //disables analysis warning SA0175 suspicious operation on string
-	//string character to value without casting
-	b0Value := sValue1[0]; 			//raw value
-	//cast string to value. NOTE: does not work when using indexing!!!
-	iValue2 := TO_INT(sValue1[0]);	//raw value
- 
-//copy 1 character
-	//ERROR can not assign byte to string: 
-		//sValue2 := sValue1[0];
-	//now you will have the asci-code as string...
-	
-	
-		sValue2 := TO_STRING(sValue1[0]);
-	//works but but now you have to deal with string-termination as well
-		sValue3[0] := sValue1[0];
-		sValue3[1] := 0; //fix terminator
-	//using boikon library (little bit overkill if you only need 1 char but better to have easy to read code)
-		utl_Any_CopyWithOffset(I_Source:=sValue1, I_Destination:= sValue4, I_WriteOffset:= 0); //side note: only copies 1 char  because destination isn't larger)
-	//using beckhoff library
-		sValue5 := MID(sValue1,1,1); //beckhoff string functions are slow, use more cpu
-
-
-//Library / Template Performance analysis 
-	//cx2040 2015-00-00-45
-	IF(HM_ProfileBlocks)
-	THEN
-		StopWatchGeneral(Start:=TRUE);  
-		a_General();
-		StopWatchGeneral(Start:=FALSE);
-		{warning disable C0139}
-		StopWatchGeneral.DATA.AverageExecTime;
-			//								>>no sim with errors / sim no errors 	
-			//2024-08-27 V0.7.1002 24us
-			//2024-08-29 V0.7.1002 7us		>>(not hashing all setpoints each cycle but 10 bytes/plc cycle)
-			//2024-09-03 V0.7.1002 7us		
-			//2025-01-30 V0.7.1002 8us		
-			//2025-04-01 V0.7.1027 8/8us	
-			//2025-06-10 V0.7.1030 8/8us
-			//2025-06-11 V0.7.1030 7/8us
-			//2025-10-15 V0.7.1109 8/8us 	>>added signal column'
-			//2026-02-26 V0.7.1113 9/10us   >>utl_loggedchannel.M_Update( now type any but that's not the cause) + safety standard changed extra zone's is this causing increase?
-			
-		StopWatchMachineStuff(Start:=TRUE);
-		b_MachinePart();
-		StopWatchMachineStuff(Start:=FALSE);
-		{warning disable C0139} 
-		StopWatchMachineStuff.DATA.AverageExecTime;
-			//2024-08-27 V0.7.1002 25us
-			//2024-08-27 V0.7.1002 18us 	>>(disabling all err/wrn/sp hashing saved 2us)
-			//2024-09-03 V0.7.1002 13us 	>>improved logging
-			//2025-01-30 V0.7.1002 12us 	>>improved HMI vars handling
-			//Above were probably with simulation (then it is faster because statetransitions of the scam isn't executed?)
-			//2025-04-01 V0.7.1027 11/16us	>>with/without simulation modes   >> improved fletcher a bit
-			//2025-06-10 V0.7.1030 13/18us	>>Organiser now passed by interface + log first 10 errors by name in the organiser 
-			//2025-06-10 V0.7.1030 11/16us	>>Instead of hashing all values for errors/warnings, only hashing addresses for active errors/warnings
-			//2025-10-15 V0.7.1109 12/16us  >>PLC BSD updated 4026.19, added: banner-SC, pc, fdr-interrol
-			//2026-02-26 V0.7.1113 13/18us  >>increase because of extra stuff?
-
-		UnitTesting(); //otherwise logErrors will go beserk
-		
-		//stop execution here (otherwise a_General gets called twice and that't no good for the bknlibrary
-		RETURN;
-	END_IF
-	
-	
-//Test example MachinePart
-//It is a simple machine with 1 organiser and 1 scam fully functional with simulation and using general
-	a_General();
-	b_MachinePart();]]></ST>
       </Implementation>
     </Action>
   </POU>

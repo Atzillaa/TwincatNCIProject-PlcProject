@@ -123,7 +123,10 @@ VAR
 	(*Configuration*)	
 
 	(*Logged variables*)
-
+	LogXaxis: utl_LoggedReal(LoggingGroup:= eLogGroups.Default , TrigAtInterval:=1 , TrigAtDeviation:=1 );
+	LogYaxis: utl_LoggedReal(LoggingGroup:= eLogGroups.Default , TrigAtInterval:=1 , TrigAtDeviation:=1 );
+	LogZaxis: utl_LoggedReal(LoggingGroup:= eLogGroups.Default , TrigAtInterval:=1 , TrigAtDeviation:=1 );
+	
 	(*Internals*)
 	HMI:HMI_TemplateClean;					//All Hmi variables
 	State:sTpc;								//Program state
@@ -319,7 +322,12 @@ END_VAR]]></Declaration>
 		I_OrgControl:= I_Organiser, 
 		//..several commands.. 
 		I_CPF_CoupleFactor:= 1,
-		I_K_ExternalSetpoint:= FALSE);]]></ST>
+		I_K_ExternalSetpoint:= FALSE);
+		
+	//Logging
+	LogXaxis.V:= Srv_Xaxis.P_STS_Actposition;
+	LogYaxis.V:= Srv_Yaxis.P_STS_ActPosition;
+	LogZaxis.V:= Srv_Zaxis.P_STS_ActPosition;]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_ActivationsInit" Id="{e2474eae-d283-0ec5-3ed7-e90d9e6b223c}">

@@ -203,8 +203,7 @@ EthercatManager(
 	//note: nicest way to restart safety is to use a dedicated hw button. Here I've connected it to the more general reset signal/buttons
 SafetyController(
 	I_HMI_Parent:= HMI,
-	I_K_SimulationActive:= 	Glbl.SimEnable
-							AND NOT UnitTesting.Sft_EnableSafetyTest,		//TODO TEMPLATE >> remove this line (for unittesting I've a "real" safety setup on the testboard that manipulates safety card inputs with plc output)
+	I_K_SimulationActive:= 	Glbl.SimEnable,		//TODO TEMPLATE >> remove this line (for unittesting I've a "real" safety setup on the testboard that manipulates safety card inputs with plc output)
 	I_K_Enable:= I_WcState_SafetyZones.Q_STS_SyncUnitDataOk, 			//NOTE: connecting enable like this has the advantage that safety is started and ErrAcked at startup of ethercat
 																		//Disadvantage is that it will auto reset errors at restart of ethercat (you might find this an advantage...)
 	I_OrgControl:= OrganiserGeneral,
@@ -255,7 +254,7 @@ I_PS_AirpressureOk(
 	I_HMI_Parent := HMI,
 	I_OrgControl := OrganiserGeneral,
 	I_K_SetError := NOT I_PS_AirpressureOk.Q,
-	I_K_SimulationActive:= Glbl.SimEnable OR UnitTesting.Sft_EnableSafetyTest, //TODO TEMPLATE, remove OR UnitTesting
+	I_K_SimulationActive:= Glbl.SimEnable, //TODO TEMPLATE, remove OR UnitTesting
 	I_K_SimulateOn:= TRUE);
 
 //TODO TEMPLATE >> dependant on your ups solution adapt as needed

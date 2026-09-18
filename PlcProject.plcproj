@@ -82,9 +82,6 @@
     <Compile Include="DevelopmentPlayground\UnitTesting\BreakLogging.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DevelopmentPlayground\UnitTesting\UnitTesting.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="DevelopmentPlayground\UnitTesting\Vis_Test.TcVIS">
       <SubType>Code</SubType>
       <DependentUpon>VisualizationManager.TcVMO</DependentUpon>
